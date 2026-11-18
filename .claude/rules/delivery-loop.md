@@ -31,7 +31,9 @@ its last without a human in between.
    the PBI changes no code.
 8. **Record decisions.** Any architecture / technology / cross-cutting decision made on the
    way gets an ADR in the same commit (`.claude/rules/documentation.md`).
-9. **Commit and push to `main`.** Stage by explicit path; `git diff --check`; message
+9. **Commit and push** — to `main`, or to the milestone branch when the user asked for a PR
+   (ADR-0029: then tick the DoD and comment on the issue, but let `Closes #N` close it on merge).
+   Stage by explicit path; `git diff --check`; message
    references the issue (`Refs #N`); push.
 10. **Watch CI to the end.** Green → continue. Red → fix forward now; do not start the next PBI.
 11. **Write the test report.** `docs/test-reports/issue-NNNN-<summary>.md` with the screenshots
