@@ -66,3 +66,25 @@ describe('PostCard（#20: 詳細へのリンク）', () => {
     expect(push).not.toHaveBeenCalled();
   });
 });
+
+describe('PostCard の操作の差し込み（#21）', () => {
+  it('like と bookmark を渡すと、操作の列のいいねの場所と右端に出す', () => {
+    render(
+      <PostCard
+        post={{ ...post, counts: { ...post.counts, likes: 3, views: 7 } }}
+        now={now}
+        like={<button type="button">いいねの部品</button>}
+        bookmark={<button type="button">ブックマークの部品</button>}
+      />,
+    );
+    const group = screen.getByRole('group', { name: '操作' });
+    const names = [...group.children].map((child) => child.textContent);
+    expect(names).toEqual([
+      '返信 0',
+      'リポスト 0',
+      'いいねの部品',
+      '表示 77',
+      'ブックマークの部品',
+    ]);
+  });
+});

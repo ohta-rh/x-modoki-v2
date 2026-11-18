@@ -13,7 +13,16 @@ const COUNTS = [
 ] as const;
 
 /** The post being read on its detail page: larger text, the absolute time, the counts (#20). */
-export function MainPost({ post, menu }: { post: Post; menu?: ReactNode }) {
+export function MainPost({
+  post,
+  menu,
+  actions,
+}: {
+  post: Post;
+  menu?: ReactNode;
+  /** The like / bookmark controls, composed by the caller (#21). */
+  actions?: ReactNode;
+}) {
   const profile = `/${post.author.username}` as Route;
   return (
     <article aria-label="投稿の本体" className="border-b border-line px-4 pt-3">
@@ -50,6 +59,15 @@ export function MainPost({ post, menu }: { post: Post; menu?: ReactNode }) {
           </span>
         ))}
       </p>
+      {actions ? (
+        <div
+          role="group"
+          aria-label="操作"
+          className="flex justify-around border-t border-line py-1"
+        >
+          {actions}
+        </div>
+      ) : null}
     </article>
   );
 }

@@ -17,6 +17,8 @@ type Props = {
   replies: ReactNode;
   /** The reply list's query key, reloaded after a reply. */
   repliesKey: readonly string[];
+  /** The main post's like / bookmark controls, composed by the page (#21). */
+  mainActions?: ReactNode;
 };
 
 /**
@@ -31,6 +33,7 @@ export function PostThread({
   deleteAction,
   replies,
   repliesKey,
+  mainActions,
 }: Props) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -49,6 +52,7 @@ export function PostThread({
       )}
       <MainPost
         post={post}
+        actions={mainActions}
         menu={
           post.viewer.isAuthor ? (
             <DeletePostMenu

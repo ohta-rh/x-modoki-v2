@@ -51,3 +51,4 @@ status: stable
 | [0037](0037-pool-closes-when-idle-not-after-response.md) | リクエストごとの接続の pool は、after() で閉じず、使わなくなって 1 秒で接続を閉じる | 採用 | エージェント |
 | [0038](0038-e2e-sign-up-per-test-and-direct-bulk-fixtures.md) | 画面のテストは、テストごとに画面から登録し、画面では作れない量のデータだけをデータベースへ直接入れる | 採用 | エージェント |
 | [0039](0039-not-found-route-file-is-a-thin-shell.md) | 404 の画面は、アプリの not-found.tsx から同期の画面のコンポーネントを出し、Next.js の既定の画面を使わない | 採用 | エージェント |
+| [0040](0040-bookmark-cursor-is-time-and-post-id.md) | ブックマークの一覧のカーソルは、付けた時刻のマイクロ秒と投稿の ID の組にする | 採用 | エージェント |

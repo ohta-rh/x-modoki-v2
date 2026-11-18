@@ -10,6 +10,12 @@ vi.mock('@/features/post-compose/index.server', () => ({
 vi.mock('@/features/post-delete/index.server', () => ({
   deletePostAction: async () => ({ ok: true }),
 }));
+vi.mock('@/features/post-like/index.server', () => ({
+  setLikeAction: async () => ({ ok: true, count: 1 }),
+}));
+vi.mock('@/features/post-bookmark/index.server', () => ({
+  setBookmarkAction: async () => ({ ok: true, count: 1 }),
+}));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 const empty = { items: [], nextCursor: null };
@@ -68,8 +74,10 @@ describe('HomePage（ui-ux.md の 6 節）', () => {
         />
       </QueryClientProvider>,
     );
-    expect(
-      within(screen.getByRole('article')).getByRole('button', { name: 'もっと見る' }),
-    ).toBeInTheDocument();
+    const article = within(screen.getByRole('article'));
+    expect(article.getByRole('button', { name: 'もっと見る' })).toBeInTheDocument();
+    // #21: the timeline's cards can be liked and bookmarked.
+    expect(article.getByRole('button', { name: 'いいね' })).toBeInTheDocument();
+    expect(article.getByRole('button', { name: 'ブックマーク' })).toBeInTheDocument();
   });
 });

@@ -196,7 +196,7 @@ Server Action は例外を投げずに、上の形で返す。想定していな
 | `GET /api/search?q=&f=&cursor=` | 検索の結果の続き |
 | `GET /api/notifications?tab=&cursor=` | 通知の続き |
 | `GET /api/notifications/unread-count` | 未読の数 |
-| `GET /api/bookmarks?cursor=` | ブックマークの続き |
+| `GET /api/bookmarks?cursor=` | ブックマークの続き。付けた順の新しい順で、カーソルは `<マイクロ秒>_<投稿の ID>`（[ADR-0040](../adr/0040-bookmark-cursor-is-time-and-post-id.md)） |
 | `POST /api/uploads/presign` | 画像の署名つき URL を出す |
 | `POST /api/posts/{id}/view` | 表示の回数を足す（`after()` で書く） |
 | `GET / POST /api/auth/[...all]` | Better Auth |

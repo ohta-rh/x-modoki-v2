@@ -68,6 +68,8 @@
   --text-body-lg--line-height: 24px;
   --text-title: 20px;
   --text-title--line-height: 24px;
+  /* The heart's pop when liked (#21); motion-safe: only, so reduced motion keeps it still. */
+  --animate-like-pop: like-pop 300ms ease-out;
   --color-background: var(--bg);
   --color-foreground: var(--text);
   --color-border: var(--border);
@@ -105,5 +107,18 @@ body {
 
   :focus:not(:focus-visible) {
     outline: none;
+  }
+}
+
+/* The heart's pop when liked (#21); used only through motion-safe:animate-like-pop. */
+@keyframes like-pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
   }
 }

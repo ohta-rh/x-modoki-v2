@@ -26,6 +26,10 @@ type Props = {
   label?: string;
   /** Draws the 2px thread line under the avatar, down to the next post (ui-ux.md 6). */
   connector?: boolean;
+  /** The like control, composed by the caller; without it the like count is shown as text. */
+  like?: ReactNode;
+  /** The bookmark control, shown at the end of the action row (#21). */
+  bookmark?: ReactNode;
 };
 
 /** True when the click started on something with its own action: a link or a button. */
@@ -36,7 +40,7 @@ const ownAction = (event: MouseEvent) =>
  * One post (docs/architecture/ui-ux.md 5). The whole card opens the post's detail; links and buttons
  * inside keep their own behaviour. The actions arrive with their PBIs.
  */
-export function PostCard({ post, now, menu, label, connector = false }: Props) {
+export function PostCard({ post, now, menu, label, connector = false, like, bookmark }: Props) {
   const router = useRouter();
   const profile = `/${post.author.username}` as Route;
   const detail = `/${post.author.username}/status/${post.id}` as Route;
@@ -91,6 +95,7 @@ export function PostCard({ post, now, menu, label, connector = false }: Props) {
           className="mt-3 flex max-w-[425px] justify-between text-text-muted"
         >
           {ACTIONS.map(({ key, label, icon: Icon }) => {
+            if (key === 'likes' && like) return <div key={key}>{like}</div>;
             const count = post.counts[key];
             return (
               <span key={key} className="flex items-center gap-1 text-[13px]">
@@ -100,6 +105,7 @@ export function PostCard({ post, now, menu, label, connector = false }: Props) {
               </span>
             );
           })}
+          {bookmark ? <div>{bookmark}</div> : null}
         </div>
       </div>
     </article>

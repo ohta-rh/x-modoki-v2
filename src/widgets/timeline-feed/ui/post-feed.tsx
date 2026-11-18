@@ -6,8 +6,11 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { PostCard, type PostPage } from '@/entities/post';
+import { BookmarkButton } from '@/features/post-bookmark';
 import { type DeletePostActionResult, DeletePostMenu } from '@/features/post-delete';
+import { LikeButton } from '@/features/post-like';
 import { Spinner } from '@/shared/ui/spinner';
+import { type ReactionAction, useReaction } from '../lib/use-reaction';
 
 export type PostFeedProps = {
   queryKey: readonly string[];
@@ -18,6 +21,9 @@ export type PostFeedProps = {
   now: string;
   /** Deletes one of the viewer's own posts; without it no card shows the ⋯ menu. */
   deleteAction?: (postId: string) => Promise<DeletePostActionResult>;
+  /** Like / bookmark Server Actions; without them the card shows the counts as text (signed out). */
+  likeAction?: ReactionAction;
+  bookmarkAction?: ReactionAction;
   emptyText?: string;
 };
 
@@ -38,9 +44,13 @@ export function PostFeed({
   firstPage,
   now,
   deleteAction,
+  likeAction,
+  bookmarkAction,
   emptyText = 'まだポストがありません',
 }: PostFeedProps) {
   const queryClient = useQueryClient();
+  const toggleLike = useReaction('like', likeAction);
+  const toggleBookmark = useReaction('bookmark', bookmarkAction);
   const router = useRouter();
   const query = useInfiniteQuery({
     queryKey,
@@ -83,6 +93,23 @@ export function PostFeed({
             <PostCard
               post={posts[row.index]}
               now={date}
+              like={
+                likeAction ? (
+                  <LikeButton
+                    liked={posts[row.index].viewer.liked}
+                    count={posts[row.index].counts.likes}
+                    onToggle={() => toggleLike(posts[row.index])}
+                  />
+                ) : undefined
+              }
+              bookmark={
+                bookmarkAction ? (
+                  <BookmarkButton
+                    bookmarked={posts[row.index].viewer.bookmarked}
+                    onToggle={() => toggleBookmark(posts[row.index])}
+                  />
+                ) : undefined
+              }
               menu={
                 deleteAction && posts[row.index].viewer.isAuthor ? (
                   <DeletePostMenu
