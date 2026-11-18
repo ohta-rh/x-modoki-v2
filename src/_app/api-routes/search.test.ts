@@ -33,6 +33,7 @@ describe('GET /api/search（#27）', () => {
     expect(searchUsers).toHaveBeenLastCalledWith('hana', null);
   });
 
+  // NFR-SEC-02: 全ての入力（フォーム・JSON・ルートの引数・検索の語）を Zod で確かめ、形が違えば `VALIDATION`（Route Handler は 400）
   it('q は前後の空白を除いて 1〜100 文字。そうでなければ 400', async () => {
     for (const query of ['', '?q=', '?q=%20%20', `?q=${'a'.repeat(101)}`]) {
       const response = await call(query);
@@ -42,6 +43,14 @@ describe('GET /api/search（#27）', () => {
     await call('?q=%20%E7%8C%AB%20');
     expect(searchPosts).toHaveBeenLastCalledWith('猫', 'top', null);
     expect((await call(`?q=${'a'.repeat(100)}`)).status).toBe(200);
+  });
+
+  it('知らない f は 400 で、検索しない（#62）', async () => {
+    const response = await call('?q=a&f=nope');
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: 'VALIDATION' });
+    expect(searchPosts).not.toHaveBeenCalled();
+    expect(searchUsers).not.toHaveBeenCalled();
   });
 
   it('カーソルが壊れていれば 400', async () => {

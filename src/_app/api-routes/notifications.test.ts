@@ -24,13 +24,24 @@ describe('GET /api/notifications（#26）', () => {
   const call = (query: string) =>
     getNotificationList(new Request(`http://localhost:3000/api/notifications${query}`));
 
-  it('タブとカーソルを渡し、ページを返す。タブが mentions でなければ全部', async () => {
+  it('タブとカーソルを渡し、ページを返す。タブが無ければ全部', async () => {
     getNotifications.mockResolvedValue({ ok: true, page: { items: [], nextCursor: '5' } });
     const response = await call('?tab=mentions&cursor=9');
     expect(await response.json()).toEqual({ items: [], nextCursor: '5' });
     expect(getNotifications).toHaveBeenLastCalledWith('mentions', '9');
-    await call('?tab=other&cursor=');
+    await call('?tab=all&cursor=');
     expect(getNotifications).toHaveBeenLastCalledWith('all', null);
+    await call('?cursor=');
+    expect(getNotifications).toHaveBeenLastCalledWith('all', null);
+  });
+
+  // NFR-SEC-02: 形の違う入力は 400
+  it('知らない tab は 400 で、一覧を読まない（#62）', async () => {
+    getNotifications.mockClear();
+    const response = await call('?tab=other');
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: 'VALIDATION' });
+    expect(getNotifications).not.toHaveBeenCalled();
   });
 
   it('ログインしていなければ 401、カーソルが壊れていれば 400', async () => {
