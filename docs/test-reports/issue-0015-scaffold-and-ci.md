@@ -122,6 +122,16 @@ VERIFY_RC=0
 | `http://localhost:3300/` | 375 | 同 | 開いた | 同じ。`innerWidth` 375、横のスクロールなし | [375](evidence/issue-0015-scaffold-and-ci/landing-375.jpg) |
 | `http://localhost:3300/does-not-exist` | 1280 | 同 | 無いページを開いた（失敗の経路） | Next.js の 404 のページ | [404](evidence/issue-0015-scaffold-and-ci/chrome-not-found.jpg) |
 
+![1280px の / （chrome-evidence）](evidence/issue-0015-scaffold-and-ci/landing-1280.jpg)
+
+![768px の /](evidence/issue-0015-scaffold-and-ci/landing-768.jpg)
+
+![375px の /](evidence/issue-0015-scaffold-and-ci/landing-375.jpg)
+
+![Claude in Chrome で見た /](evidence/issue-0015-scaffold-and-ci/chrome-landing.jpg)
+
+![無いページの 404](evidence/issue-0015-scaffold-and-ci/chrome-not-found.jpg)
+
 - コンソール: エラー 0、警告 0（直したあと。直す前は `/favicon.ico` の 404 のエラーが 1 つ）　通信: 失敗 0
 - キーボード: このページにはまだ操作できる部品が無い（Tab でフォーカスが移る先が無い）
 
@@ -132,7 +142,8 @@ VERIFY_RC=0
 - 実行 [44230081936](https://github.com/ohta-rh/x-modoki-v2/actions/runs/44230081936): 失敗（1 回目は、`playwright install --with-deps` が Ubuntu の apt のミラーの遅さで 15 分止まったので取り消し、流し直した）
 - 出力: `Expected: "deliberately-wrong"` / `Received: "ja"`、`1 failed`・`3 did not run`（最初の失敗で止まった）
 - 成果物 `playwright-report`（770KB）: `index.html`、Chromium と Firefox の `test-failed-1.png`・`trace.zip`・`error-context.md`
-- [成果物の中の画面の写真](evidence/issue-0015-scaffold-and-ci/ci-artifact-failure.jpg)
+
+![CI の成果物の中の、失敗したときの画面の写真](evidence/issue-0015-scaffold-and-ci/ci-artifact-failure.jpg)
 
 ## 見つけた問題
 
@@ -141,3 +152,4 @@ VERIFY_RC=0
 3. **古いビルドを相手にテストしていた（Chrome で見つけた）。** 根本原因: `next start` は動き出すと名前を `next-server` に変えるので、`pkill -f "next start"` が効かず、前のサーバーが 3300 番に残っていた。Playwright の `reuseExistingServer` がそれを使った。`reuseExistingServer: false` にし、`.claude/rules/quality-gates.md` に「サーバーは PID で止める。ほかのプロセスに触らない」を足した
 4. **自分が立ち上げていないプロセスを止めた（私の誤り）。** `pnpm dev` を確かめるとき、3000 番で前から動いていた `next-server`（PID 74980。このセッションより前からあり、誰が立ち上げたかは分からない）に、確かめずに `kill` を送った。立ち上げ直す方法が分からないので戻していない。ルールはすでにあり（3 の項）、守らなかったのが原因。確かめに使った `pnpm dev`（3000 番）は、止めるコマンドが自動の判定で止められたので、動いたままにしてある
 5. **CI のジョブに時間の上限が無い（CI で見つけた）。** 上の 1 回目の実行は、apt のミラーが遅く、止めなければ GitHub の既定の 6 時間まで動き続けるところだった。#15 の範囲の外なので、バグの PBI を起票して、すぐに直す
+6. **確認が落ちたのに commit して push した（私の誤り）。** レポートの最初の commit `9ca1b92` は、`node scripts/check-docs.mjs` が落ちた（写真をリンクで書き、埋め込んでいなかった）のに、コマンドを `;` でつないでいたので、そのまま commit して push した。写真を埋め込みに直し、確認を通してから、次の commit で push し直した。確認と commit は `&&` でつなぐ
