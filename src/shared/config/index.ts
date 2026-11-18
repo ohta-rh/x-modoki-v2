@@ -10,3 +10,4 @@ export {
   type NavKey,
 } from './routes';
 export { isAllowedUsername, RESERVED_USERNAMES, USERNAME_PATTERN } from './reserved-usernames';
+export { KEYBOARD_SHORTCUTS, resolveShortcut, type ShortcutAction } from './keyboard-shortcuts';

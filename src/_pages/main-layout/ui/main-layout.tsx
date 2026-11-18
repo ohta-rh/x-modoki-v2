@@ -4,6 +4,7 @@ import { SearchBox } from '@/features/search-box';
 import { setFollowAction } from '@/features/user-follow/index.server';
 import { LOGIN_PATH } from '@/shared/config';
 import { AppShell } from '@/widgets/app-shell';
+import { KeyboardShortcuts } from '@/widgets/keyboard-shortcuts';
 import { RightSidebar } from '@/widgets/right-sidebar';
 import { Trends } from '@/widgets/trends';
 import { WhoToFollow } from '@/widgets/who-to-follow';
@@ -35,6 +36,7 @@ export function MainLayout({ viewer, sidebar, children, modal }: Props) {
         {children}
       </AppShell>
       {modal}
+      {viewer ? <KeyboardShortcuts username={viewer.username} /> : null}
     </>
   );
 }

@@ -1,10 +1,13 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { MainLayout } from './main-layout';
 
-vi.mock('next/navigation', () => ({ usePathname: () => '/home' }));
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/home',
+  useRouter: () => ({ push: vi.fn() }),
+}));
 vi.mock('@/features/account-access/index.server', () => ({ signOutAction: async () => undefined }));
 vi.mock('@/features/user-follow/index.server', () => ({
   setFollowAction: async () => ({ ok: true }),
@@ -71,5 +74,22 @@ describe('MainLayout', () => {
         name: 'フォロー',
       }),
     ).toHaveAttribute('href', expect.stringContaining('/i/flow/login'));
+  });
+
+  it('入っている人には、キーボードの操作がある（? で一覧）。入っていない人には無い（#29）', async () => {
+    const layout = (viewer: Parameters<typeof MainLayout>[0]['viewer']) => (
+      <QueryClientProvider client={new QueryClient()}>
+        <MainLayout viewer={viewer} sidebar={sidebar} modal={null}>
+          ページ
+        </MainLayout>
+      </QueryClientProvider>
+    );
+    const { unmount } = render(layout(null));
+    fireEvent.keyDown(document.body, { key: '?' });
+    expect(screen.queryByRole('dialog', { name: 'キーボードショートカット' })).toBeNull();
+    unmount();
+    render(layout({ name: 'サンプル', username: 'taro', image: null, unread: 0 }));
+    fireEvent.keyDown(document.body, { key: '?' });
+    expect(await screen.findByRole('dialog', { name: 'キーボードショートカット' })).toBeTruthy();
   });
 });
