@@ -83,7 +83,7 @@ from a symptom gets fixed at the symptom and comes back.
 <誰>として、<何>をしたい。なぜなら<理由>。
 
 ## 根本原因
-<1文> 
+<1文>
 - 根拠: <file:line / ログ / 再現結果>
 - 再現手順（不具合の場合）:
 
