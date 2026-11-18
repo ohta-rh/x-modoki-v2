@@ -79,7 +79,10 @@ export function checkTraceability(root) {
     ...requirements(root).flatMap(([id, owners]) => {
       const later = LATER.exec(rowsOf.get(id) ?? '');
       if (later)
-        return owners.includes(`#${later[1]}`) ? [] : [`${id}: #${later[1]} does not own it`];
+        // A whole number: #3 is not #32 (review 1).
+        return new RegExp(`#${later[1]}(?!\\d)`).test(owners)
+          ? []
+          : [`${id}: #${later[1]} does not own it`];
       return checkTest(root, id, rowsOf.get(id), { mention: true, e2e: false });
     }),
     ...routes(root).flatMap((url) =>

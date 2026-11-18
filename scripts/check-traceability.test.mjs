@@ -148,6 +148,9 @@ test('あとの PBI が受け持つ要件は「#NN で確かめる」と書け�
   const { code, errors } = run();
   expect(code).toBe(1);
   expect(errors).toMatch(/NFR-PERF-01: #31 does not own it/);
+  // A number that is only the start of an owner's number does not own it (#30 review 1).
+  trace('#3 で確かめる');
+  expect(run().errors).toMatch(/NFR-PERF-01: #3 does not own it/);
 });
 
 // NFR-MAINT-04: 全ての画面のルートに、Playwright のテストが 1 本以上ある
