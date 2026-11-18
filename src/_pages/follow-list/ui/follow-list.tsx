@@ -80,10 +80,13 @@ export function FollowList({ username, type, firstPage, signedIn, action }: Prop
   });
   const people = query.data.pages.flatMap((page) => page.items);
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = query;
+  const loaded = query.data.pages.length;
   useEffect(() => {
-    // A failed page is not retried in a loop; the alert below says so.
+    // A failed page is not retried in a loop; the alert below says so. `loaded` re-runs this after
+    // every page: the fetching flag can go up and down between two renders and leave the rest
+    // unchanged, which stopped the loading after the second page (#53).
     if (hasNextPage && !isFetchingNextPage && !query.isFetchNextPageError) void fetchNextPage();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage, query.isFetchNextPageError]);
+  }, [loaded, hasNextPage, isFetchingNextPage, fetchNextPage, query.isFetchNextPageError]);
   if (people.length === 0) {
     return (
       <p className="px-4 py-8 text-center text-text-muted">

@@ -94,6 +94,18 @@ describe('FollowListPage（#24）', () => {
     expect(await screen.findByText('@cc')).toBeInTheDocument();
   });
 
+  it('3 ページ目以降も続けて読む（#53）', async () => {
+    const pages = [
+      { items: [row('bb')], nextCursor: 'c2' },
+      { items: [row('cc')], nextCursor: null },
+    ];
+    const fetchSpy = vi.fn(async () => Response.json(pages.shift()));
+    vi.stubGlobal('fetch', fetchSpy);
+    show({ firstPage: { items: [row('aa')], nextCursor: 'c1' } });
+    expect(await screen.findByText('@cc')).toBeInTheDocument();
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+  });
+
   it('自己紹介が空の人は、自己紹介の行を出さない', () => {
     show({ firstPage: { items: [row('aa', { bio: '' })], nextCursor: null } });
     expect(screen.getByRole('listitem').querySelector('p')).toBeNull();
