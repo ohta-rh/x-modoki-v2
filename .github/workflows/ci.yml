@@ -33,8 +33,26 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Services (PostgreSQL, Garage) and .env.local
         run: sh scripts/setup-local.sh
+      # Browsers are cached; their system packages come from apt, whose mirror sometimes stalls for
+      # many minutes (#43). Each apt attempt is capped and retried; downloaded .deb files are kept.
+      - name: Playwright browsers (cache)
+        id: playwright-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium firefox webkit
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        timeout-minutes: 10
+        run: pnpm exec playwright install chromium firefox webkit
+      - name: Playwright system packages (retried)
+        timeout-minutes: 15
+        run: |
+          for attempt in 1 2 3; do
+            timeout 240 pnpm exec playwright install-deps chromium firefox webkit && exit 0
+            echo "attempt $attempt did not finish in 4 minutes; retrying"
+          done
+          exit 1
 
       - name: 1. Documentation (OKF bundle, links, ADRs, test reports)
         run: pnpm docs:check
