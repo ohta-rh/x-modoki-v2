@@ -21,7 +21,17 @@ export const getAuth = cache(() =>
     rateLimit: { enabled: false },
     // Sign-up and sign-in only through the Server Actions, which validate and rate-limit them
     // (src/features/account-access); Better Auth's own HTTP endpoints for them stay closed (T-09, T-10).
-    disabledPaths: ['/sign-up/email', '/sign-in/email', '/sign-in/username'],
+    // Its endpoints that write a user and that the app does not use are closed too: the profile
+    // changes only through its validated editor (ADR-0045, #51).
+    disabledPaths: [
+      '/sign-up/email',
+      '/sign-in/email',
+      '/sign-in/username',
+      '/update-user',
+      '/change-email',
+      '/change-password',
+      '/delete-user',
+    ],
     plugins: [
       username({
         minUsernameLength: 4,

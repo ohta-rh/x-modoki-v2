@@ -40,4 +40,18 @@ describe('authHandler（app/api/auth/[...all]）', () => {
       expect(rows[0].n).toBe(0);
     },
   );
+
+  it.each([
+    ['/update-user', { name: 'あ'.repeat(51), image: 'media/someone-else.webp' }],
+    ['/change-email', { newEmail: 'other@example.test' }],
+    ['/change-password', { currentPassword: 'x', newPassword: 'correct-horse-battery' }],
+    ['/delete-user', {}],
+  ])(
+    'T-09（#51）: %s は外から呼べない（プロフィールは検証のある編集だけで変える）',
+    async (path, body) => {
+      const { authHandler } = await import('./auth');
+      const response = await authHandler(post(path, body));
+      expect(response.status).toBe(404);
+    },
+  );
 });
