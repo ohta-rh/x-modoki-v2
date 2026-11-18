@@ -375,3 +375,21 @@ rejects(
   swap(report, '### TDD の記録\n', '```\n### TDD の記録\n```\n'),
   /TDD の記録/,
 );
+
+// --- third review, findings 1 and 2 -----------------------------------------------------------
+rejects(
+  'an image with a title is still checked as evidence',
+  (f) => {
+    f[report] = reportBody(`![s](evidence/${REPORT}/a-375.jpg)\n![t](evidence/other/b.png "t")`);
+    f['docs/test-reports/evidence/other/b.png'] = 'x';
+  },
+  /evidence "evidence\/other\/b\.png" must be under/,
+);
+rejects(
+  'evidence that escapes its directory with ".." is rejected',
+  (f) => {
+    f[report] = reportBody(`![s](evidence/${REPORT}/../other/c.jpg)`);
+    f['docs/test-reports/evidence/other/c.jpg'] = 'x';
+  },
+  /must be under evidence\/issue-0007-sample\//,
+);

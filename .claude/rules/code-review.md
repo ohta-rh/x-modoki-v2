@@ -40,9 +40,12 @@ report says `コードの変更なし` under `## コードレビュー`.
 4. **A finding outside the PBI's scope:** file a PBI; do not fold the fix in.
 5. After any change, re-run `pnpm verify`, then spawn a **new** reviewer on the new range —
    never continue the previous one, which is now anchored on its earlier reading.
-6. Repeat until the verdict is `APPROVE`. **Three rounds without approval:** stop, write the
+6. **`APPROVE` with `minor` findings:** fix each real one test-first, applying the fix the
+   reviewer proposed. That needs no further round — the reviewer has already judged the fix.
+   Anything beyond the proposed fix is a new change and gets a new round.
+7. Repeat until the verdict is `APPROVE`. **Three rounds without approval:** stop, write the
    history on the issue, label it `blocked`, and move to the next independent PBI.
-7. If a finding shows a rule gap, update the rule and `.claude/agents/code-reviewer.md` in the
+8. If a finding shows a rule gap, update the rule and `.claude/agents/code-reviewer.md` in the
    same change.
 
 ## The record

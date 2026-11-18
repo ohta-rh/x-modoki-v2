@@ -11,7 +11,7 @@
 // Exits 1 and prints every problem if anything is wrong.
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { basename, dirname, join, normalize, relative } from 'node:path';
+import { basename, dirname, join, normalize, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // `--root <dir>` checks another tree (used by the tests); the default is this repository.
@@ -161,7 +161,10 @@ for (const path of files) {
       // ADR-0025, ADR-0026, ADR-0027. Images inside code are examples, not evidence.
       const stem = name.replace(/\.md$/, '');
       const prose = withoutCode(body);
-      const images = [...prose.matchAll(/!\[[^\]]*\]\(([^)\s]+)\)/g)].map((m) => m[1]);
+      const images = [...prose.matchAll(/!\[[^\]]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)].map(
+        (m) => m[1],
+      );
+      const evidenceDir = join(dirname(path), 'evidence', stem) + sep;
       if (!REPORT_NAME.test(name)) {
         fail(path, 'a test report must be named issue-NNNN-<summary>.md or YYYY-MM-DD-<summary>.md');
       }
@@ -173,7 +176,8 @@ for (const path of files) {
         fail(path, 'a test report needs at least one screenshot under evidence/');
       }
       for (const src of images) {
-        if (!src.startsWith(`evidence/${stem}/`)) {
+        // Compare resolved paths, so `evidence/<stem>/../elsewhere/x.jpg` does not slip through.
+        if (!normalize(join(dirname(path), src)).startsWith(evidenceDir)) {
           fail(path, `evidence "${src}" must be under evidence/${stem}/`);
         } else if (!/\.(jpe?g|webp)$/i.test(src)) {
           fail(path, `evidence "${src}" must be JPEG or WebP`);
