@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { MAX_WEIGHTED_LENGTH, measurePost } from '@/shared/lib/text';
 import { Button } from '@/shared/ui/button';
 import type { CreatePostActionResult } from '../model/types';
@@ -29,6 +29,13 @@ export function ComposeBox({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const ref = useRef<HTMLTextAreaElement>(null);
+  // Text typed before hydration is in the DOM but not in state (#47): take it in once mounted.
+  useEffect(() => {
+    const typed = ref.current!.value;
+    if (typed === '') return;
+    setText(typed);
+    ref.current!.style.height = `${ref.current!.scrollHeight}px`;
+  }, []);
   const { weighted, remaining, postable } = measurePost(text);
   const state = remaining < 0 ? 'over' : remaining <= 20 ? 'warning' : 'normal';
 

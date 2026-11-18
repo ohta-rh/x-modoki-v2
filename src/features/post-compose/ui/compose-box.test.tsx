@@ -69,3 +69,25 @@ describe('ComposeBox（ui-ux.md の 7 節）', () => {
     expect(screen.getByRole('button', { name: '返信' })).toBeInTheDocument();
   });
 });
+
+describe('ComposeBox のハイドレーション（#47）', () => {
+  it('ハイドレーションの前に打った文字も、状態に入り、投稿できる', async () => {
+    const { renderToString } = await import('react-dom/server');
+    const { hydrateRoot } = await import('react-dom/client');
+    const { act } = await import('react');
+    const action = vi.fn(async () => ({ ok: true as const }));
+    const container = document.createElement('div');
+    container.innerHTML = renderToString(<ComposeBox action={action} />);
+    document.body.append(container);
+    // Typed before React took over the page.
+    container.querySelector('textarea')!.value = '早く打った';
+    await act(async () => {
+      hydrateRoot(container, <ComposeBox action={action} />);
+    });
+    const button = screen.getByRole('button', { name: 'ポストする' });
+    expect(button).toBeEnabled();
+    await userEvent.click(button);
+    expect(action).toHaveBeenCalledWith('早く打った');
+    container.remove();
+  });
+});
