@@ -94,6 +94,14 @@ html {
   color: var(--text);
 }
 
+/* Below 640px the home timeline has its own pull to refresh (#28): the browser's would reload the
+   whole page and lose a draft. */
+@media (max-width: 639px) {
+  html {
+    overscroll-behavior-y: contain;
+  }
+}
+
 body {
   margin: 0;
 }

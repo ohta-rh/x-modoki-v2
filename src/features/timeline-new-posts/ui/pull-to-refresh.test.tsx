@@ -52,4 +52,17 @@ describe('PullToRefresh（#28、ui-ux.md の 6 節）', () => {
     expect(onRefresh).not.toHaveBeenCalled();
     expect(screen.queryByTestId('pull-indicator')).toBeNull();
   });
+
+  it('途中で取り消されたら（OS がタッチを取った）、印を消して読み直さない（レビュー 1）', () => {
+    narrow(true);
+    const onRefresh = vi.fn();
+    render(<PullToRefresh onRefresh={onRefresh}>一覧</PullToRefresh>);
+    const list = screen.getByText('一覧');
+    fireEvent.touchStart(list, { touches: [{ clientY: 100 }] });
+    fireEvent.touchMove(list, { touches: [{ clientY: 250 }] });
+    fireEvent.touchCancel(list, { touches: [] });
+    expect(screen.queryByTestId('pull-indicator')).toBeNull();
+    fireEvent.touchEnd(list, { touches: [] });
+    expect(onRefresh).not.toHaveBeenCalled();
+  });
 });

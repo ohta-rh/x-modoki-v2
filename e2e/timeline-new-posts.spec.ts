@@ -86,5 +86,9 @@ test.describe('640px 未満', () => {
     await feed.dispatchEvent('touchmove', { touches: touch(320), changedTouches: touch(320) });
     await feed.dispatchEvent('touchend', { touches: [], changedTouches: touch(320) });
     await expect(page.getByRole('article').first()).toContainText('引っ張って出る投稿');
+    // The browser's own pull to refresh would reload the whole page and lose a draft (review 1).
+    expect(
+      await page.evaluate(() => getComputedStyle(document.documentElement).overscrollBehaviorY),
+    ).toBe('contain');
   });
 });

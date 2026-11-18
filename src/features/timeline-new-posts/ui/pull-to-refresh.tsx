@@ -36,6 +36,11 @@ export function PullToRefresh({
         start.current = null;
         setDistance(0);
       }}
+      // The system took the touch (a call, an OS gesture): the pull is abandoned (review 1).
+      onTouchCancel={() => {
+        start.current = null;
+        setDistance(0);
+      }}
     >
       {distance > 0 ? (
         <div
