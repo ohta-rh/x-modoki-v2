@@ -10,7 +10,7 @@ is the reference. This file is the operating rule.
 app/            Next.js routing only (project root, NOT src/app)
 proxy.ts        coarse login redirect only
 src/
-  _app/         app-wide init: providers, global styles, api-routes (Route Handler implementations)
+  _app/         app-wide init: entrypoint (providers), styles, api-routes (Route Handler implementations)
   _pages/       one screen: synchronous page component + its data loader
   widgets/      large self-contained blocks composed of features and entities
   features/     one user action: Server Action + its UI
@@ -71,10 +71,15 @@ src/
 
 ## 5. Enforcement
 
-- `pnpm lint` runs ESLint **and** `steiger ./src` (recommended `fsd` config); both fail CI.
-- ESLint `no-restricted-imports` blocks: `@/shared/db` outside `api` segments;
-  `index.server` from client files; anything but `_pages` / `_app` from root `app/`;
-  `sharp` and `node:fs` writes in server code (ADR-0017).
+- `pnpm lint` runs ESLint, `steiger ./src`, and `node scripts/check-src-layers.mjs`; all fail CI.
+- Steiger: the recommended `fsd` config, with only `typo-in-layer-name` (for `_app`/`_pages`)
+  and `insignificant-slice` turned off (ADR-0030).
+- ESLint `no-restricted-imports` blocks: `@/shared/db` outside `api` segments; anything but
+  `_pages` / `_app` from root `app/`; `sharp` and `fs` in server code (ADR-0017).
+- ESLint `local/no-server-import-in-client` blocks `index.server`, `server-only`, and
+  `@/shared/db` in `'use client'` files.
+- `scripts/check-src-layers.mjs` fails if `src/` holds anything but the six layers.
+- Segment names describe purpose (`entrypoint`, not `providers`); no folder named `ui` inside a segment.
 - Do not turn off a Steiger or ESLint rule to make a violation pass. If a rule is wrong for
   this project, disable that one rule in the config with a one-line reason and record it in
   an ADR.

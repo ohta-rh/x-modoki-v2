@@ -33,7 +33,7 @@ status: stable
 | [0019](0019-first-milestone-runs-locally.md) | 最初のマイルストーンは「ローカルで全部が動く」とし、Cloudflare への配備はその次にする | 採用 | ユーザー |
 | [0020](0020-ci-required-github-actions.md) | CI を必須とし、GitHub Actions で全部の確認を push と PR のたびに動かす | 採用 | ユーザー／エージェント |
 | [0021](0021-coverage-100-percent.md) | テストのカバレッジは 100% を必須とし、測れない非同期の Server Component だけを薄くして外す | 採用（外すファイルのパスを ADR-0022 で置き換え） | ユーザー／エージェント |
-| [0022](0022-feature-sliced-design.md) | コードは Feature-Sliced Design で分け、Next.js の `app/` はルートに置いてルーティングだけを持たせる | 採用 | ユーザー／エージェント |
+| [0022](0022-feature-sliced-design.md) | コードは Feature-Sliced Design で分け、Next.js の `app/` はルートに置いてルーティングだけを持たせる | 採用（守らせ方の節を ADR-0030 で置き換え） | ユーザー／エージェント |
 | [0023](0023-delivery-loop-one-pbi-at-a-time.md) | EPIC の子 issue は、決まった手順のループで 1 件ずつ、閉じるまで終わらせる | 採用（前提が崩れたときの扱いと `blocked` を ADR-0028 で置き換え） | ユーザー／エージェント |
 | [0024](0024-definition-of-done-requires-browser-testing.md) | 完了の定義に、本物のブラウザでのテストを必ず含める | 採用（閉じるコメントに書く記録を ADR-0025 で試験レポートに置き換え） | ユーザー／エージェント |
 | [0025](0025-test-report-with-evidence.md) | PBI を閉じるたびに、エビデンスつきの試験レポートを `docs/test-reports/` に残す | 採用 | ユーザー／エージェント |
@@ -41,3 +41,4 @@ status: stable
 | [0027](0027-independent-code-review-in-the-loop.md) | PBI ごとに、push の前に、独立した sub agent（opus）のコードレビューを受ける | 採用（3 回で `blocked` にする決まりを ADR-0028 で置き換え） | ユーザー／エージェント |
 | [0028](0028-bugs-are-fixed-to-completion-without-asking.md) | 見つけたバグは、ループを止めず、ユーザーに確認を求めずに、その場で最後まで直し切る | 採用 | ユーザー／エージェント |
 | [0029](0029-milestone-on-a-branch-when-a-pr-is-requested.md) | ユーザーが PR を求めたマイルストーンは、1 本のブランチで進め、issue はマージで閉じる | 採用 | ユーザー／エージェント |
+| [0030](0030-fsd-lint-exceptions-and-own-layer-check.md) | Steiger の 2 つの決まりを範囲を絞って止め、`src/` の直下の層と、クライアントからのサーバーの読み込みは自前の確認で守る | 採用 | エージェント |

@@ -8,7 +8,7 @@ status: stable
 
 # アプリケーションの構造
 
-- 決定: [ADR-0022](../adr/0022-feature-sliced-design.md)（Feature-Sliced Design）、[ADR-0010](../adr/0010-dal-server-actions-route-handlers.md)（データアクセス層）、[ADR-0017](../adr/0017-cloudflare-workers-opennext.md)、[ADR-0021](../adr/0021-coverage-100-percent.md)
+- 決定: [ADR-0022](../adr/0022-feature-sliced-design.md)（Feature-Sliced Design）、[ADR-0030](../adr/0030-fsd-lint-exceptions-and-own-layer-check.md)（守らせ方）、[ADR-0010](../adr/0010-dal-server-actions-route-handlers.md)（データアクセス層）、[ADR-0017](../adr/0017-cloudflare-workers-opennext.md)、[ADR-0021](../adr/0021-coverage-100-percent.md)
 
 ## 1. ディレクトリ
 
@@ -28,7 +28,7 @@ status: stable
 ├── docs/                       OKF のバンドル
 └── src/                        Feature-Sliced Design の層だけ
     ├── _app/
-    │   ├── providers/          TanStack Query・テーマの Provider
+    │   ├── entrypoint/         TanStack Query・テーマの Provider（目的で名前を付ける。ADR-0030）
     │   ├── styles/             Tailwind の入口とテーマの変数
     │   └── api-routes/         Route Handler の実装
     ├── _pages/
@@ -93,7 +93,7 @@ app/ ──▶ _app, _pages ──▶ widgets ──▶ features ──▶ entit
 | `'use client'` は葉の部品に付ける。クライアントのファイルから `index.server` を読まない | クライアントへ送る量を小さくし、サーバーのコードを漏らさない |
 | モジュールの一番上で、接続・プール・リクエストをまたぐ値を作らない | Cloudflare Workers で動かない（[ADR-0017](../adr/0017-cloudflare-workers-opennext.md)） |
 
-Steiger（`fsd` の推奨の設定）と ESLint の `no-restricted-imports` が、`pnpm lint` でこれを守らせる。`sharp` と `node:fs` への書き込みをサーバーのコードから使うことも禁じる。
+Steiger（`fsd` の推奨の設定。止めた 2 つの決まりは [ADR-0030](../adr/0030-fsd-lint-exceptions-and-own-layer-check.md)）、ESLint の `no-restricted-imports` とローカルの決まり `local/no-server-import-in-client`、`scripts/check-src-layers.mjs` が、`pnpm lint` でこれを守らせる。`sharp` と `node:fs` への書き込みをサーバーのコードから使うことも禁じる。
 
 ### ルートの `app/` のファイルの形
 
