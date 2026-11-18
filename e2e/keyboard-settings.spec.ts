@@ -97,3 +97,40 @@ test('? でキーの一覧が出て、Esc で閉じる', async ({ page }) => {
   await page.keyboard.press('Escape');
   await expect(list).toBeHidden();
 });
+
+test('/settings/display でテーマと色を選ぶとすぐ変わり、次に開いたときも最初の描画から同じ', async ({
+  page,
+}) => {
+  await signUp(page);
+  await page.goto('/settings/display');
+  const html = page.locator('html');
+  await page.getByRole('radio', { name: 'ダークブルー' }).check();
+  await page.getByRole('radio', { name: 'ピンク' }).check();
+  await expect(html).toHaveAttribute('data-theme', 'dim');
+  await expect(html).toHaveAttribute('data-accent', 'pink');
+  // The accent colour reaches the page's own colours.
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
+      ),
+    )
+    .toBe('#f91880');
+
+  // A fresh load: the html carries the choice before anything is drawn.
+  const seen: string[] = [];
+  await page.exposeFunction('seeTheme', (theme: string) => seen.push(theme));
+  await page.addInitScript(() => {
+    new MutationObserver(() => {
+      if (document.body) {
+        (window as unknown as { seeTheme: (t: string) => void }).seeTheme(
+          document.documentElement.dataset.theme ?? '',
+        );
+      }
+    }).observe(document, { childList: true, subtree: true });
+  });
+  await page.goto('/home');
+  await expect(html).toHaveAttribute('data-theme', 'dim');
+  expect(seen.length).toBeGreaterThan(0);
+  expect(seen.every((theme) => theme === 'dim')).toBe(true);
+});

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { QueryProvider } from '@/_app/entrypoint';
+import { DisplayScript, QueryProvider } from '@/_app/entrypoint';
 import '@/_app/styles/global.css';
 
 export const metadata: Metadata = {
@@ -10,7 +10,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="ja" data-theme="light">
+    // The head script sets the saved theme and accent before the first paint (ADR-0051), so the
+    // attributes on the client differ from these.
+    <html lang="ja" data-theme="light" suppressHydrationWarning>
+      <head>
+        <DisplayScript />
+      </head>
       <body>
         <QueryProvider>{children}</QueryProvider>
       </body>

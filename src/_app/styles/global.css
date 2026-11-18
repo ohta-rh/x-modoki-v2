@@ -45,6 +45,23 @@
   color-scheme: dark;
 }
 
+/* The accent colours chosen in /settings/display (#29, ui-ux.md 4); blue is the default above. */
+[data-accent='yellow'] {
+  --accent: #ffd400;
+}
+[data-accent='pink'] {
+  --accent: #f91880;
+}
+[data-accent='purple'] {
+  --accent: #7856ff;
+}
+[data-accent='orange'] {
+  --accent: #ff7a00;
+}
+[data-accent='green'] {
+  --accent: #00ba7c;
+}
+
 @custom-variant dark (&:where([data-theme='dim'], [data-theme='dim'] *, [data-theme='dark'], [data-theme='dark'] *));
 
 /* Tailwind names. brand is the X accent; the shadcn names used by src/shared/ui/kit map onto ours. */
