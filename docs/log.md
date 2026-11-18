@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **Creation**: [試験レポート](test-reports/2026-11-18-bug-handling-rule.md)を置いた（バグのルールと、issue の本文への反映の確認）。
 * **Creation**: [ADR-0028](adr/0028-bugs-are-fixed-to-completion-without-asking.md)（バグは止めず・聞かずに最後まで直す）を記録した。[ADR-0023](adr/0023-delivery-loop-one-pbi-at-a-time.md) と [ADR-0027](adr/0027-independent-code-review-in-the-loop.md) の `blocked` の決まりを置き換えた。
 * **Creation**: [試験レポート](test-reports/2026-11-18-tdd-and-code-review.md)を置いた。独立したコードレビュー 3 回で `scripts/check-docs.mjs` の欠け 14 件を直し、テストを 51 件にした。
 * **Creation**: [ADR-0027](adr/0027-independent-code-review-in-the-loop.md)（push の前に、独立した sub agent のコードレビューを受ける）を記録した。完了の定義は 10 項目になった。
