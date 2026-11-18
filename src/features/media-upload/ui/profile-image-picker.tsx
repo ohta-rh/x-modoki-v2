@@ -92,6 +92,8 @@ export function ProfileImagePicker({ kind, currentUrl, onChange }: Props) {
           onChange={(event) => {
             const file = event.currentTarget.files?.[0];
             if (file) void choose(file);
+            // Cleared, so choosing the same file again (to retry) is a change too.
+            event.currentTarget.value = '';
           }}
         />
       </label>

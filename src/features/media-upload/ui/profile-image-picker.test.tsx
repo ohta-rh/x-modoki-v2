@@ -177,4 +177,17 @@ describe('ProfileImagePicker（#25）', () => {
     expect(screen.queryByRole('img', { name: '新しいアバター' })).toBeNull();
     expect(onChange).toHaveBeenLastCalledWith({ id: null, busy: false });
   });
+
+  it('選んだあとは入力欄を空にし、送れなかった同じファイルを選び直せる（レビュー 3）', async () => {
+    uploadImage.mockRejectedValueOnce(new Error('network')).mockResolvedValueOnce('9');
+    const onChange = vi.fn();
+    render(<ProfileImagePicker kind="avatar" currentUrl={null} onChange={onChange} />);
+    const input = screen.getByLabelText<HTMLInputElement>('アバターの画像を選ぶ');
+    await userEvent.upload(input, png);
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    expect(input.value).toBe('');
+    await userEvent.upload(input, png);
+    await waitFor(() => expect(onChange).toHaveBeenLastCalledWith({ id: '9', busy: false }));
+    expect(prepareImage).toHaveBeenCalledTimes(2);
+  });
 });
