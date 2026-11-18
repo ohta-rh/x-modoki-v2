@@ -98,3 +98,36 @@ test('入力欄は内容に合わせて伸び、消すと縮む', async ({ page 
   await composer(page).fill('1');
   await expect.poll(height).toBeLessThanOrEqual(oneLine + 1);
 });
+
+test('投稿したあとも、高さの違うカードどうしが重ならない（#48）', async ({ page }) => {
+  await signUp(page);
+  await page.goto('/home?tab=following');
+  const composer = page.getByRole('textbox', { name: '投稿の本文' });
+  await composer.fill('元の投稿');
+  await page.getByRole('button', { name: 'ポストする' }).click();
+  await expect(page.getByRole('article').first()).toContainText('元の投稿');
+  // A quote is taller than the post it quotes.
+  await page.getByRole('article').first().getByRole('button', { name: 'リポスト' }).click();
+  await page.getByRole('menuitem', { name: '引用' }).click();
+  const dialog = page.getByRole('dialog', { name: '引用' });
+  await dialog.getByRole('textbox', { name: '引用の本文' }).fill('引用した');
+  await dialog.getByRole('button', { name: 'ポストする' }).click();
+  await expect(page.getByRole('article').first()).toContainText('引用した');
+  // The page's first rows are measured from the server's page; a new post on top then shifts
+  // every row down by one (the case seen in Chrome, #48).
+  await page.reload();
+  await composer.fill('一番新しい');
+  await page.getByRole('button', { name: 'ポストする' }).click();
+  await expect(page.getByRole('article').first()).toContainText('一番新しい');
+  await page.waitForTimeout(500);
+  const cards = page.locator('[data-index] > article');
+  const boxes = await cards.evaluateAll((articles) =>
+    articles.map((article) => {
+      const box = article.getBoundingClientRect();
+      return [box.top, box.bottom];
+    }),
+  );
+  expect(boxes).toHaveLength(3);
+  for (let i = 1; i < boxes.length; i++)
+    expect(boxes[i][0]).toBeGreaterThanOrEqual(boxes[i - 1][1] - 1);
+});

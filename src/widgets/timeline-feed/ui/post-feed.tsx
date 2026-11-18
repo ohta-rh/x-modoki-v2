@@ -78,8 +78,12 @@ export function PostFeed({
     staleTime: 30_000,
   });
   const posts = query.data.pages.flatMap((page) => page.items);
+  // A row's identity: a repost and its original share the post id, the reposter tells them apart.
+  const rowKey = (post: Post) => `${post.id}:${post.repostedBy?.username ?? ''}`;
   const virtualizer = useWindowVirtualizer({
     count: posts.length,
+    // Measured heights follow the post, not the position: a new post on top shifts every row (#48).
+    getItemKey: (index) => rowKey(posts[index]),
     estimateSize: () => 120,
     overscan: 5,
   });
@@ -100,8 +104,7 @@ export function PostFeed({
       <div className="relative" style={{ height: virtualizer.getTotalSize() }}>
         {rows.map((row) => (
           <div
-            // A repost and its original share the post ID; the reposter tells them apart (#22).
-            key={`${posts[row.index].id}:${posts[row.index].repostedBy?.username ?? ''}`}
+            key={rowKey(posts[row.index])}
             data-index={row.index}
             ref={virtualizer.measureElement}
             className="absolute inset-x-0 top-0"

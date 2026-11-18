@@ -6,8 +6,14 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Post } from '@/entities/post';
 import { toast } from '@/shared/ui/kit';
 import type { ReactionAction } from '../lib/use-reaction';
+import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { PostFeed } from './post-feed';
 
+// The real virtualizer, wrapped so a test can read the options it was given (#48).
+vi.mock('@tanstack/react-virtual', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@tanstack/react-virtual')>();
+  return { ...actual, useWindowVirtualizer: vi.fn(actual.useWindowVirtualizer) };
+});
 const refresh = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh }) }));
 
@@ -261,5 +267,29 @@ describe('PostFeed の固定とプロフィールの一覧（#23）', () => {
     await waitFor(() =>
       expect(fetchSpy).toHaveBeenCalledWith('/api/users/taro/posts?tab=posts&cursor='),
     );
+  });
+});
+
+describe('PostFeed の行の高さ（#48）', () => {
+  it('行の高さを、番号ではなく投稿（とリポストした人）ごとに覚える', () => {
+    const original = post(1, false);
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <PostFeed
+          queryKey={['timeline', 'for-you']}
+          endpoint="/api/timeline/for-you"
+          firstPage={{
+            items: [
+              { ...original, repostedBy: { username: 'jiro', name: '次郎', avatarUrl: null } },
+              original,
+            ],
+            nextCursor: null,
+          }}
+          now="2026-11-18T03:00:00.000Z"
+        />
+      </QueryClientProvider>,
+    );
+    const options = vi.mocked(useWindowVirtualizer).mock.calls.at(-1)![0];
+    expect([0, 1].map((index) => options.getItemKey?.(index))).toEqual(['1:jiro', '1:']);
   });
 });
