@@ -24,9 +24,11 @@ test('画像を押すとビューアが重なり、左右のキーで前後へ�
   const me = await signUp(page);
   await insertPosts(me.username, 20, '下の投稿');
   const card = await postWithTwoImages(page, 'ビューアの投稿');
-  await page.mouse.wheel(0, 80);
+  // Scroll at once and wait for the position to settle: a wheel scroll is still moving when its
+  // first position is read, and clicking then lets WebKit end up back at the top (#56).
+  await page.evaluate(() => window.scrollTo(0, 80));
   const scrollY = () => page.evaluate(() => window.scrollY);
-  await expect.poll(scrollY).toBeGreaterThan(0);
+  await expect.poll(scrollY).toBe(80);
 
   await card.getByRole('link', { name: '1 枚目の画像' }).click();
   await expect(page).toHaveURL(new RegExp(`/${me.username}/status/\\d+/photo/1$`));
