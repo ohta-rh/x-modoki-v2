@@ -1,1 +1,1 @@
-export { createPostAction, createReplyAction } from './api/actions';
+export { createPostAction, createQuoteAction, createReplyAction } from './api/actions';

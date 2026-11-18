@@ -1,8 +1,9 @@
 import type { PostPage, TimelineKind } from '@/entities/post';
-import { createPostAction } from '@/features/post-compose/index.server';
+import { createPostAction, createQuoteAction } from '@/features/post-compose/index.server';
 import { setBookmarkAction } from '@/features/post-bookmark/index.server';
 import { deletePostAction } from '@/features/post-delete/index.server';
 import { setLikeAction } from '@/features/post-like/index.server';
+import { setRepostAction } from '@/features/post-repost/index.server';
 import { PageHeader } from '@/widgets/app-shell';
 import { HomeTimeline } from '@/widgets/timeline-feed';
 import { HomeTabs } from './home-tabs';
@@ -28,6 +29,8 @@ export function HomePage({ kind, firstPage, now }: Props) {
         deleteAction={deletePostAction}
         likeAction={setLikeAction}
         bookmarkAction={setBookmarkAction}
+        repostAction={setRepostAction}
+        quoteAction={createQuoteAction}
       />
     </>
   );

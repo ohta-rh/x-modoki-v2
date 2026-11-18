@@ -5,7 +5,7 @@ import type { Post } from '@/entities/post';
 import { toast } from '@/shared/ui/kit';
 import { updatePostInCaches } from './update-post-in-caches';
 
-type Kind = 'like' | 'bookmark';
+type Kind = 'like' | 'bookmark' | 'repost';
 type Result = { ok: true; count: number } | { ok: false; message: string };
 export type ReactionAction = (postId: string, on: boolean) => Promise<Result>;
 
@@ -16,6 +16,7 @@ const FIELDS = {
     count: 'bookmarks',
     failure: 'ブックマークを変えられませんでした',
   },
+  repost: { flag: 'reposted', count: 'reposts', failure: 'リポストできませんでした' },
 } as const;
 
 /**

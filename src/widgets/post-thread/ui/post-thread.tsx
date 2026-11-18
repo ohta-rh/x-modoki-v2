@@ -52,6 +52,7 @@ export function PostThread({
       )}
       <MainPost
         post={post}
+        now={date}
         actions={mainActions}
         menu={
           post.viewer.isAuthor ? (

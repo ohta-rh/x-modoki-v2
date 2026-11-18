@@ -9,7 +9,10 @@ export type TimelineFeedProps = {
   kind: TimelineKind;
   firstPage: PostPage;
   now: string;
-} & Pick<PostFeedProps, 'deleteAction' | 'likeAction' | 'bookmarkAction'>;
+} & Pick<
+  PostFeedProps,
+  'deleteAction' | 'likeAction' | 'bookmarkAction' | 'repostAction' | 'quoteAction'
+>;
 
 /** A home timeline (docs/architecture/ui-ux.md 6): おすすめ or フォロー中. */
 export function TimelineFeed({ kind, ...props }: TimelineFeedProps) {

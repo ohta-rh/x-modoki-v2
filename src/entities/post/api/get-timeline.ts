@@ -2,8 +2,8 @@ import 'server-only';
 import { and, desc, eq, inArray, isNull, lt, or, type SQL } from 'drizzle-orm';
 import { getSession } from '@/shared/auth/index.server';
 import { follows, getDb, posts, user } from '@/shared/db';
-import type { Post, PostPage, TimelineKind } from '../model/types';
-import { postColumns, toPost } from './post-rows';
+import type { PostPage, TimelineKind } from '../model/types';
+import { postColumns, toPosts } from './post-rows';
 
 const PAGE_SIZE = 20;
 
@@ -36,7 +36,8 @@ export async function getTimeline(
     .where(and(...where))
     .orderBy(desc(posts.id))
     .limit(PAGE_SIZE + 1);
-  const items: Post[] = rows.slice(0, PAGE_SIZE).map((row) => toPost(row, viewer.id));
-  const nextCursor = rows.length > PAGE_SIZE ? items[PAGE_SIZE - 1].id : null;
+  const items = await toPosts(rows.slice(0, PAGE_SIZE), viewer.id);
+  // The cursor is the last row's ID: a repost row's own, not its original's (#22).
+  const nextCursor = rows.length > PAGE_SIZE ? rows[PAGE_SIZE - 1].post.id.toString() : null;
   return { ok: true, page: { items, nextCursor } };
 }

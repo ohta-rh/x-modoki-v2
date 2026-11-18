@@ -11,7 +11,7 @@ export type CreatePostResult =
   | { ok: true; id: string }
   | { ok: false; error: 'UNAUTHORIZED' | 'VALIDATION' | 'RATE_LIMITED' | 'NOT_FOUND' };
 
-type Options = { newId?: () => bigint; replyToId?: bigint };
+type Options = { newId?: () => bigint; replyToId?: bigint; quoteOfId?: bigint };
 
 const unique = (values: string[]) => [...new Set(values.map((value) => value.toLowerCase()))];
 
@@ -25,7 +25,7 @@ const isIdCollision = (error: unknown) =>
  */
 export async function createPost(
   text: string,
-  { newId = defaultNewId, replyToId }: Options = {},
+  { newId = defaultNewId, replyToId, quoteOfId }: Options = {},
 ): Promise<CreatePostResult> {
   const viewer = await getSession();
   if (!viewer) return { ok: false, error: 'UNAUTHORIZED' };
@@ -42,6 +42,16 @@ export async function createPost(
       .where(and(eq(posts.id, replyToId), isNull(posts.deletedAt)));
     if (!parent) return { ok: false, error: 'NOT_FOUND' };
   }
+  // A quote of a repost quotes the original (#22).
+  let quoted: bigint | undefined;
+  if (quoteOfId !== undefined) {
+    const [target] = await getDb()
+      .select({ id: posts.id, repostOfId: posts.repostOfId })
+      .from(posts)
+      .where(and(eq(posts.id, quoteOfId), isNull(posts.deletedAt)));
+    if (!target) return { ok: false, error: 'NOT_FOUND' };
+    quoted = target.repostOfId ?? target.id;
+  }
   const tags = unique(twitterText.extractHashtags(body));
   const names = unique(twitterText.extractMentions(body));
 
@@ -57,12 +67,21 @@ export async function createPost(
           .returning({ id: posts.id });
         if (counted.length === 0) return null;
       }
+      if (quoted !== undefined) {
+        const counted = await tx
+          .update(posts)
+          .set({ quoteCount: sql`${posts.quoteCount} + 1` })
+          .where(and(eq(posts.id, quoted), isNull(posts.deletedAt)))
+          .returning({ id: posts.id });
+        if (counted.length === 0) return null;
+      }
       await tx.insert(posts).values({
         id,
         authorId: viewer.id,
         text: body,
         replyToId: parent?.id ?? null,
         rootId: parent ? (parent.rootId ?? parent.id) : null,
+        quoteOfId: quoted ?? null,
       });
       if (tags.length > 0) {
         await tx

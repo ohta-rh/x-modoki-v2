@@ -137,3 +137,103 @@ describe('PostFeed のいいね・ブックマーク（#21）', () => {
     expect(bookmark).toHaveAttribute('aria-pressed', 'true');
   });
 });
+
+describe('PostFeed のリポストと引用（#22）', () => {
+  const renderFeed = (repostAction: ReactionAction, quoteAction = vi.fn()) => {
+    const client = new QueryClient();
+    render(
+      <QueryClientProvider client={client}>
+        <PostFeed
+          queryKey={['timeline', 'following']}
+          endpoint="/api/timeline/following"
+          firstPage={{ items: [post(1, false)], nextCursor: null }}
+          now="2026-11-18T03:00:00.000Z"
+          repostAction={repostAction}
+          quoteAction={quoteAction}
+        />
+      </QueryClientProvider>,
+    );
+    return client;
+  };
+
+  it('メニューのリポストで、すぐに色と数が変わり、失敗したら戻してトースト', async () => {
+    const add = vi.spyOn(toast, 'add');
+    const repostAction = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, count: 1 })
+      .mockResolvedValueOnce({ ok: false, message: 'この投稿は見つかりません' });
+    renderFeed(repostAction);
+    const repost = screen.getByRole('button', { name: 'リポスト' });
+    await userEvent.click(repost);
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'リポスト' }));
+    expect(repost).toHaveClass('text-repost');
+    expect(repostAction).toHaveBeenCalledWith('1', true);
+    await waitFor(() => expect(repost).toHaveTextContent('1'));
+    await userEvent.click(repost);
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'リポストを取り消す' }));
+    await waitFor(() => expect(add).toHaveBeenCalledWith({ title: 'リポストできませんでした' }));
+    expect(repost).toHaveClass('text-repost');
+  });
+
+  it('引用で、入れ子のカード付きの入力欄が開き、投稿すると閉じて一覧を読み直す', async () => {
+    const fetchSpy = vi.fn(async () => Response.json({ items: [], nextCursor: null }));
+    vi.stubGlobal('fetch', fetchSpy);
+    const quoteAction = vi.fn(async () => ({ ok: true as const }));
+    renderFeed(vi.fn(), quoteAction);
+    await userEvent.click(screen.getByRole('button', { name: 'リポスト' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: '引用' }));
+    const dialog = within(await screen.findByRole('dialog', { name: '引用' }));
+    expect(dialog.getByRole('article', { name: '引用した投稿' })).toHaveTextContent('投稿 1');
+    await userEvent.type(dialog.getByRole('textbox', { name: '引用の本文' }), '意見');
+    await userEvent.click(dialog.getByRole('button', { name: 'ポストする' }));
+    expect(quoteAction).toHaveBeenCalledWith('意見', '1');
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: '引用' })).toBeNull());
+    await waitFor(() => expect(fetchSpy).toHaveBeenCalledWith('/api/timeline/following?cursor='));
+  });
+
+  it('引用の入力欄は Esc で閉じ、何も投稿しない', async () => {
+    const quoteAction = vi.fn();
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <PostFeed
+          queryKey={['timeline', 'following']}
+          endpoint="/api/timeline/following"
+          firstPage={{ items: [post(1, false)], nextCursor: null }}
+          now="2026-11-18T03:00:00.000Z"
+          repostAction={vi.fn()}
+          quoteAction={quoteAction}
+        />
+      </QueryClientProvider>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'リポスト' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: '引用' }));
+    await screen.findByRole('dialog', { name: '引用' });
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: '引用' })).toBeNull());
+    expect(quoteAction).not.toHaveBeenCalled();
+  });
+
+  it('元の投稿とそのリポストが同じ一覧にあっても、両方を出し、キーが重ならない', () => {
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const original = post(1, false);
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <PostFeed
+          queryKey={['timeline', 'for-you']}
+          endpoint="/api/timeline/for-you"
+          firstPage={{
+            items: [
+              { ...original, repostedBy: { username: 'jiro', name: '次郎', avatarUrl: null } },
+              original,
+            ],
+            nextCursor: null,
+          }}
+          now="2026-11-18T03:00:00.000Z"
+        />
+      </QueryClientProvider>,
+    );
+    expect(screen.getAllByRole('article')).toHaveLength(2);
+    expect(errors).not.toHaveBeenCalled();
+    errors.mockRestore();
+  });
+});

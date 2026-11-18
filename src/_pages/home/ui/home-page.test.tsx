@@ -6,6 +6,7 @@ import { HomePage } from './home-page';
 
 vi.mock('@/features/post-compose/index.server', () => ({
   createPostAction: async () => ({ ok: true }),
+  createQuoteAction: async () => ({ ok: true }),
 }));
 vi.mock('@/features/post-delete/index.server', () => ({
   deletePostAction: async () => ({ ok: true }),
@@ -15,6 +16,9 @@ vi.mock('@/features/post-like/index.server', () => ({
 }));
 vi.mock('@/features/post-bookmark/index.server', () => ({
   setBookmarkAction: async () => ({ ok: true, count: 1 }),
+}));
+vi.mock('@/features/post-repost/index.server', () => ({
+  setRepostAction: async () => ({ ok: true, count: 1 }),
 }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
@@ -79,5 +83,7 @@ describe('HomePage（ui-ux.md の 6 節）', () => {
     // #21: the timeline's cards can be liked and bookmarked.
     expect(article.getByRole('button', { name: 'いいね' })).toBeInTheDocument();
     expect(article.getByRole('button', { name: 'ブックマーク' })).toBeInTheDocument();
+    // #22: and reposted or quoted.
+    expect(article.getByRole('button', { name: 'リポスト' })).toBeInTheDocument();
   });
 });

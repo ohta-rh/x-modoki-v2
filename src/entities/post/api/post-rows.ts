@@ -1,9 +1,9 @@
 import 'server-only';
-import { sql } from 'drizzle-orm';
-import { posts, user } from '@/shared/db';
+import { eq, inArray, isNull, and, sql } from 'drizzle-orm';
+import { getDb, posts, user } from '@/shared/db';
 import { toIdString } from '@/shared/lib/id';
 import { mediaUrl } from '@/shared/lib/media-url';
-import type { Post } from '../model/types';
+import type { Post, QuotedPost } from '../model/types';
 
 const FALSE = sql<boolean>`false`;
 
@@ -32,7 +32,7 @@ export function postColumns(viewerId: string | null) {
   };
 }
 
-type Row = {
+export type Row = {
   post: typeof posts.$inferSelect;
   author: { username: string | null; name: string; image: string | null };
   replyToUsername: string | null;
@@ -41,12 +41,20 @@ type Row = {
   reposted: boolean;
 };
 
+type Extra = { repostedBy: Post['repostedBy']; quoted: QuotedPost | null };
+
+const summary = (author: Row['author']) => ({
+  username: author.username!,
+  name: author.name,
+  avatarUrl: mediaUrl(author.image),
+});
+
 /** One row as the post DTO (application-structure.md 5). */
-export function toPost(row: Row, viewerId: string | null): Post {
+function toPost(row: Row, viewerId: string | null, extra: Extra): Post {
   const { post, author } = row;
   return {
     id: toIdString(post.id),
-    author: { username: author.username!, name: author.name, avatarUrl: mediaUrl(author.image) },
+    author: summary(author),
     text: post.text,
     createdAt: post.createdAt.toISOString(),
     media: [],
@@ -63,8 +71,63 @@ export function toPost(row: Row, viewerId: string | null): Post {
       bookmarked: row.bookmarked,
       isAuthor: viewerId === post.authorId,
     },
-    repostedBy: null,
+    repostedBy: extra.repostedBy,
     replyTo: row.replyToUsername ? { username: row.replyToUsername } : null,
-    quoted: null,
+    quoted: extra.quoted,
   };
+}
+
+/**
+ * Rows of a list as post DTOs (#22). A repost row shows its original with `repostedBy`; a repost
+ * of a deleted original is dropped. Originals and quoted posts are read in one query each for the
+ * whole page (data-model.md 4) — never one query per post.
+ */
+export async function toPosts(rows: Row[], viewerId: string | null): Promise<Post[]> {
+  const db = getDb();
+  const repostOf = rows.flatMap((row) =>
+    row.post.repostOfId === null ? [] : [row.post.repostOfId],
+  );
+  const originals = await db
+    .select(postColumns(viewerId))
+    .from(posts)
+    .innerJoin(user, eq(user.id, posts.authorId))
+    .where(and(inArray(posts.id, repostOf), isNull(posts.deletedAt)));
+  const originalById = new Map(originals.map((row) => [row.post.id, row]));
+  type Shown = { row: Row; repostedBy: Post['repostedBy'] };
+  const shown = rows.flatMap((row): Shown[] => {
+    if (row.post.repostOfId === null) return [{ row, repostedBy: null }];
+    const original = originalById.get(row.post.repostOfId);
+    return original ? [{ row: original, repostedBy: summary(row.author) }] : [];
+  });
+  const quoteOf = shown.flatMap(({ row }) =>
+    row.post.quoteOfId === null ? [] : [row.post.quoteOfId],
+  );
+  const quotedRows = await db
+    .select({
+      post: posts,
+      author: { username: user.username, name: user.name, image: user.image },
+    })
+    .from(posts)
+    .innerJoin(user, eq(user.id, posts.authorId))
+    .where(inArray(posts.id, quoteOf));
+  const quotedById = new Map(
+    quotedRows.map(({ post, author }): [bigint, QuotedPost] => [
+      post.id,
+      post.deletedAt
+        ? { id: toIdString(post.id), deleted: true }
+        : {
+            id: toIdString(post.id),
+            author: summary(author),
+            text: post.text,
+            createdAt: post.createdAt.toISOString(),
+            quotesAnother: post.quoteOfId !== null,
+          },
+    ]),
+  );
+  return shown.map(({ row, repostedBy }) =>
+    toPost(row, viewerId, {
+      repostedBy,
+      quoted: quotedById.get(row.post.quoteOfId!) ?? null,
+    }),
+  );
 }

@@ -9,7 +9,9 @@ import {
   type ClearBookmarksActionResult,
 } from '@/features/post-bookmark';
 import type { DeletePostActionResult } from '@/features/post-delete';
+import type { CreatePostActionResult } from '@/features/post-compose';
 import type { ReactionActionResult } from '@/features/post-like';
+import type { RepostActionResult } from '@/features/post-repost';
 import { PageHeader } from '@/widgets/app-shell';
 import { PostFeed } from '@/widgets/timeline-feed';
 
@@ -23,6 +25,8 @@ type Props = {
   likeAction: (postId: string, on: boolean) => Promise<ReactionActionResult>;
   bookmarkAction: (postId: string, on: boolean) => Promise<BookmarkActionResult>;
   deleteAction: (postId: string) => Promise<DeletePostActionResult>;
+  repostAction: (postId: string, on: boolean) => Promise<RepostActionResult>;
+  quoteAction: (text: string, quoteOfId: string) => Promise<CreatePostActionResult>;
 };
 
 /** The header with its ⋯ menu and the bookmark list; 全て削除 empties the list (#21). */

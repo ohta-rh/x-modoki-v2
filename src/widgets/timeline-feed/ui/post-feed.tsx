@@ -3,14 +3,17 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { PostCard, type PostPage } from '@/entities/post';
+import { type Post, PostCard, type PostPage } from '@/entities/post';
 import { BookmarkButton } from '@/features/post-bookmark';
+import type { CreatePostActionResult } from '@/features/post-compose';
 import { type DeletePostActionResult, DeletePostMenu } from '@/features/post-delete';
 import { LikeButton } from '@/features/post-like';
+import { RepostMenu } from '@/features/post-repost';
 import { Spinner } from '@/shared/ui/spinner';
 import { type ReactionAction, useReaction } from '../lib/use-reaction';
+import { QuoteDialog } from './quote-dialog';
 
 export type PostFeedProps = {
   queryKey: readonly string[];
@@ -24,6 +27,9 @@ export type PostFeedProps = {
   /** Like / bookmark Server Actions; without them the card shows the counts as text (signed out). */
   likeAction?: ReactionAction;
   bookmarkAction?: ReactionAction;
+  /** Repost / quote Server Actions (#22); without them the repost count is shown as text. */
+  repostAction?: ReactionAction;
+  quoteAction?: (text: string, quoteOfId: string) => Promise<CreatePostActionResult>;
   emptyText?: string;
 };
 
@@ -46,11 +52,15 @@ export function PostFeed({
   deleteAction,
   likeAction,
   bookmarkAction,
+  repostAction,
+  quoteAction,
   emptyText = 'まだポストがありません',
 }: PostFeedProps) {
   const queryClient = useQueryClient();
   const toggleLike = useReaction('like', likeAction);
   const toggleBookmark = useReaction('bookmark', bookmarkAction);
+  const toggleRepost = useReaction('repost', repostAction);
+  const [quoting, setQuoting] = useState<Post | null>(null);
   const router = useRouter();
   const query = useInfiniteQuery({
     queryKey,
@@ -84,7 +94,8 @@ export function PostFeed({
       <div className="relative" style={{ height: virtualizer.getTotalSize() }}>
         {rows.map((row) => (
           <div
-            key={posts[row.index].id}
+            // A repost and its original share the post ID; the reposter tells them apart (#22).
+            key={`${posts[row.index].id}:${posts[row.index].repostedBy?.username ?? ''}`}
             data-index={row.index}
             ref={virtualizer.measureElement}
             className="absolute inset-x-0 top-0"
@@ -99,6 +110,16 @@ export function PostFeed({
                     liked={posts[row.index].viewer.liked}
                     count={posts[row.index].counts.likes}
                     onToggle={() => toggleLike(posts[row.index])}
+                  />
+                ) : undefined
+              }
+              repost={
+                repostAction && quoteAction ? (
+                  <RepostMenu
+                    reposted={posts[row.index].viewer.reposted}
+                    count={posts[row.index].counts.reposts}
+                    onToggle={() => toggleRepost(posts[row.index])}
+                    onQuote={() => setQuoting(posts[row.index])}
                   />
                 ) : undefined
               }
@@ -127,6 +148,18 @@ export function PostFeed({
           </div>
         ))}
       </div>
+      {quoteAction ? (
+        <QuoteDialog
+          post={quoting}
+          now={date}
+          action={quoteAction}
+          onClose={() => setQuoting(null)}
+          onPosted={() => {
+            setQuoting(null);
+            void queryClient.resetQueries({ queryKey: ['timeline'] });
+          }}
+        />
+      ) : null}
       {query.isFetchNextPageError ? (
         <p role="alert" className="px-4 py-6 text-center text-text-muted">
           続きを読み込めませんでした

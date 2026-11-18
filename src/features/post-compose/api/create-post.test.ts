@@ -157,3 +157,46 @@ describe('createPost の返信（#20）', () => {
     expect(rows[0].replyCount).toBe(0);
   });
 });
+
+describe('createPost の引用（#22）', () => {
+  it('引用は quote_of_id を持ち、元の quote_count を 1 増やす。リポストを引用すると元の投稿の引用になる', async () => {
+    const author = await makeUser();
+    const me = await makeUser();
+    const post = await makePost({ authorId: author.id });
+    const repost = await makePost({ authorId: author.id, text: '', repostOfId: post.id });
+    signInAs(me);
+    const first = await createPost('意見', { quoteOfId: post.id });
+    const second = await createPost('もう一つ', { quoteOfId: repost.id });
+    if (!first.ok || !second.ok) throw new Error('expected ok');
+    const rows = await testDb().select().from(posts).where(eq(posts.authorId, me.id));
+    expect(rows.map((r) => r.quoteOfId)).toEqual([post.id, post.id]);
+    const [original] = await testDb().select().from(posts).where(eq(posts.id, post.id));
+    expect(original.quoteCount).toBe(2);
+  });
+
+  it('無い投稿・削除された投稿、確かめたあとに消された投稿は引用できない（NOT_FOUND）', async () => {
+    const me = await makeUser();
+    signInAs(me);
+    const gone = await makePost({ authorId: me.id, deletedAt: new Date() });
+    expect(await createPost('引用', { quoteOfId: gone.id })).toEqual({
+      ok: false,
+      error: 'NOT_FOUND',
+    });
+    expect(await createPost('引用', { quoteOfId: newId() })).toEqual({
+      ok: false,
+      error: 'NOT_FOUND',
+    });
+    const target = await makePost({ authorId: me.id });
+    const db = testDb();
+    const transaction = db.transaction.bind(db);
+    vi.spyOn(db, 'transaction').mockImplementationOnce(async (run) => {
+      await db.update(posts).set({ deletedAt: new Date() }).where(eq(posts.id, target.id));
+      return transaction(run);
+    });
+    expect(await createPost('引用', { quoteOfId: target.id })).toEqual({
+      ok: false,
+      error: 'NOT_FOUND',
+    });
+    expect((await db.select().from(posts).where(eq(posts.id, target.id)))[0].quoteCount).toBe(0);
+  });
+});

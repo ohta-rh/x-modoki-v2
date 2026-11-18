@@ -11,8 +11,16 @@ export type Post = {
   viewer: { liked: boolean; reposted: boolean; bookmarked: boolean; isAuthor: boolean };
   repostedBy: UserSummary | null;
   replyTo: { username: string } | null;
-  quoted: Post | null;
+  quoted: QuotedPost | null;
 };
+
+/**
+ * The post inside a quote (#22): one level only, so its own quote is just `quotesAnother` (shown as
+ * a 「ポストを表示」 link); a deleted one is only a mark.
+ */
+export type QuotedPost =
+  | { id: string; author: UserSummary; text: string; createdAt: string; quotesAnother: boolean }
+  | { id: string; deleted: true };
 
 export type PostPage = { items: Post[]; nextCursor: string | null };
 

@@ -22,7 +22,9 @@ const post: Post = {
 
 describe('MainPost（#20: 詳細の本体）', () => {
   it('「投稿の本体」の article に、17px の本文・絶対の時刻・数・メニューを出す', () => {
-    render(<MainPost post={post} menu={<button type="button">メニュー</button>} />);
+    render(
+      <MainPost post={post} now={new Date()} menu={<button type="button">メニュー</button>} />,
+    );
     const main = screen.getByRole('article', { name: '投稿の本体' });
     expect(within(main).getByText('本文').closest('p')).toHaveClass('text-body-lg');
     expect(within(main).getByText('午後3:04 · 2026年11月18日').tagName).toBe('TIME');
@@ -38,5 +40,27 @@ describe('PostCard の connector（スレッドの線）', () => {
     expect(container.querySelector('[data-thread-line]')).toHaveClass('w-0.5');
     rerender(<PostCard post={post} now={new Date()} />);
     expect(container.querySelector('[data-thread-line]')).toBeNull();
+  });
+});
+
+describe('MainPost の引用（#22）', () => {
+  it('引用なら、本文の下に入れ子を出す（時刻は今から測る）', () => {
+    render(
+      <MainPost
+        post={{
+          ...post,
+          quoted: {
+            id: '9',
+            author: { username: 'hana', name: '花', avatarUrl: null },
+            text: '元',
+            createdAt: '2026-11-18T05:04:00.000Z',
+            quotesAnother: false,
+          },
+        }}
+        now={new Date('2026-11-18T07:04:00.000Z')}
+      />,
+    );
+    // Two hours from now, not the one hour from the outer post's time.
+    expect(screen.getByRole('article', { name: '引用した投稿' })).toHaveTextContent('2時間');
   });
 });

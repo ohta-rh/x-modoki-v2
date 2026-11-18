@@ -14,6 +14,12 @@ vi.mock('@/features/post-bookmark/index.server', () => ({
   setBookmarkAction: async () => ({ ok: true, count: 1 }),
   clearBookmarksAction: async () => ({ ok: true }),
 }));
+vi.mock('@/features/post-repost/index.server', () => ({
+  setRepostAction: async () => ({ ok: true, count: 1 }),
+}));
+vi.mock('@/features/post-compose/index.server', () => ({
+  createQuoteAction: async () => ({ ok: true }),
+}));
 vi.mock('@/features/post-delete/index.server', () => ({
   deletePostAction: async () => ({ ok: true }),
 }));

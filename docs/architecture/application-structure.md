@@ -227,6 +227,8 @@ Server Action は例外を投げずに、上の形で返す。想定していな
 
 `nextCursor` が `null` なら、続きは無い。`viewer.isAuthor` は見ている人がその投稿の作者かどうかで、削除のメニューを出すかを決める（#20）。返信の一覧（`/api/posts/{id}/replies`）は古い順で、`replyTo` に相手のユーザー名が入る。
 
+リポストと引用（#22、[ADR-0041](../adr/0041-repost-and-quote-target-the-original.md)）: リポストの行は元の投稿として返し、`repostedBy` にリポストした人（`username`・`name`・`avatarUrl`）を入れる。`id` は元の投稿の ID なので、操作は元に対して行われる。続きのカーソルは行の ID。`quoted` は 1 段だけで、`{ id, author, text, createdAt, quotesAnother }`、元が削除されていれば `{ id, deleted: true }`。
+
 ## 6. 安全のための規則
 
 | 規則 | 場所 |

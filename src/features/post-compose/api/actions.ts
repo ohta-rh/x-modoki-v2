@@ -33,3 +33,16 @@ export async function createReplyAction(
   const result = await createPost(parsed.data, { replyToId: parentId });
   return result.ok ? { ok: true } : { ok: false, message: MESSAGES[result.error] };
 }
+
+/** Posts `text` quoting another post (#22). */
+export async function createQuoteAction(
+  text: string,
+  quoteOfId: string,
+): Promise<CreatePostActionResult> {
+  const parsed = z.string().safeParse(text);
+  if (!parsed.success) return { ok: false, message: MESSAGES.VALIDATION };
+  const targetId = parseId(String(quoteOfId));
+  if (targetId === null) return { ok: false, message: MESSAGES.NOT_FOUND };
+  const result = await createPost(parsed.data, { quoteOfId: targetId });
+  return result.ok ? { ok: true } : { ok: false, message: MESSAGES[result.error] };
+}

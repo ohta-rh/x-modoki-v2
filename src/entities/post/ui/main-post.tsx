@@ -5,6 +5,7 @@ import { absoluteTime, compactCount } from '@/shared/lib/format';
 import { Avatar } from '@/shared/ui/avatar';
 import type { Post } from '../model/types';
 import { PostText } from './post-text';
+import { QuotedCard } from './quoted-card';
 
 const COUNTS = [
   { key: 'replies', label: '件の返信' },
@@ -15,10 +16,12 @@ const COUNTS = [
 /** The post being read on its detail page: larger text, the absolute time, the counts (#20). */
 export function MainPost({
   post,
+  now,
   menu,
   actions,
 }: {
   post: Post;
+  now: Date;
   menu?: ReactNode;
   /** The like / bookmark controls, composed by the caller (#21). */
   actions?: ReactNode;
@@ -48,6 +51,7 @@ export function MainPost({
       ) : null}
       <div className="mt-3">
         <PostText text={post.text} size="lg" />
+        {post.quoted ? <QuotedCard quoted={post.quoted} now={now} /> : null}
       </div>
       <p className="my-4 text-body text-text-muted">
         <time dateTime={post.createdAt}>{absoluteTime(new Date(post.createdAt))}</time>

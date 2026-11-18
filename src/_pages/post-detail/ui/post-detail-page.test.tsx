@@ -19,7 +19,12 @@ vi.mock('@/features/post-bookmark/index.server', () => ({
 }));
 vi.mock('@/features/post-compose/index.server', () => ({
   createReplyAction: async () => ({ ok: true }),
+  createQuoteAction: async () => ({ ok: true }),
 }));
+vi.mock('@/features/post-repost/index.server', () => ({
+  setRepostAction: async () => ({ ok: true, count: 1 }),
+}));
+
 vi.mock('@/features/post-delete/index.server', () => ({
   deletePostAction: async () => ({ ok: true }),
 }));
@@ -136,6 +141,7 @@ describe('PostDetailPage のいいね・ブックマーク（#21）', () => {
     expect(main.getByRole('button', { name: 'ブックマーク' })).toBeInTheDocument();
     const reply = within(within(screen.getByRole('region', { name: '返信' })).getByRole('article'));
     expect(reply.getByRole('button', { name: 'いいね' })).toBeInTheDocument();
+    expect(reply.getByRole('button', { name: 'リポスト' })).toBeInTheDocument();
     unmount();
     renderDetail(false);
     expect(screen.queryByRole('button', { name: 'いいね' })).toBeNull();

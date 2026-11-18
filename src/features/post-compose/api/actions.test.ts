@@ -3,7 +3,7 @@ import { setupTestDb, testDb } from '@test/db';
 import { currentSession, signInAs, signOut } from '@test/session';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { posts } from '@/shared/db';
-import { createPostAction, createReplyAction } from './actions';
+import { createPostAction, createQuoteAction, createReplyAction } from './actions';
 
 vi.mock('@/shared/auth/index.server', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/shared/auth/index.server')>()),
@@ -69,6 +69,25 @@ describe('createReplyAction', () => {
   it('文字列でない本文は、本文を確かめるよう言う', async () => {
     signInAs(await makeUser());
     expect(await createReplyAction(42 as unknown as string, '1')).toEqual({
+      ok: false,
+      message: '本文を確かめてください',
+    });
+  });
+});
+
+describe('createQuoteAction（#22）', () => {
+  it('引用して ok を返す。元が無い・数字でない ID・文字列でない本文は、それぞれの文言', async () => {
+    const me = await makeUser();
+    const post = await makePost({ authorId: me.id });
+    signInAs(me);
+    expect(await createQuoteAction('意見', post.id.toString())).toEqual({ ok: true });
+    for (const id of ['999999999999999', 'abc']) {
+      expect(await createQuoteAction('意見', id)).toEqual({
+        ok: false,
+        message: 'この投稿は見つかりません',
+      });
+    }
+    expect(await createQuoteAction(42 as unknown as string, post.id.toString())).toEqual({
       ok: false,
       message: '本文を確かめてください',
     });

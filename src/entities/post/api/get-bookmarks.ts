@@ -3,8 +3,8 @@ import { and, desc, eq, isNull, sql, type SQL } from 'drizzle-orm';
 import { getSession } from '@/shared/auth/index.server';
 import { bookmarks, getDb, posts, user } from '@/shared/db';
 import { parseId } from '@/shared/lib/id';
-import type { Post, PostPage } from '../model/types';
-import { postColumns, toPost } from './post-rows';
+import type { PostPage } from '../model/types';
+import { postColumns, toPosts } from './post-rows';
 
 const PAGE_SIZE = 20;
 
@@ -43,7 +43,7 @@ export async function getBookmarks(cursor: string | null): Promise<BookmarksResu
     .orderBy(desc(bookmarks.createdAt), desc(bookmarks.postId))
     .limit(PAGE_SIZE + 1);
   const page = rows.slice(0, PAGE_SIZE);
-  const items: Post[] = page.map((row) => toPost(row, viewer.id));
+  const items = await toPosts(page, viewer.id);
   const last = page[PAGE_SIZE - 1];
   const nextCursor = rows.length > PAGE_SIZE ? `${last.micros}_${last.post.id}` : null;
   return { ok: true, page: { items, nextCursor } };

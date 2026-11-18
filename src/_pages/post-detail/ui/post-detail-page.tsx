@@ -1,8 +1,9 @@
 import type { PostDetail } from '@/entities/post';
 import { setBookmarkAction } from '@/features/post-bookmark/index.server';
-import { createReplyAction } from '@/features/post-compose/index.server';
+import { createQuoteAction, createReplyAction } from '@/features/post-compose/index.server';
 import { deletePostAction } from '@/features/post-delete/index.server';
 import { setLikeAction } from '@/features/post-like/index.server';
+import { setRepostAction } from '@/features/post-repost/index.server';
 import { ViewCounter } from '@/features/post-view-count';
 import { PageHeader } from '@/widgets/app-shell';
 import { PostThread } from '@/widgets/post-thread';
@@ -44,6 +45,8 @@ export function PostDetailPage({ detail, now, signedIn }: Props) {
             deleteAction={deletePostAction}
             likeAction={signedIn ? setLikeAction : undefined}
             bookmarkAction={signedIn ? setBookmarkAction : undefined}
+            repostAction={signedIn ? setRepostAction : undefined}
+            quoteAction={signedIn ? createQuoteAction : undefined}
             emptyText="まだ返信がありません"
           />
         }
