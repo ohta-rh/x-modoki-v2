@@ -26,16 +26,53 @@ describe('markNotificationsReadAction（#26）', () => {
         { id: ids[2], recipientId: me.id, actorId: them.id, type: 'mention', postId: null },
       ]);
     signInAs(me);
-    expect(await markNotificationsReadAction(ids[1].toString())).toEqual({ ok: true });
+    expect(await markNotificationsReadAction(ids[1].toString(), 'all')).toEqual({
+      ok: true,
+      unread: 1,
+    });
     const rows = await testDb().select().from(notifications);
     const read = (id: bigint) => rows.find((row) => row.id === id)!.readAt !== null;
     expect([read(ids[0]), read(ids[1]), read(ids[2])]).toEqual([true, false, false]);
   });
 
   it('ログインしていない・形の違う ID は何もしない', async () => {
-    expect(await markNotificationsReadAction('1')).toEqual({ ok: false, error: 'UNAUTHORIZED' });
+    expect(await markNotificationsReadAction('1', 'all')).toEqual({
+      ok: false,
+      error: 'UNAUTHORIZED',
+    });
     signInAs(await makeUser());
-    expect(await markNotificationsReadAction('abc')).toEqual({ ok: false, error: 'VALIDATION' });
-    expect(await markNotificationsReadAction(12)).toEqual({ ok: false, error: 'VALIDATION' });
+    expect(await markNotificationsReadAction('abc', 'all')).toEqual({
+      ok: false,
+      error: 'VALIDATION',
+    });
+    expect(await markNotificationsReadAction('1', 'other')).toEqual({
+      ok: false,
+      error: 'VALIDATION',
+    });
+    expect(await markNotificationsReadAction(12, 'all')).toEqual({
+      ok: false,
+      error: 'VALIDATION',
+    });
+  });
+
+  it('メンションのタブは、メンションと返信だけを既読にし、残った未読の数を返す（レビュー 1）', async () => {
+    const [me, them] = [await makeUser(), await makeUser()];
+    const ids = Array.from({ length: 4 }, () => newId()).sort((a, b) => (a < b ? -1 : 1));
+    await testDb()
+      .insert(notifications)
+      .values([
+        { id: ids[0], recipientId: me.id, actorId: them.id, type: 'follow', postId: null },
+        { id: ids[1], recipientId: me.id, actorId: them.id, type: 'reply', postId: null },
+        { id: ids[2], recipientId: me.id, actorId: them.id, type: 'mention', postId: null },
+        { id: ids[3], recipientId: me.id, actorId: them.id, type: 'like', postId: null },
+      ]);
+    signInAs(me);
+    expect(await markNotificationsReadAction(ids[2].toString(), 'mentions')).toEqual({
+      ok: true,
+      unread: 2,
+    });
+    const rows = await testDb().select().from(notifications);
+    const read = (id: bigint) => rows.find((row) => row.id === id)!.readAt !== null;
+    expect(ids.map(read)).toEqual([false, true, true, false]);
   });
 });

@@ -19,7 +19,7 @@ import { Spinner } from '@/shared/ui/spinner';
 type Props = {
   tab: 'all' | 'mentions';
   firstPage: NotificationPage;
-  markRead: (upTo: string) => Promise<MarkNotificationsReadResult>;
+  markRead: (upTo: string, tab: 'all' | 'mentions') => Promise<MarkNotificationsReadResult>;
 };
 
 /** ui-ux.md 通知: a heart for likes, arrows for reposts, a person for follows. */
@@ -91,10 +91,11 @@ export function NotificationList({ tab, firstPage, markRead }: Props) {
   const newest = items[0]?.id;
   useEffect(() => {
     if (newest === undefined) return;
-    void markRead(newest).then(() =>
-      queryClient.setQueryData(['notifications', 'unread-count'], 0),
-    );
-  }, [newest, markRead, queryClient]);
+    // The badge becomes what is still unread: the other tab's, or what came in since (review 1).
+    void markRead(newest, tab).then((result) => {
+      if (result.ok) queryClient.setQueryData(['notifications', 'unread-count'], result.unread);
+    });
+  }, [newest, tab, markRead, queryClient]);
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = query;
   const loaded = query.data.pages.length;
   useEffect(() => {
