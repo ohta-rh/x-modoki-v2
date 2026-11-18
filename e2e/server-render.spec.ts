@@ -45,6 +45,12 @@ test.describe('JavaScript を読み込み終える前', () => {
     const me = await signUp(page);
     await insertPosts(me.username, 20, '先に読む投稿');
     await page.setViewportSize({ width: 1280, height: 600 });
+    // A hydration that does not match the server's HTML is reported as an error (review 1).
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (message) => {
+      if (message.type() === 'error') errors.push(message.text());
+    });
     // The app's bundles are held back until the page has been scrolled while it is still only HTML.
     let release!: () => void;
     const scrolled = new Promise<void>((resolve) => (release = resolve));
@@ -67,5 +73,6 @@ test.describe('JavaScript を読み込み終える前', () => {
       () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
     );
     expect(await page.evaluate(() => window.scrollY)).toBe(400);
+    expect(errors).toEqual([]);
   });
 });

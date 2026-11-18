@@ -2,7 +2,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
+import { act } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Post } from '@/entities/post';
 import { toast } from '@/shared/ui/kit';
@@ -331,5 +333,35 @@ describe('PostFeed を取り付けたとき（#60）', () => {
     // Writing the position it is already at is harmless; any other value moves the page.
     for (const [options] of scrollTo.mock.calls) expect(options).toMatchObject({ top: 400 });
     vi.restoreAllMocks();
+  });
+});
+
+describe('PostFeed のハイドレーション（#60 review 1）', () => {
+  it('スクリプトが動く前にスクロールしてあっても、サーバーの HTML と同じ行で取り付く', async () => {
+    const feed = (
+      <QueryClientProvider client={new QueryClient()}>
+        <PostFeed
+          queryKey={['hydrate']}
+          endpoint="/api/hydrate"
+          firstPage={{
+            items: Array.from({ length: 20 }, (_, i) => post(i + 1, false)),
+            nextCursor: null,
+          }}
+          now="2026-11-18T03:00:00.000Z"
+        />
+      </QueryClientProvider>
+    );
+    const container = document.createElement('div');
+    container.innerHTML = renderToString(feed);
+    document.body.append(container);
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    vi.spyOn(window, 'scrollY', 'get').mockReturnValue(400);
+    const onRecoverableError = vi.fn();
+    await act(async () => {
+      hydrateRoot(container, feed, { onRecoverableError });
+    });
+    expect(onRecoverableError).not.toHaveBeenCalled();
+    vi.restoreAllMocks();
+    container.remove();
   });
 });

@@ -96,9 +96,11 @@ export function PostFeed({
     // Before the window is measured — on the server, and in the browser's first render alike — draw
     // the rows a tall screen would show, so the posts are in the HTML before any script runs (#60).
     initialRect: { width: 600, height: 1200 },
-    // The page may have been scrolled before this script ran (the posts are already in the HTML,
-    // #60). On attaching, the virtualizer writes the window to the offset it holds — 0 from the
-    // first render, which must match the server's — so it takes the real one first.
+    // The first render must draw the server's rows, even when the page was already scrolled: the
+    // window virtualizer would start from window.scrollY and fail hydration (#60 review 1).
+    initialOffset: 0,
+    // On attaching, the virtualizer writes the window to the offset it holds (that 0), which would
+    // throw a page scrolled before this script ran back to the top: it takes the real one first.
     observeElementOffset: (instance, onOffset) => {
       instance.scrollOffset = window.scrollY;
       return observeWindowOffset(instance, onOffset);
