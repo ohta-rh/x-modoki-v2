@@ -35,6 +35,9 @@ test('フォローすると、相手の投稿が「フォロー中」に出る',
     'rgb(244, 33, 46)',
   );
 
+  // The profile reloads itself after the follow (router.refresh); let that finish before leaving,
+  // or WebKit reports the navigation as interrupted (#50).
+  await page.waitForLoadState('networkidle');
   await page.goto('/home?tab=following');
   await expect(page.getByRole('article').first()).toContainText('フォローされる人の投稿');
 
