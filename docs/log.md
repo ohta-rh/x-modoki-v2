@@ -1,7 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
-* **Creation**: [Better Auth を Next.js 16.4 で動かした結果](research/better-auth-on-next-16.md)を置いた（#10）。
+* **Creation**: [Better Auth を Next.js 16.4 で動かした結果](research/better-auth-on-next-16.md)を置いた（#10、[試験レポート](test-reports/issue-0010-better-auth-spike.md)）。
 * **Creation**: [機能でない要件](requirements/non-functional.md)を置いた（#9、[試験レポート](test-reports/issue-0009-non-functional-requirements.md)）。
 * **Creation**: [機能の要件](requirements/functional.md)を置いた（#8、[試験レポート](test-reports/issue-0008-functional-requirements.md)）。
 * **Creation**: [ADR-0029](adr/0029-milestone-on-a-branch-when-a-pr-is-requested.md)（PR を求められたマイルストーンはブランチで進める）を記録した。
