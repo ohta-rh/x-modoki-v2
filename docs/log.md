@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-19
+* **New**: [#28 の試験レポート](test-reports/issue-0028-composer-new-posts.md)（投稿のモーダル・新しい投稿の知らせ・さらに表示）。
 * **New**: [ADR-0049](adr/0049-e2e-scrolls-at-once-not-by-wheel.md)（画面のテストは、ホイールではなく一度に動かしてスクロールする）。
 * **Update**: [UI/UX 仕様](architecture/ui-ux.md)の 5 節に、長い本文を 8 行で切り詰める決まりを書いた（#28）。
 * **New**: [#57 の試験レポート](test-reports/issue-0057-close-labels.md)。
