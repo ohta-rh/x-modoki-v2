@@ -23,8 +23,9 @@ test('フォローすると、相手の投稿が「フォロー中」に出る',
   const follow = header.getByRole('button', { name: 'フォロー', exact: true });
   const done = actionDone(page);
   // After the follow the profile reloads itself (router.refresh): an RSC request for this page
-  // that is not the Server Action. Leaving before it is answered makes WebKit report the next
-  // navigation as interrupted (#50).
+  // that is not the Server Action. A browser navigation started while that refresh is still
+  // committing is reported by WebKit as interrupted (#50), so the test waits for the whole
+  // response body and then leaves through the app's own link, which the router serialises.
   const refreshed = page.waitForResponse(
     (response) =>
       response.request().headers()['rsc'] === '1' &&
@@ -44,8 +45,10 @@ test('フォローすると、相手の投稿が「フォロー中」に出る',
     'rgb(244, 33, 46)',
   );
 
-  await refreshed;
-  await page.goto('/home?tab=following');
+  await (await refreshed).finished();
+  await page.getByRole('link', { name: 'ホーム', exact: true }).click();
+  await page.getByRole('tab', { name: 'フォロー中' }).click();
+  await expect(page).toHaveURL(/\/home\?tab=following$/);
   await expect(page.getByRole('article').first()).toContainText('フォローされる人の投稿');
 
   await page.goto(`/${them.username}/followers`);
