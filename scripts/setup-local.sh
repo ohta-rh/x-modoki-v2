@@ -46,4 +46,6 @@ node scripts/fill-env.mjs .env.local \
   "S3_ACCESS_KEY_ID:=$KEY_ID" \
   "S3_SECRET_ACCESS_KEY:=$KEY_SECRET" \
   "CRON_SECRET=$(rand 16)"
+# The browser uploads straight to storage (#25): allow the local app origins.
+node scripts/storage-cors.mjs
 echo "setup-local: containers up, bucket $BUCKET ready, .env.local filled"

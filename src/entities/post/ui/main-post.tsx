@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { absoluteTime, compactCount } from '@/shared/lib/format';
 import { Avatar } from '@/shared/ui/avatar';
 import type { Post } from '../model/types';
+import { PostMedia } from './post-media';
 import { PostText } from './post-text';
 import { QuotedCard } from './quoted-card';
 
@@ -51,6 +52,7 @@ export function MainPost({
       ) : null}
       <div className="mt-3">
         <PostText text={post.text} size="lg" />
+        <PostMedia media={post.media} />
         {post.quoted ? <QuotedCard quoted={post.quoted} now={now} /> : null}
       </div>
       <p className="my-4 text-body text-text-muted">

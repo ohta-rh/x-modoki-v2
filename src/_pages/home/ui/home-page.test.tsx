@@ -48,6 +48,8 @@ describe('HomePage（ui-ux.md の 6 節）', () => {
   it('入力欄とタイムラインを出す', () => {
     renderHome('for-you');
     expect(screen.getByRole('textbox', { name: '投稿の本文' })).toBeInTheDocument();
+    // #25: images can be attached.
+    expect(screen.getByLabelText('画像を追加')).toBeInTheDocument();
     expect(screen.getByText('まだポストがありません')).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'おすすめ' })).toHaveAttribute('aria-selected', 'true');
   });

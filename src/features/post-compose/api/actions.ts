@@ -2,6 +2,7 @@
 
 import { z } from 'zod';
 import { parseId } from '@/shared/lib/id';
+import type { MediaItem } from './create-post';
 import { createPost } from './create-post';
 
 import type { CreatePostActionResult } from '../model/types';
@@ -15,10 +16,26 @@ const MESSAGES = {
   NOT_FOUND: 'この投稿は見つかりません',
 } as const;
 
-export async function createPostAction(text: string): Promise<CreatePostActionResult> {
-  const parsed = z.string().safeParse(text);
+const mediaSchema = z
+  .array(z.object({ id: z.string(), alt: z.string() }))
+  .max(4)
+  .transform((items, context): MediaItem[] =>
+    items.map((item) => {
+      const id = parseId(item.id);
+      if (id === null) context.addIssue({ code: 'custom', message: 'id' });
+      return { id: id ?? 0n, alt: item.alt };
+    }),
+  );
+
+/** Posts `text` with up to four uploaded images (#19, #25). */
+export async function createPostAction(
+  text: string,
+  media: { id: string; alt: string }[] = [],
+): Promise<CreatePostActionResult> {
+  const parsed = z.tuple([z.string(), mediaSchema]).safeParse([text, media]);
   if (!parsed.success) return { ok: false, message: MESSAGES.VALIDATION };
-  const result = await createPost(parsed.data);
+  const [body, items] = parsed.data;
+  const result = await createPost(body, { media: items });
   return result.ok ? { ok: true } : { ok: false, message: MESSAGES[result.error] };
 }
 

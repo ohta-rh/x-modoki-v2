@@ -5,6 +5,8 @@
 * **New**: [#49 の試験レポート](test-reports/issue-0049-postgres-connections.md)（PostgreSQL の接続の数の上限）を足した。
 * **New**: [#48 の試験レポート](test-reports/issue-0048-feed-row-heights.md)（タイムラインのカードの重なり）を足した。
 * **Update**: [環境と配備](architecture/environments.md)に、ローカルと CI の PostgreSQL の `max_connections` を書いた（#49）。
+* **Update**: [環境と配備](architecture/environments.md)に、ローカルのバケットの CORS を書いた（#25）。
+* **New**: [ADR-0043](adr/0043-jpeg-where-the-browser-cannot-write-webp.md)（Safari では JPEG で送る）を記録し、ADR-0018 の一部を置き換え、[脅威の文書](architecture/threat-model.md)の T-07 を直した（#25）。
 * **New**: [#24 の試験レポート](test-reports/issue-0024-follow.md)（フォロー）を足した。
 * **Update**: [ルーティング](architecture/routing.md)の 2 節と[アプリケーションの構造](architecture/application-structure.md)の 5 節に、フォローの一覧を書いた（#24）。
 * **New**: [#23 の試験レポート](test-reports/issue-0023-profile.md)（プロフィール）を足した。

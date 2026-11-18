@@ -1,6 +1,6 @@
 import 'server-only';
-import { eq, inArray, isNull, and, sql } from 'drizzle-orm';
-import { getDb, posts, user } from '@/shared/db';
+import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { getDb, media, postMedia, posts, user } from '@/shared/db';
 import { toIdString } from '@/shared/lib/id';
 import { mediaUrl } from '@/shared/lib/media-url';
 import type { Post, QuotedPost } from '../model/types';
@@ -41,7 +41,7 @@ export type Row = {
   reposted: boolean;
 };
 
-type Extra = { repostedBy: Post['repostedBy']; quoted: QuotedPost | null };
+type Extra = { repostedBy: Post['repostedBy']; quoted: QuotedPost | null; media: Post['media'] };
 
 const summary = (author: Row['author']) => ({
   username: author.username!,
@@ -57,7 +57,7 @@ function toPost(row: Row, viewerId: string | null, extra: Extra): Post {
     author: summary(author),
     text: post.text,
     createdAt: post.createdAt.toISOString(),
-    media: [],
+    media: extra.media,
     counts: {
       replies: post.replyCount,
       reposts: post.repostCount,
@@ -124,10 +124,32 @@ export async function toPosts(rows: Row[], viewerId: string | null): Promise<Pos
           },
     ]),
   );
+  const images = await db
+    .select({
+      postId: postMedia.postId,
+      key: media.key,
+      width: media.width,
+      height: media.height,
+      alt: media.alt,
+    })
+    .from(postMedia)
+    .innerJoin(media, eq(media.id, postMedia.mediaId))
+    .where(
+      inArray(
+        postMedia.postId,
+        shown.map(({ row }) => row.post.id),
+      ),
+    )
+    .orderBy(asc(postMedia.postId), asc(postMedia.position));
+  const mediaOf = (id: bigint) =>
+    images
+      .filter((image) => image.postId === id)
+      .map(({ key, width, height, alt }) => ({ url: mediaUrl(key)!, width, height, alt }));
   return shown.map(({ row, repostedBy }) =>
     toPost(row, viewerId, {
       repostedBy,
       quoted: quotedById.get(row.post.quoteOfId!) ?? null,
+      media: mediaOf(row.post.id),
     }),
   );
 }

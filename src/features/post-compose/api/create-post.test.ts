@@ -1,9 +1,10 @@
 import { makePost, makeUser } from '@test/factories';
 import { setupTestDb, testDb } from '@test/db';
+import { jpegHead, makeUpload, pngHead } from '@test/uploads';
 import { currentSession, signInAs, signOut } from '@test/session';
 import { eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { hashtags, mentions, postHashtags, posts, user } from '@/shared/db';
+import { hashtags, media, mentions, postHashtags, postMedia, posts, user } from '@/shared/db';
 import { newId } from '@/shared/lib/id';
 import { createPost } from './create-post';
 
@@ -198,5 +199,110 @@ describe('createPost の引用（#22）', () => {
       error: 'NOT_FOUND',
     });
     expect((await db.select().from(posts).where(eq(posts.id, target.id)))[0].quoteCount).toBe(0);
+  });
+});
+
+describe('createPost の画像（#25、T-07・T-08）', () => {
+  it('置かれた画像を確かめてから ready にし、代替テキストと順に結びつける。本文が空でもよい', async () => {
+    const me = await makeUser();
+    signInAs(me);
+    const a = await makeUpload(me.id);
+    const b = await makeUpload(me.id);
+    const result = await createPost('', {
+      media: [
+        { id: b.id, alt: '二枚目' },
+        { id: a.id, alt: '' },
+      ],
+    });
+    if (!result.ok) throw new Error(result.error);
+    const links = await testDb()
+      .select()
+      .from(postMedia)
+      .where(eq(postMedia.postId, BigInt(result.id)));
+    expect(links.sort((x, y) => x.position - y.position).map((link) => link.mediaId)).toEqual([
+      b.id,
+      a.id,
+    ]);
+    const rows = await testDb().select().from(media);
+    expect(rows.every((row) => row.status === 'ready')).toBe(true);
+    expect(rows.find((row) => row.id === b.id)!.alt).toBe('二枚目');
+  });
+
+  it('他人の画像・無い画像・置かれていない画像・申告と違う中身（PNG を WebP と偽る、縦横の違い）・使用済みは拒み、何も書かない', async () => {
+    const me = await makeUser();
+    const other = await makeUser();
+    signInAs(me);
+    const cases = [
+      (await makeUpload(other.id)).id,
+      123456789n,
+      (await makeUpload(me.id, { put: false })).id,
+      (await makeUpload(me.id, { bytes: pngHead() })).id,
+      (await makeUpload(me.id, { width: 301 })).id,
+    ];
+    for (const id of cases) {
+      expect(await createPost('写真', { media: [{ id, alt: '' }] })).toEqual({
+        ok: false,
+        error: 'VALIDATION',
+      });
+    }
+    const used = await makeUpload(me.id);
+    expect((await createPost('一回目', { media: [{ id: used.id, alt: '' }] })).ok).toBe(true);
+    expect(await createPost('二回目', { media: [{ id: used.id, alt: '' }] })).toEqual({
+      ok: false,
+      error: 'VALIDATION',
+    });
+    const posted = await testDb().select().from(posts).where(eq(posts.authorId, me.id));
+    expect(posted.map((row) => row.text)).toEqual(['一回目']);
+  });
+
+  it('JPEG も、サイズの印が 32 バイトより後ろにあっても確かめて結びつける（ADR-0043）', async () => {
+    const me = await makeUser();
+    signInAs(me);
+    const upload = await makeUpload(me.id, { bytes: jpegHead(300, 200), mime: 'image/jpeg' });
+    expect((await createPost('', { media: [{ id: upload.id, alt: '' }] })).ok).toBe(true);
+  });
+
+  it('同じ画像を 2 回付けることはできない', async () => {
+    const me = await makeUser();
+    signInAs(me);
+    const upload = await makeUpload(me.id);
+    expect(
+      await createPost('二重', {
+        media: [
+          { id: upload.id, alt: '' },
+          { id: upload.id, alt: '' },
+        ],
+      }),
+    ).toEqual({ ok: false, error: 'VALIDATION' });
+  });
+
+  it('5 枚は拒み、代替テキストは 1,000 文字まで', async () => {
+    const me = await makeUser();
+    signInAs(me);
+    const five = await Promise.all([1, 2, 3, 4, 5].map(() => makeUpload(me.id)));
+    expect(await createPost('多い', { media: five.map((m) => ({ id: m.id, alt: '' })) })).toEqual({
+      ok: false,
+      error: 'VALIDATION',
+    });
+    expect(
+      await createPost('長い', { media: [{ id: five[0].id, alt: 'あ'.repeat(1001) }] }),
+    ).toEqual({ ok: false, error: 'VALIDATION' });
+  });
+
+  it('確かめたあと、書く前に画像がほかの投稿に使われたら、拒み何も書かない', async () => {
+    const me = await makeUser();
+    signInAs(me);
+    const upload = await makeUpload(me.id);
+    const db = testDb();
+    const transaction = db.transaction.bind(db);
+    vi.spyOn(db, 'transaction').mockImplementationOnce(async (run) => {
+      await db.update(media).set({ status: 'ready' }).where(eq(media.id, upload.id));
+      return transaction(run);
+    });
+    expect(await createPost('写真', { media: [{ id: upload.id, alt: '' }] })).toEqual({
+      ok: false,
+      error: 'VALIDATION',
+    });
+    expect(await db.select().from(posts).where(eq(posts.authorId, me.id))).toEqual([]);
   });
 });

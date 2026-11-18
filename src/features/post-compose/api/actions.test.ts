@@ -1,5 +1,6 @@
 import { makePost, makeUser } from '@test/factories';
 import { setupTestDb, testDb } from '@test/db';
+import { makeUpload } from '@test/uploads';
 import { currentSession, signInAs, signOut } from '@test/session';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { posts } from '@/shared/db';
@@ -91,5 +92,22 @@ describe('createQuoteAction（#22）', () => {
       ok: false,
       message: '本文を確かめてください',
     });
+  });
+});
+
+describe('createPostAction の画像（#25）', () => {
+  it('画像の ID（文字列）と代替テキストを受け取って投稿する。形の違う画像の指定は本文を確かめるよう言う', async () => {
+    const me = await makeUser();
+    signInAs(me);
+    const upload = await makeUpload(me.id);
+    expect(await createPostAction('', [{ id: upload.id.toString(), alt: '青' }])).toEqual({
+      ok: true,
+    });
+    for (const bad of [[{ id: 'abc', alt: '' }], [{ id: '1' }], 'not a list']) {
+      expect(await createPostAction('本文', bad as never)).toEqual({
+        ok: false,
+        message: '本文を確かめてください',
+      });
+    }
   });
 });

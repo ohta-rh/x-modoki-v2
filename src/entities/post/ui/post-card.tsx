@@ -9,6 +9,7 @@ import { compactCount, relativeTime } from '@/shared/lib/format';
 import { UserHoverCard } from '@/entities/user/@x/post';
 import { Avatar } from '@/shared/ui/avatar';
 import type { Post } from '../model/types';
+import { PostMedia } from './post-media';
 import { PostText } from './post-text';
 import { QuotedCard } from './quoted-card';
 
@@ -124,6 +125,7 @@ export function PostCard({
           </p>
         ) : null}
         <PostText text={post.text} />
+        <PostMedia media={post.media} />
         {post.quoted ? <QuotedCard quoted={post.quoted} now={now} /> : null}
         <div
           role="group"

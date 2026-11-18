@@ -29,7 +29,7 @@ status: stable
 | [0015](0015-timeline-fan-out-on-read.md) | タイムラインは読むときに組み立て、いいねなどの数は投稿の行に持つ | 採用 | エージェント |
 | [0016](0016-time-ordered-64bit-post-ids.md) | 投稿の ID は、時刻の順に並ぶ 64 bit の整数をアプリで作り、外では文字列として扱う | 採用 | エージェント |
 | [0017](0017-cloudflare-workers-opennext.md) | 本番は Cloudflare Workers で、Next.js そのものを OpenNext のアダプターで動かす | 採用 | ユーザー／エージェント |
-| [0018](0018-resize-images-in-browser.md) | 画像の縮小と変換は送る前にブラウザで行い、サーバーでは変換しない | 採用 | エージェント |
+| [0018](0018-resize-images-in-browser.md) | 画像の縮小と変換は送る前にブラウザで行い、サーバーでは変換しない | 採用（WebP にできないブラウザの扱いを ADR-0043 で置き換え） | エージェント |
 | [0019](0019-first-milestone-runs-locally.md) | 最初のマイルストーンは「ローカルで全部が動く」とし、Cloudflare への配備はその次にする | 採用 | ユーザー |
 | [0020](0020-ci-required-github-actions.md) | CI を必須とし、GitHub Actions で全部の確認を push と PR のたびに動かす | 採用（CI のコンテナの動かし方を ADR-0033 で置き換え） | ユーザー／エージェント |
 | [0021](0021-coverage-100-percent.md) | テストのカバレッジは 100% を必須とし、測れない非同期の Server Component だけを薄くして外す | 採用（外すファイルのパスを ADR-0022 で置き換え） | ユーザー／エージェント |
@@ -54,3 +54,4 @@ status: stable
 | [0040](0040-bookmark-cursor-is-time-and-post-id.md) | ブックマークの一覧のカーソルは、付けた時刻のマイクロ秒と投稿の ID の組にする | 採用 | エージェント |
 | [0041](0041-repost-and-quote-target-the-original.md) | リポストと引用の対象は、リポストの行なら元の投稿、返信ならその返信にする | 採用 | エージェント |
 | [0042](0042-profile-routes-in-a-group-with-their-own-not-found.md) | プロフィールのルートは [username] の中のルートグループに置き、無いアカウントの 404 をそこだけに出す | 採用 | エージェント |
+| [0043](0043-jpeg-where-the-browser-cannot-write-webp.md) | ブラウザが WebP を書けないときは、同じ品質の JPEG で送り、サーバーは JPEG も受け付ける | 採用 | エージェント |

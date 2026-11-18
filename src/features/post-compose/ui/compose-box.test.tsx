@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { ComposeBox } from './compose-box';
@@ -44,7 +44,7 @@ describe('ComposeBox（ui-ux.md の 7 節）', () => {
     render(<ComposeBox action={action} onPosted={onPosted} />);
     await userEvent.type(box(), 'こんにちは');
     await userEvent.click(button());
-    expect(action).toHaveBeenCalledWith('こんにちは');
+    expect(action).toHaveBeenCalledWith('こんにちは', []);
     expect(box()).toHaveValue('');
     expect(onPosted).toHaveBeenCalledTimes(1);
   });
@@ -87,7 +87,36 @@ describe('ComposeBox のハイドレーション（#47）', () => {
     const button = screen.getByRole('button', { name: 'ポストする' });
     expect(button).toBeEnabled();
     await userEvent.click(button);
-    expect(action).toHaveBeenCalledWith('早く打った');
+    expect(action).toHaveBeenCalledWith('早く打った', []);
     container.remove();
+  });
+});
+
+describe('ComposeBox の画像（#25）', () => {
+  const attachments = (over: Partial<{ count: number; ready: boolean }> = {}) => ({
+    node: <p>添付の部品</p>,
+    media: [{ id: '7', alt: '青' }],
+    count: 1,
+    ready: true,
+    clear: vi.fn(),
+    ...over,
+  });
+
+  it('画像があれば本文が空でも送れ、本文と画像を渡し、送れたら画像を空にする', async () => {
+    const action = ok();
+    const attached = attachments();
+    render(<ComposeBox action={action} attachments={attached} />);
+    expect(screen.getByText('添付の部品')).toBeInTheDocument();
+    // A row of its own above the footer, so the previews never squeeze the button (Chrome, #25).
+    expect(button().parentElement).not.toContainElement(screen.getByText('添付の部品'));
+    expect(button()).toBeEnabled();
+    await userEvent.click(button());
+    expect(action).toHaveBeenCalledWith('', [{ id: '7', alt: '青' }]);
+    await waitFor(() => expect(attached.clear).toHaveBeenCalled());
+  });
+
+  it('画像を送り終えるまで（ready でない間）は送れない', () => {
+    render(<ComposeBox action={ok()} attachments={attachments({ ready: false })} />);
+    expect(button()).toBeDisabled();
   });
 });

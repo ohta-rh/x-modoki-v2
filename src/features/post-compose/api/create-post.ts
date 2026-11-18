@@ -1,9 +1,19 @@
 import 'server-only';
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import twitterText from 'twitter-text';
+import { checkUploads } from '@/entities/media/index.server';
 import { hitRateLimit } from '@/shared/api/index.server';
 import { getSession } from '@/shared/auth/index.server';
-import { getDb, hashtags, mentions, postHashtags, posts, user } from '@/shared/db';
+import {
+  getDb,
+  hashtags,
+  media,
+  mentions,
+  postHashtags,
+  postMedia,
+  posts,
+  user,
+} from '@/shared/db';
 import { newId as defaultNewId, toIdString } from '@/shared/lib/id';
 import { measurePost } from '@/shared/lib/text';
 
@@ -11,7 +21,18 @@ export type CreatePostResult =
   | { ok: true; id: string }
   | { ok: false; error: 'UNAUTHORIZED' | 'VALIDATION' | 'RATE_LIMITED' | 'NOT_FOUND' };
 
-type Options = { newId?: () => bigint; replyToId?: bigint; quoteOfId?: bigint };
+/** An uploaded image to attach, with its alternative text (#25). */
+export type MediaItem = { id: bigint; alt: string };
+
+type Options = {
+  newId?: () => bigint;
+  replyToId?: bigint;
+  quoteOfId?: bigint;
+  media?: MediaItem[];
+};
+
+const MAX_MEDIA = 4;
+const MAX_ALT = 1000;
 
 const unique = (values: string[]) => [...new Set(values.map((value) => value.toLowerCase()))];
 
@@ -20,17 +41,21 @@ const isIdCollision = (error: unknown) =>
   (error as { cause: { constraint?: string } }).cause.constraint === 'posts_pkey';
 
 /**
- * Creates a text post (or a reply, with replyToId: #20) and, in the same transaction, its hashtags and mentions and the author's
- * post count (FR-POST, data-model.md). 10 posts per user per minute (NFR-SEC-05).
+ * Creates a post — text, a reply (#20), a quote (#22), up to four checked images (#25) — and, in the
+ * same transaction, its hashtags, mentions, images and the author's post count (FR-POST,
+ * data-model.md). 10 posts per user per minute (NFR-SEC-05).
  */
 export async function createPost(
   text: string,
-  { newId = defaultNewId, replyToId, quoteOfId }: Options = {},
+  { newId = defaultNewId, replyToId, quoteOfId, media: items = [] }: Options = {},
 ): Promise<CreatePostResult> {
   const viewer = await getSession();
   if (!viewer) return { ok: false, error: 'UNAUTHORIZED' };
   const body = text.normalize('NFC');
-  if (!measurePost(body).postable) return { ok: false, error: 'VALIDATION' };
+  // A post may be images alone (#25); otherwise its text must be postable.
+  const textOk = measurePost(body).postable || (body === '' && items.length > 0);
+  const mediaOk = items.length <= MAX_MEDIA && items.every((item) => item.alt.length <= MAX_ALT);
+  if (!textOk || !mediaOk) return { ok: false, error: 'VALIDATION' };
   if (!(await hitRateLimit(`post:${viewer.id}`, { limit: 10, windowMs: 60_000 }))) {
     return { ok: false, error: 'RATE_LIMITED' };
   }
@@ -52,11 +77,25 @@ export async function createPost(
     if (!target) return { ok: false, error: 'NOT_FOUND' };
     quoted = target.repostOfId ?? target.id;
   }
+  const mediaIds = items.map((item) => item.id);
+  if (items.length > 0 && !(await checkUploads(viewer.id, mediaIds))) {
+    return { ok: false, error: 'VALIDATION' };
+  }
   const tags = unique(twitterText.extractHashtags(body));
   const names = unique(twitterText.extractMentions(body));
 
   const insert = async (id: bigint) =>
-    getDb().transaction(async (tx): Promise<bigint | null> => {
+    getDb().transaction(async (tx): Promise<bigint | 'NOT_FOUND' | 'VALIDATION'> => {
+      // The images go first: only a still-pending one is claimed, so two posts never share one.
+      const claimed =
+        items.length === 0
+          ? []
+          : await tx
+              .update(media)
+              .set({ status: 'ready' })
+              .where(and(inArray(media.id, mediaIds), eq(media.status, 'pending')))
+              .returning({ id: media.id });
+      if (claimed.length !== items.length) return 'VALIDATION';
       // The parent's count goes first and re-checks deleted_at: a parent deleted after the check
       // above takes no reply (nothing has been written yet when this returns).
       if (parent) {
@@ -65,7 +104,7 @@ export async function createPost(
           .set({ replyCount: sql`${posts.replyCount} + 1` })
           .where(and(eq(posts.id, parent.id), isNull(posts.deletedAt)))
           .returning({ id: posts.id });
-        if (counted.length === 0) return null;
+        if (counted.length === 0) return 'NOT_FOUND';
       }
       if (quoted !== undefined) {
         const counted = await tx
@@ -73,7 +112,7 @@ export async function createPost(
           .set({ quoteCount: sql`${posts.quoteCount} + 1` })
           .where(and(eq(posts.id, quoted), isNull(posts.deletedAt)))
           .returning({ id: posts.id });
-        if (counted.length === 0) return null;
+        if (counted.length === 0) return 'NOT_FOUND';
       }
       await tx.insert(posts).values({
         id,
@@ -83,6 +122,10 @@ export async function createPost(
         rootId: parent ? (parent.rootId ?? parent.id) : null,
         quoteOfId: quoted ?? null,
       });
+      for (const [position, item] of items.entries()) {
+        await tx.update(media).set({ alt: item.alt }).where(eq(media.id, item.id));
+        await tx.insert(postMedia).values({ postId: id, mediaId: item.id, position });
+      }
       if (tags.length > 0) {
         await tx
           .insert(hashtags)
@@ -114,8 +157,8 @@ export async function createPost(
       return id;
     });
 
-  const created = (id: bigint | null): CreatePostResult =>
-    id === null ? { ok: false, error: 'NOT_FOUND' } : { ok: true, id: toIdString(id) };
+  const created = (id: bigint | 'NOT_FOUND' | 'VALIDATION'): CreatePostResult =>
+    typeof id === 'string' ? { ok: false, error: id } : { ok: true, id: toIdString(id) };
   try {
     return created(await insert(newId()));
   } catch (error) {

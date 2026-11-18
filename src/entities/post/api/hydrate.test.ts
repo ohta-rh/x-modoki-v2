@@ -1,7 +1,8 @@
 import { makePost, makeUser } from '@test/factories';
-import { setupTestDb } from '@test/db';
+import { setupTestDb, testDb } from '@test/db';
 import { currentSession, signInAs, signOut } from '@test/session';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { media, postMedia } from '@/shared/db';
 import { newId } from '@/shared/lib/id';
 import { getTimeline } from './get-timeline';
 
@@ -79,5 +80,58 @@ describe('一覧のリポストと引用（#22）', () => {
     const second = await getTimeline('for-you', BigInt(first.page.nextCursor!));
     if (!second.ok) throw new Error('expected ok');
     expect(first.page.items.length + second.page.items.length).toBe(22);
+  });
+
+  it('画像は位置の順に、公開の URL・縦横・代替テキストで返す（#25）', async () => {
+    const me = await makeUser();
+    const post = await makePost({ id: at(1), authorId: me.id, text: '写真' });
+    const rows = await testDb()
+      .insert(media)
+      .values([
+        {
+          id: newId(),
+          ownerId: me.id,
+          key: 'media/b.webp',
+          mime: 'image/webp',
+          width: 10,
+          height: 20,
+          alt: '二',
+          status: 'ready' as const,
+        },
+        {
+          id: newId(),
+          ownerId: me.id,
+          key: 'media/a.webp',
+          mime: 'image/webp',
+          width: 30,
+          height: 40,
+          alt: '',
+          status: 'ready' as const,
+        },
+      ])
+      .returning();
+    await testDb()
+      .insert(postMedia)
+      .values([
+        { postId: post.id, mediaId: rows[0].id, position: 1 },
+        { postId: post.id, mediaId: rows[1].id, position: 0 },
+      ]);
+    signInAs(me);
+    const result = await getTimeline('for-you', null);
+    if (!result.ok) throw new Error('expected ok');
+    expect(result.page.items[0].media).toEqual([
+      {
+        url: `${process.env.NEXT_PUBLIC_MEDIA_BASE_URL}/media/a.webp`,
+        width: 30,
+        height: 40,
+        alt: '',
+      },
+      {
+        url: `${process.env.NEXT_PUBLIC_MEDIA_BASE_URL}/media/b.webp`,
+        width: 10,
+        height: 20,
+        alt: '二',
+      },
+    ]);
   });
 });

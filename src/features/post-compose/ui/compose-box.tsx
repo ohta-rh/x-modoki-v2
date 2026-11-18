@@ -1,12 +1,23 @@
 'use client';
 
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { type ReactNode, useEffect, useRef, useState, useTransition } from 'react';
 import { MAX_WEIGHTED_LENGTH, measurePost } from '@/shared/lib/text';
 import { Button } from '@/shared/ui/button';
 import type { CreatePostActionResult } from '../model/types';
 
+/** Uploaded images to send with the text (#25), composed by the caller (media-upload). */
+export type ComposeAttachments = {
+  node: ReactNode;
+  media: { id: string; alt: string }[];
+  count: number;
+  /** Every chosen image has finished uploading. */
+  ready: boolean;
+  clear: () => void;
+};
+
 type Props = {
-  action: (text: string) => Promise<CreatePostActionResult>;
+  action: (text: string, media: ComposeAttachments['media']) => Promise<CreatePostActionResult>;
+  attachments?: ComposeAttachments;
   onPosted?: () => void;
   label?: string;
   submitLabel?: string;
@@ -20,6 +31,7 @@ const RING_COLOR = { normal: 'var(--accent)', warning: '#ffd400', over: 'var(--d
 /** The inline composer at the top of /home (docs/architecture/ui-ux.md 7). */
 export function ComposeBox({
   action,
+  attachments,
   onPosted,
   label = '投稿の本文',
   submitLabel = 'ポストする',
@@ -36,17 +48,21 @@ export function ComposeBox({
     setText(typed);
     ref.current!.style.height = `${ref.current!.scrollHeight}px`;
   }, []);
-  const { weighted, remaining, postable } = measurePost(text);
+  const { weighted, remaining, postable: textPostable } = measurePost(text);
+  // Images alone may be posted (#25); nothing is sent while one is still uploading.
+  const count = attachments?.count ?? 0;
+  const postable = (textPostable || (text === '' && count > 0)) && (attachments?.ready ?? true);
   const state = remaining < 0 ? 'over' : remaining <= 20 ? 'warning' : 'normal';
 
   const submit = () =>
     startTransition(async () => {
-      const result = await action(text);
+      const result = await action(text, attachments?.media ?? []);
       if (!result.ok) {
         setError(result.message);
         return;
       }
       setText('');
+      attachments?.clear();
       setError(null);
       ref.current!.style.height = ''; // the textarea is mounted while its form submits
       onPosted?.();
@@ -79,6 +95,7 @@ export function ComposeBox({
           {error}
         </p>
       ) : null}
+      {attachments ? <div>{attachments.node}</div> : null}
       <div className="flex items-center justify-end gap-3 border-t border-line pt-3">
         {text ? (
           <svg
