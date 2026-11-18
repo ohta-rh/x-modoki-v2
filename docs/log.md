@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-19
+* **New**: [#30 の試験レポート](test-reports/issue-0030-requirements-traceability.md)（全部の要件をテストに結びつける）。
 * **New**: [#62 の試験レポート](test-reports/issue-0062-unknown-filter-400.md)（知らない f と tab は 400）。
 * **New**: [#63 の試験レポート](test-reports/issue-0063-reduced-motion.md)（動きを減らす設定）。
 * **New**: [#64 の試験レポート](test-reports/issue-0064-toast-region-name.md)（トーストの置き場の名前）。
