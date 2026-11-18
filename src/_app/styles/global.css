@@ -153,3 +153,16 @@ body {
     transform: scale(1);
   }
 }
+
+/* NFR-A11Y-07: with reduced motion nothing moves (#63). 0.01ms, not 0: Base UI waits for
+   animationend to finish opening and closing, and an animation of 0 never ends in some browsers. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
