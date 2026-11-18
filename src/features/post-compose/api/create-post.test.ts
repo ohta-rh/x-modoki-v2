@@ -96,8 +96,12 @@ describe('createPost（FR-POST、NFR-SEC-01・02・05）', () => {
   });
 
   it('NFR-SEC-05: 同じ人の 11 回目は 1 分の中で RATE_LIMITED', async () => {
+    // hitRateLimit counts in one-minute windows; pin the clock mid-minute so the 11 calls share one.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-18T12:00:10Z'));
     signInAs(await makeUser());
     for (let i = 0; i < 10; i += 1) expect((await createPost(`投稿 ${i}`)).ok).toBe(true);
     expect(await createPost('11 回目')).toEqual({ ok: false, error: 'RATE_LIMITED' });
+    vi.useRealTimers();
   });
 });

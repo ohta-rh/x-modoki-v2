@@ -36,6 +36,9 @@ describe('createPostAction', () => {
   });
 
   it('回数の制限を超えたら、待つように言う', async () => {
+    // hitRateLimit counts in one-minute windows; pin the clock mid-minute so the 11 calls share one.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-18T12:00:10Z'));
     signInAs(await makeUser());
     let result;
     for (let i = 0; i < 11; i += 1) result = await createPostAction(`投稿 ${i}`);
@@ -43,5 +46,6 @@ describe('createPostAction', () => {
       ok: false,
       message: '投稿が多すぎます。しばらく待ってから、もう一度お試しください',
     });
+    vi.useRealTimers();
   });
 });

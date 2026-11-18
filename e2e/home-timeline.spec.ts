@@ -88,3 +88,13 @@ test('入力欄をクリックしても、四角いフォーカスの輪を出�
   await expect(composer(page)).toBeFocused();
   expect(await composer(page).evaluate((el) => getComputedStyle(el).outlineStyle)).toBe('none');
 });
+
+test('入力欄は内容に合わせて伸び、消すと縮む', async ({ page }) => {
+  await signUp(page);
+  const height = async () => (await composer(page).boundingBox())!.height;
+  const oneLine = await height();
+  await composer(page).fill('1\n2\n3\n4\n5');
+  await expect.poll(height).toBeGreaterThan(oneLine + 40);
+  await composer(page).fill('1');
+  await expect.poll(height).toBeLessThanOrEqual(oneLine + 1);
+});

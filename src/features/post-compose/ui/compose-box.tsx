@@ -52,6 +52,8 @@ export function ComposeBox({ action, onPosted }: Props) {
         value={text}
         onChange={(event) => {
           setText(event.target.value);
+          // Reset first: scrollHeight never drops below the current height, so the box could not shrink.
+          event.target.style.height = 'auto';
           event.target.style.height = `${event.target.scrollHeight}px`;
         }}
         className="min-h-12 w-full resize-none bg-transparent py-2 text-title outline-none placeholder:text-text-muted"
