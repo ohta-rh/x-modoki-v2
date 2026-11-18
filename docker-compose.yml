@@ -1,0 +1,27 @@
+# Local and CI services (ADR-0019). Run `sh scripts/setup-local.sh` instead of `docker compose up`
+# the first time: it writes the Garage config and the .env.local keys.
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: xmodoki
+      POSTGRES_PASSWORD: xmodoki
+      POSTGRES_DB: xmodoki
+    ports: ['54320:5432']
+    volumes: ['db-data:/var/lib/postgresql']
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'xmodoki']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  storage:
+    image: dxflrs/garage:v2.5.0
+    volumes:
+      - ./docker/garage/garage.toml:/etc/garage.toml:ro
+      - storage-meta:/var/lib/garage/meta
+      - storage-data:/var/lib/garage/data
+    ports: ['3900:3900', '3902:3902']
+volumes:
+  db-data:
+  storage-meta:
+  storage-data:

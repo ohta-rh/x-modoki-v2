@@ -58,7 +58,8 @@ with `--window-size=375,…` lays the page out at ~500px and crops it. So:
 
 - After any resize, read `window.innerWidth` and confirm it equals the width you asked for.
 - For the per-width screenshots use `node scripts/chrome-evidence.mjs --out <evidence dir>
-  <name>=<url> …`. It sets the viewport through the DevTools protocol, saves
+  <name>=<url> …`. It opens each page with an exact viewport (Playwright driving the installed
+  Google Chrome; the bundled Chromium in CI), saves
   `<name>-<width>.jpg` for 1280 / 768 / 375, prints the real `innerWidth`, sideways scroll,
   console errors, and failed requests, and exits 1 if any of them is wrong.
 - **Then open the saved images and read them.** A screenshot nobody looked at is not evidence.

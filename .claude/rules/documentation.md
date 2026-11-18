@@ -76,7 +76,7 @@ The global rule `~/.claude/rules/adr.md` applies; these are the local convention
 ## 4. Before committing a documentation change
 
 Run `node scripts/check-docs.mjs` (also `pnpm docs:check`, and the first CI gate). It must
-exit 0. Its own tests are `node --test scripts/check-docs.test.mjs`.
+exit 0. Its own tests are `scripts/check-docs.test.mjs`, run by `pnpm test` (Vitest).
 
 **Checked by the script** — do not re-check by hand, and do not weaken:
 

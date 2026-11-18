@@ -1,10 +1,6 @@
 # CI is mandatory (ADR-0020). A change is done only when this workflow is green on its commit.
-#
-# Until the app scaffold exists, the only gate that can run is the documentation check.
-# The scaffold PBI adds the remaining six gates, in this order, without removing this one:
-#   typecheck -> lint (ESLint + Steiger) -> format:check -> test --coverage (100%) -> build -> test:e2e
-# Never add `continue-on-error`, skip a gate, or lower a threshold to get green
-# (.claude/rules/quality-gates.md).
+# The seven gates run in this order and the job stops at the first failure. Never add
+# `continue-on-error`, skip a gate, or lower a threshold to get green (.claude/rules/quality-gates.md).
 
 name: CI
 
@@ -21,16 +17,46 @@ permissions:
   contents: read
 
 jobs:
-  docs:
-    name: docs (OKF bundle, links, ADR status)
+  verify:
+    name: verify (7 gates)
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 30
+    env:
+      PORT: '3000'
     steps:
       - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-      - name: Tests for the repository scripts
-        run: node --test scripts/check-docs.test.mjs
-      - name: Documentation check
-        run: node scripts/check-docs.mjs
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Services (PostgreSQL, Garage) and .env.local
+        run: sh scripts/setup-local.sh
+      - name: Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
+
+      - name: 1. Documentation (OKF bundle, links, ADRs, test reports)
+        run: pnpm docs:check
+      - name: 2. Type check
+        run: pnpm typecheck
+      - name: 3. Lint (ESLint, Steiger, src layers)
+        run: pnpm lint
+      - name: 4. Format
+        run: pnpm format:check
+      - name: 5. Tests and coverage (100%)
+        run: pnpm test --coverage
+      - name: 6. Build
+        run: pnpm build
+      - name: 7. Browser tests (Chromium, Firefox, WebKit)
+        run: pnpm test:e2e
+
+      - name: Keep screenshots and traces of a browser-test failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14

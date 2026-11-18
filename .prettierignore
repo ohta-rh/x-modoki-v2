@@ -1,0 +1,9 @@
+# Documents keep their own hand-aligned Markdown tables (ADR-0002).
+*.md
+docs/
+.claude/
+pnpm-lock.yaml
+drizzle/
+coverage/
+test-results/
+playwright-report/

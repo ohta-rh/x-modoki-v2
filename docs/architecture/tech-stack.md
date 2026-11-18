@@ -9,7 +9,7 @@ status: stable
 # 技術スタック
 
 - 版を確認した日: 2026-11-18（`npm view <package> version`）
-- 版はここに書いたマイナーの系列で固定する。上げるときは、[ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md) の手順で 1 つずつ上げる
+- 版は、公開から 7 日以上たったものに正確に固定する（[ADR-0032](../adr/0032-pin-dependencies-published-at-least-seven-days-ago.md)）。正確な版は `package.json`。この表はマイナーの系列を示す。上げるときは、[ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md) の手順で 1 つずつ上げる
 
 ## 1. 実行環境と道具
 
@@ -18,8 +18,8 @@ status: stable
 | 実行環境 | Node.js | 24 LTS | [ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md) |
 | パッケージの管理 | pnpm | 12.21.x | [ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md) |
 | 言語 | TypeScript | 6.0.x（7 は使わない） | [ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md) |
-| lint | ESLint と `eslint-config-next` | 10.15.x / 16.4.x | [ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md) |
-| 整形 | Prettier と `prettier-plugin-tailwindcss` | 3.10.x | [ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md) |
+| lint | ESLint と `eslint-config-next`、Steiger と `@feature-sliced/steiger-plugin` | 10.14.x / 16.4.x、0.10.x / 0.8.x | [ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md) |
+| 整形 | Prettier（`prettier-plugin-tailwindcss` は #17 で足す） | 3.10.0 | [ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md) |
 | 構造のリンター | Steiger と `@feature-sliced/steiger-plugin`（Feature-Sliced Design） | 0.10.x / 0.8.x | [ADR-0022](../adr/0022-feature-sliced-design.md) |
 
 ## 2. アプリ
@@ -31,7 +31,7 @@ status: stable
 | スタイル | Tailwind CSS と `@tailwindcss/postcss` | 4.3.x | [ADR-0014](../adr/0014-tailwind-shadcn-base-ui.md) |
 | 部品の土台 | shadcn の CLI と `@base-ui/react` | 4.23.x / 1.9.x | [ADR-0014](../adr/0014-tailwind-shadcn-base-ui.md) |
 | アイコン | `lucide-react` | 1.74.x | [ADR-0014](../adr/0014-tailwind-shadcn-base-ui.md) |
-| クライアントのデータ | `@tanstack/react-query` | 5.108.x | [ADR-0010](../adr/0010-dal-server-actions-route-handlers.md) |
+| クライアントのデータ | `@tanstack/react-query` | 5.107.x | [ADR-0010](../adr/0010-dal-server-actions-route-handlers.md) |
 | 一覧の仮想化 | `@tanstack/react-virtual` | 3.14.x | [UI/UX 仕様](ui-ux.md) |
 | 文字数 | `twitter-text` | 3.1.x | [ADR-0009](../adr/0009-mimic-x-ui-with-own-brand.md) |
 | 入力の検証 | Zod | 4.6.x | [ADR-0010](../adr/0010-dal-server-actions-route-handlers.md) |
@@ -62,8 +62,8 @@ PostgreSQL の 18 は、イメージのタグを実装のときに確かめて�
 |---|---|---|---|
 | 単体・データアクセス層 | Vitest と `@vitejs/plugin-react` | 5.1.x / 6.3.x | [ADR-0013](../adr/0013-vitest-playwright-testing.md) |
 | カバレッジ（しきい値 100%） | `@vitest/coverage-v8` | 5.1.x | [ADR-0021](../adr/0021-coverage-100-percent.md) |
-| コンポーネント | `@testing-library/react`・`@testing-library/dom`・`@testing-library/user-event`・jsdom | 16.3.x / 10.4.x / 14.6.x / 31.x | [ADR-0013](../adr/0013-vitest-playwright-testing.md) |
-| 画面を通したテスト | `@playwright/test` | 1.65.x | [ADR-0013](../adr/0013-vitest-playwright-testing.md) |
+| コンポーネント | `@testing-library/react`・`@testing-library/dom`・`@testing-library/user-event`・jsdom | 16.3.x / 10.4.x / 14.6.9 / 31.0.0 | [ADR-0013](../adr/0013-vitest-playwright-testing.md) |
+| 画面を通したテスト | `@playwright/test` | 1.65.0 | [ADR-0013](../adr/0013-vitest-playwright-testing.md) |
 
 ## 5. 使わないと決めたもの
 

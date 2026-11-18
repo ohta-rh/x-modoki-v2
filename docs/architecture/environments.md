@@ -36,7 +36,7 @@ status: stable
 
 | 変数 | ローカルの例 | 意味 |
 |---|---|---|
-| `DATABASE_URL` | `postgres://xmodoki:xmodoki@localhost:5432/xmodoki` | PostgreSQL の接続先。本番では Hyperdrive のバインディングから得る |
+| `DATABASE_URL` | `postgres://xmodoki:xmodoki@localhost:54320/xmodoki` | PostgreSQL の接続先。本番では Hyperdrive のバインディングから得る |
 | `BETTER_AUTH_SECRET` | 32 バイト以上の乱数 | セッションの署名 |
 | `BETTER_AUTH_URL` | `http://localhost:3000` | アプリの URL |
 | `S3_ENDPOINT` | `http://localhost:3900` | S3 互換の接続先 |
@@ -73,13 +73,16 @@ status: stable
 ## 5. 最初に動かすまで
 
 ```
-docker compose up -d
-cp .env.example .env.local
 pnpm install
+sh scripts/setup-local.sh   # Garage の設定・コンテナ・バケットとキー・.env.local
 pnpm db:migrate
 pnpm db:seed
-pnpm dev            # http://localhost:3000
+pnpm dev                    # http://localhost:3000（使われていれば PORT=3300 pnpm dev）
 ```
+
+- ホストのポート: PostgreSQL は 54320（5432 と重ならないように）、Garage は 3900（S3）と 3902（公開の URL）
+- 手元の pnpm が 12 でないときは `npx -y pnpm@12.21.0 <コマンド>` で動かす（pnpm 10 からの自動の切り替えは失敗する。[Better Auth の調査](../research/better-auth-on-next-16.md) の 3.4）
+- `scripts/setup-local.sh` は何度流してもよい。Garage の秘密の値は、機械ごとに乱数で作る（リポジトリには入れない）
 
 ## 6. CI
 

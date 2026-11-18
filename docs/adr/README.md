@@ -43,3 +43,4 @@ status: stable
 | [0029](0029-milestone-on-a-branch-when-a-pr-is-requested.md) | ユーザーが PR を求めたマイルストーンは、1 本のブランチで進め、issue はマージで閉じる | 採用 | ユーザー／エージェント |
 | [0030](0030-fsd-lint-exceptions-and-own-layer-check.md) | Steiger の 2 つの決まりを範囲を絞って止め、`src/` の直下の層と、クライアントからのサーバーの読み込みは自前の確認で守る | 採用 | エージェント |
 | [0031](0031-database-tests-per-worker-database-and-truncate.md) | データベースのテストは、ワーカーごとのデータベースを使い、テストごとに表を空にし、補助はリポジトリのルートの `test/` に置く | 採用 | エージェント |
+| [0032](0032-pin-dependencies-published-at-least-seven-days-ago.md) | 依存は、公開から 7 日以上たった版に固定し、pnpm の新しい版の除外を使わない | 採用 | エージェント |
