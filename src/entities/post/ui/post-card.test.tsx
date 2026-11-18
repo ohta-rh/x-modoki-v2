@@ -57,18 +57,25 @@ describe('PostCard（ui-ux.md の 5 節）', () => {
     expect(within(card).getByRole('link', { name: '太郎' })).toHaveAttribute('href', '/taro');
   });
 
-  it('操作の列は、返信・リポスト・いいね・表示回数の数を 5 節の形で出す（この PBI では押せない）', () => {
+  it('操作の列は、返信・リポスト・いいね・表示回数を、読み上げでは「返信 2」の形、見た目では 5 節の形で出す（この PBI では押せない）', () => {
     render(<PostCard post={post} now={now} />);
     const actions = screen.getByRole('group', { name: '操作' });
-    expect(within(actions).getByLabelText('返信 2')).toHaveTextContent('2');
-    expect(within(actions).getByLabelText('リポスト 1')).toHaveTextContent('1');
-    expect(within(actions).getByLabelText('いいね 12,345')).toHaveTextContent('1.2万');
-    expect(within(actions).getByLabelText('表示 9,999')).toHaveTextContent('9,999');
+    for (const [spoken, shown] of [
+      ['返信 2', '2'],
+      ['リポスト 1', '1'],
+      ['いいね 12,345', '1.2万'],
+      ['表示 9,999', '9,999'],
+    ]) {
+      const label = within(actions).getByText(spoken);
+      expect(label).toHaveClass('sr-only');
+      expect(label.nextElementSibling).toHaveAttribute('aria-hidden', 'true');
+      expect(label.nextElementSibling).toHaveTextContent(shown);
+    }
     expect(within(actions).queryByRole('button')).toBeNull();
   });
 
-  it('数が 0 なら数字を出さない', () => {
+  it('数が 0 なら数字を出さない（読み上げは「返信 0」）', () => {
     render(<PostCard post={{ ...post, counts: { ...post.counts, replies: 0 } }} now={now} />);
-    expect(screen.getByLabelText('返信 0')).toHaveTextContent('');
+    expect(screen.getByText('返信 0').nextElementSibling).toHaveTextContent('');
   });
 });

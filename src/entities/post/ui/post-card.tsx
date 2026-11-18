@@ -41,13 +41,10 @@ export function PostCard({ post, now }: { post: Post; now: Date }) {
           {ACTIONS.map(({ key, label, icon: Icon }) => {
             const count = post.counts[key];
             return (
-              <span
-                key={key}
-                aria-label={`${label} ${count.toLocaleString('ja-JP')}`}
-                className="flex items-center gap-1 text-[13px]"
-              >
+              <span key={key} className="flex items-center gap-1 text-[13px]">
                 <Icon aria-hidden="true" className="size-[18px]" />
-                {count > 0 ? compactCount(count) : ''}
+                <span className="sr-only">{`${label} ${count.toLocaleString('ja-JP')}`}</span>
+                <span aria-hidden="true">{count > 0 ? compactCount(count) : ''}</span>
               </span>
             );
           })}
