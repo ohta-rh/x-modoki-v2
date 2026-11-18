@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **New**: [ADR-0035](adr/0035-vendor-shadcn-from-registry-and-base-ui-toast.md)（shadcn の部品の取り込み方とトースト）を記録し、[技術スタック](architecture/tech-stack.md)に UI の依存の版を書いた（#17）。
 * **New**: [#16 の試験レポート](test-reports/issue-0016-schema-and-seed.md)（データベースの表・マイグレーション・シード）を足した。
 * **Update**: [データモデル](architecture/data-model.md)のユーザーの検索の索引を、実装の式（`coalesce(username, '')`）に合わせた（#16 のレビュー）。
 * **New**: [ADR-0034](adr/0034-foreign-keys-cascade-from-users-and-detach-thread-links.md)（外部キーの消し方と、新しい順の索引の向き）を記録し、[データモデル](architecture/data-model.md)と[テストの設計](architecture/test-strategy.md)を実装に合わせた（#16）。

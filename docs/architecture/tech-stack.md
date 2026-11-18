@@ -28,9 +28,9 @@ status: stable
 |---|---|---|---|
 | フレームワーク | Next.js（App Router・Cache Components・Turbopack） | 16.4.x | [ADR-0004](../adr/0004-nextjs-16-all-in-one-app.md) |
 | UI | React / React DOM | 19.3.x | [ADR-0004](../adr/0004-nextjs-16-all-in-one-app.md) |
-| スタイル | Tailwind CSS と `@tailwindcss/postcss` | 4.3.x | [ADR-0014](../adr/0014-tailwind-shadcn-base-ui.md) |
-| 部品の土台 | shadcn の CLI と `@base-ui/react` | 4.23.x / 1.9.x | [ADR-0014](../adr/0014-tailwind-shadcn-base-ui.md) |
-| アイコン | `lucide-react` | 1.74.x | [ADR-0014](../adr/0014-tailwind-shadcn-base-ui.md) |
+| スタイル | Tailwind CSS と `@tailwindcss/postcss`、`tw-animate-css`、`prettier-plugin-tailwindcss` | 4.3.5 / 1.4.0 / 0.8.1 | [ADR-0014](../adr/0014-tailwind-shadcn-base-ui.md) |
+| 部品の土台 | shadcn のレジストリ（Base UI 版、`src/shared/ui/kit/` に取り込む）と `@base-ui/react`、`class-variance-authority`・`clsx`・`tailwind-merge` | 1.9.0 / 0.7.1 / 2.1.1 / 3.7.0 | [ADR-0014](../adr/0014-tailwind-shadcn-base-ui.md)・[ADR-0035](../adr/0035-vendor-shadcn-from-registry-and-base-ui-toast.md) |
+| アイコン | `lucide-react` | 1.71.0 | [ADR-0014](../adr/0014-tailwind-shadcn-base-ui.md) |
 | クライアントのデータ | `@tanstack/react-query` | 5.107.x | [ADR-0010](../adr/0010-dal-server-actions-route-handlers.md) |
 | 一覧の仮想化 | `@tanstack/react-virtual` | 3.14.x | [UI/UX 仕様](ui-ux.md) |
 | 文字数 | `twitter-text` | 3.1.x | [ADR-0009](../adr/0009-mimic-x-ui-with-own-brand.md) |
@@ -62,7 +62,7 @@ PostgreSQL の 18 は、イメージのタグを実装のときに確かめて�
 |---|---|---|---|
 | 単体・データアクセス層 | Vitest と `@vitejs/plugin-react` | 5.1.x / 6.3.x | [ADR-0013](../adr/0013-vitest-playwright-testing.md) |
 | カバレッジ（しきい値 100%） | `@vitest/coverage-v8` | 5.1.x | [ADR-0021](../adr/0021-coverage-100-percent.md) |
-| コンポーネント | `@testing-library/react`・`@testing-library/dom`・`@testing-library/user-event`・jsdom | 16.3.x / 10.4.x / 14.6.9 / 31.0.0 | [ADR-0013](../adr/0013-vitest-playwright-testing.md) |
+| コンポーネント | `@testing-library/react`・`@testing-library/dom`・`@testing-library/user-event`・`@testing-library/jest-dom`・jsdom | 16.3.x / 10.4.x / 14.6.9 / 7.0.1 / 31.0.0 | [ADR-0013](../adr/0013-vitest-playwright-testing.md) |
 | 画面を通したテスト | `@playwright/test` | 1.65.0 | [ADR-0013](../adr/0013-vitest-playwright-testing.md) |
 
 ## 5. 使わないと決めたもの

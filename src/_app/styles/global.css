@@ -1,9 +1,100 @@
-/* Base styles. Tailwind CSS and the theme tokens arrive in #17 (docs/architecture/ui-ux.md). */
-html {
-  font-family:
+/* Design tokens and base styles: docs/architecture/ui-ux.md 4 and 10, ADR-0014. */
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+:root {
+  --accent: #1d9bf0;
+  --like: #f91880;
+  --repost: #00ba7c;
+  --danger: #f4212e;
+  --radius-card: 16px;
+  --header-height: 53px;
+  --nav-width: 275px;
+  --nav-width-compact: 88px;
+  --main-width: 600px;
+  --sidebar-width: 350px;
+}
+
+[data-theme='light'] {
+  --bg: #ffffff;
+  --border: #eff3f4;
+  --text: #0f1419;
+  --text-muted: #536471;
+  --hover: rgb(15 20 25 / 0.1);
+  --header-bg: rgb(255 255 255 / 0.85);
+  color-scheme: light;
+}
+
+[data-theme='dim'] {
+  --bg: #15202b;
+  --border: #38444d;
+  --text: #f7f9f9;
+  --text-muted: #8b98a5;
+  --hover: rgb(255 255 255 / 0.03);
+  --header-bg: rgb(21 32 43 / 0.75);
+  color-scheme: dark;
+}
+
+[data-theme='dark'] {
+  --bg: #000000;
+  --border: #2f3336;
+  --text: #e7e9ea;
+  --text-muted: #71767b;
+  --hover: rgb(231 233 234 / 0.1);
+  --header-bg: rgb(0 0 0 / 0.65);
+  color-scheme: dark;
+}
+
+@custom-variant dark (&:where([data-theme='dim'], [data-theme='dim'] *, [data-theme='dark'], [data-theme='dark'] *));
+
+/* Tailwind names. brand is the X accent; the shadcn names used by src/shared/ui/kit map onto ours. */
+@theme inline {
+  --font-sans:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hiragino Sans', 'Noto Sans JP',
     Helvetica, Arial, sans-serif;
+  --color-bg: var(--bg);
+  --color-line: var(--border);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-hover: var(--hover);
+  --color-brand: var(--accent);
+  --color-like: var(--like);
+  --color-repost: var(--repost);
+  --color-danger: var(--danger);
+  --radius-card: var(--radius-card);
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-border: var(--border);
+  --color-input: var(--border);
+  --color-ring: var(--accent);
+  --color-muted: var(--hover);
+  --color-muted-foreground: var(--text-muted);
+  --color-accent: var(--hover);
+  --color-accent-foreground: var(--text);
+  --color-popover: var(--bg);
+  --color-popover-foreground: var(--text);
+  --color-primary: var(--text);
+  --color-primary-foreground: var(--bg);
+  --color-secondary: var(--hover);
+  --color-secondary-foreground: var(--text);
+  --color-destructive: var(--danger);
 }
+
+html {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+}
+
 body {
   margin: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
 }

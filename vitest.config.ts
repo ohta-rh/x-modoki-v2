@@ -17,6 +17,8 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
+    // Return the real text for ?raw imports of the stylesheet (src/_app/styles/tokens.test.ts).
+    css: { include: [/global\.css/] },
     setupFiles: ['./test/setup.ts'],
     globalSetup: ['./test/global-setup.ts'],
     include: [
