@@ -13,11 +13,13 @@ type Props =
 const BASE = 'inline-flex h-9 items-center rounded-full px-4 text-body font-bold';
 
 /**
- * Follow / フォロー中 (#24, ui-ux.md 8). While following, hover or focus offers フォロー解除 in the
- * danger colour, as on X.
+ * Follow / フォロー中 (#24, ui-ux.md 8). While following, hover offers フォロー解除 in the danger
+ * colour, as on X — but not right after pressing, until the pointer has left once.
  */
 export function FollowButton(props: Props) {
   const [armed, setArmed] = useState(false);
+  // Set by pressing: the pointer must leave once before フォロー解除 is offered again.
+  const [settled, setSettled] = useState(true);
   if (props.loginHref !== undefined) {
     return (
       <Link href={props.loginHref as Route} className={cn(BASE, 'bg-text text-bg')}>
@@ -30,14 +32,15 @@ export function FollowButton(props: Props) {
     <button
       type="button"
       onClick={() => {
-        // Just followed: show フォロー中 until the next hover or focus, not フォロー解除.
-        if (!following) setArmed(false);
+        setArmed(false);
+        setSettled(false);
         onToggle();
       }}
-      onMouseEnter={() => setArmed(true)}
-      onMouseLeave={() => setArmed(false)}
-      onFocus={() => setArmed(true)}
-      onBlur={() => setArmed(false)}
+      onMouseEnter={() => setArmed(settled)}
+      onMouseLeave={() => {
+        setArmed(false);
+        setSettled(true);
+      }}
       className={cn(
         BASE,
         following
