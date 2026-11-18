@@ -79,7 +79,9 @@ jobs:
           for attempt in 1 2 3; do
             # timeout runs as root so it can stop the root apt-get that Playwright starts (#44).
             if sudo --preserve-env=PATH timeout -k 15 200 "$(command -v pnpm)" exec playwright install-deps chromium firefox webkit; then
-              # Save exactly this run's set: drop older .deb files first.
+              # Save this run's set: drop .deb versions apt can no longer use (a restored set may
+              # hold them), then replace the old copy.
+              sudo apt-get autoclean
               mkdir -p ~/apt-debs
               find ~/apt-debs -maxdepth 1 -name '*.deb' -delete
               find /var/cache/apt/archives -maxdepth 1 -name '*.deb' -exec cp {} ~/apt-debs/ \;
