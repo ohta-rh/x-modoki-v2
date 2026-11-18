@@ -38,7 +38,7 @@ export function NewPostsButton({ since, queryKey }: Props) {
     <div className="pointer-events-none sticky top-[106px] z-10 flex h-0 justify-center overflow-visible">
       <button
         type="button"
-        className="pointer-events-auto mt-2 rounded-full bg-brand px-4 py-2 text-body font-bold text-white shadow-lg"
+        className="pointer-events-auto mt-2 rounded-full bg-brand-fill px-4 py-2 text-body font-bold text-on-brand shadow-lg"
         onClick={() => {
           // Every count kept so far is now shown, this one included: the button goes at once, and
           // reading again, which goes back to the first page's top for a moment, shows no old count

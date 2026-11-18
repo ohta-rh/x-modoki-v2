@@ -7,6 +7,11 @@
   --like: #f91880;
   --repost: #00ba7c;
   --danger: #f4212e;
+  /* What text and fills use (ADR-0054): the X colours above, moved to the nearest shade that has
+     4.5:1 against what is behind them (for text: the page and a hovered row). Blue is the default. */
+  --accent-fill: #0d7bc6;
+  --on-accent: #ffffff;
+  --danger-fill: #ec0c1a;
   --radius-card: 16px;
   --header-height: 53px;
   --nav-width: 275px;
@@ -22,6 +27,10 @@
   --text-muted: #536471;
   --hover: rgb(15 20 25 / 0.1);
   --header-bg: rgb(255 255 255 / 0.85);
+  --accent-text: #0c6cae;
+  --like-text: #cd0562;
+  --repost-text: #00774f;
+  --danger-text: #d20a17;
   color-scheme: light;
 }
 
@@ -32,6 +41,10 @@
   --text-muted: #8b98a5;
   --hover: rgb(255 255 255 / 0.03);
   --header-bg: rgb(21 32 43 / 0.75);
+  --accent-text: #1d9bf0;
+  --like-text: #fa4096;
+  --repost-text: #00ba7c;
+  --danger-text: #f6515b;
   color-scheme: dark;
 }
 
@@ -39,27 +52,79 @@
   --bg: #000000;
   --border: #2f3336;
   --text: #e7e9ea;
-  --text-muted: #71767b;
+  --text-muted: #7b8086;
   --hover: rgb(231 233 234 / 0.1);
   --header-bg: rgb(0 0 0 / 0.65);
+  --accent-text: #1d9bf0;
+  --like-text: #f91880;
+  --repost-text: #00ba7c;
+  --danger-text: #f52b38;
   color-scheme: dark;
 }
 
 /* The accent colours chosen in /settings/display (#29, ui-ux.md 4); blue is the default above. */
 [data-accent='yellow'] {
   --accent: #ffd400;
+  /* Darkened, yellow turns olive: the fill stays yellow and its text turns dark instead. */
+  --accent-fill: #ffd400;
+  --on-accent: #0f1419;
 }
 [data-accent='pink'] {
   --accent: #f91880;
+  --accent-fill: #e7066e;
 }
 [data-accent='purple'] {
   --accent: #7856ff;
+  --accent-fill: #7856ff;
 }
 [data-accent='orange'] {
   --accent: #ff7a00;
+  --accent-fill: #bd5b00;
 }
 [data-accent='green'] {
   --accent: #00ba7c;
+  --accent-fill: #00875a;
+}
+
+/* The accent as text, per theme (ADR-0054). Blue is set in each theme above; dark needs no change. */
+[data-theme='light'][data-accent='yellow'] {
+  --accent-text: #7c6700;
+}
+[data-theme='light'][data-accent='pink'] {
+  --accent-text: #cd0562;
+}
+[data-theme='light'][data-accent='purple'] {
+  --accent-text: #6741ff;
+}
+[data-theme='dark'][data-accent='purple'] {
+  --accent-text: #8465ff;
+}
+[data-theme='light'][data-accent='orange'] {
+  --accent-text: #a75000;
+}
+[data-theme='light'][data-accent='green'] {
+  --accent-text: #00774f;
+}
+[data-theme='dim'][data-accent='yellow'],
+[data-theme='dark'][data-accent='yellow'] {
+  --accent-text: #ffd400;
+}
+[data-theme='dim'][data-accent='pink'] {
+  --accent-text: #fa4096;
+}
+[data-theme='dark'][data-accent='pink'] {
+  --accent-text: #f91880;
+}
+[data-theme='dim'][data-accent='purple'] {
+  --accent-text: #9176ff;
+}
+[data-theme='dim'][data-accent='orange'],
+[data-theme='dark'][data-accent='orange'] {
+  --accent-text: #ff7a00;
+}
+[data-theme='dim'][data-accent='green'],
+[data-theme='dark'][data-accent='green'] {
+  --accent-text: #00ba7c;
 }
 
 @custom-variant dark (&:where([data-theme='dim'], [data-theme='dim'] *, [data-theme='dark'], [data-theme='dark'] *));
@@ -74,10 +139,13 @@
   --color-text: var(--text);
   --color-text-muted: var(--text-muted);
   --color-hover: var(--hover);
-  --color-brand: var(--accent);
-  --color-like: var(--like);
-  --color-repost: var(--repost);
-  --color-danger: var(--danger);
+  --color-brand: var(--accent-text);
+  --color-brand-fill: var(--accent-fill);
+  --color-on-brand: var(--on-accent);
+  --color-like: var(--like-text);
+  --color-repost: var(--repost-text);
+  --color-danger: var(--danger-text);
+  --color-danger-fill: var(--danger-fill);
   --radius-card: var(--radius-card);
   --text-body: 15px;
   --text-body--line-height: 20px;
@@ -91,7 +159,7 @@
   --color-foreground: var(--text);
   --color-border: var(--border);
   --color-input: var(--border);
-  --color-ring: var(--accent);
+  --color-ring: var(--accent-text);
   --color-muted: var(--hover);
   --color-muted-foreground: var(--text-muted);
   --color-accent: var(--hover);
@@ -102,7 +170,7 @@
   --color-primary-foreground: var(--bg);
   --color-secondary: var(--hover);
   --color-secondary-foreground: var(--text);
-  --color-destructive: var(--danger);
+  --color-destructive: var(--danger-text);
 }
 
 html {
@@ -132,7 +200,7 @@ body {
 /* In the base layer, so a component's own outline utility (outline-none on text fields) wins. */
 @layer base {
   :focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--accent-text);
     outline-offset: 2px;
   }
 

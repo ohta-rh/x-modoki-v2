@@ -26,7 +26,7 @@ describe('AppShell（ui-ux.md の 2 節）', () => {
     expect(screen.getByRole('navigation', { name: '下のタブ' }).parentElement).toHaveClass(
       'sm:hidden',
     );
-    const compose = screen.getAllByRole('link', { name: '投稿する' }).at(-1);
+    const compose = screen.getAllByRole('link', { name: 'ポストする' }).at(-1);
     expect(compose?.closest('div')).toHaveClass('fixed', 'sm:hidden');
   });
 
@@ -39,7 +39,7 @@ describe('AppShell（ui-ux.md の 2 節）', () => {
         中身
       </AppShell>,
     );
-    expect(screen.getByRole('button', { name: 'アカウントのメニュー' })).toHaveTextContent('@taro');
+    expect(screen.getByRole('button', { name: /アカウントのメニュー/ })).toHaveTextContent('@taro');
     expect(screen.getByRole('link', { name: 'プロフィール' })).toHaveAttribute('href', '/taro');
     const nav = screen.getByRole('navigation', { name: 'メインのメニュー' });
     expect(within(nav).getByRole('link', { name: '話題を検索' })).toHaveAttribute(

@@ -11,8 +11,10 @@ export function LikeButton({ liked, count, onToggle }: Props) {
   return (
     <button
       type="button"
-      aria-label="いいね"
+      // The number shown is part of the name (WCAG 2.5.3, #31).
+      aria-label={count > 0 ? `いいね ${compactCount(count)}` : 'いいね'}
       aria-pressed={liked}
+      data-action="like"
       onClick={onToggle}
       className={cn(
         'group flex items-center gap-1 text-[13px] hover:text-like',

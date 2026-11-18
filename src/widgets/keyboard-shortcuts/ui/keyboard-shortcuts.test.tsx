@@ -18,9 +18,11 @@ function Page() {
       {[1, 2, 3].map((n) => (
         <article key={n} data-post="card" onClick={() => open(n)}>
           投稿 {n}
+          {/* Named with the count shown, as the real buttons are (#31): found by data-action. */}
           <button
             type="button"
-            aria-label="いいね"
+            aria-label={`いいね ${n}`}
+            data-action="like"
             onClick={(event) => {
               event.stopPropagation();
               like(n);
@@ -28,7 +30,8 @@ function Page() {
           />
           <button
             type="button"
-            aria-label="リポスト"
+            aria-label={`リポスト ${n}`}
+            data-action="repost"
             onClick={(event) => {
               event.stopPropagation();
               repost(n);
@@ -95,6 +98,30 @@ describe('KeyboardShortcuts（#29、ui-ux.md の 10 節）', () => {
     expect(selected()).toContain('投稿 2');
   });
 
+  // NFR-A11Y-03: キーボードだけで投稿を開ける（WCAG 2.1.1）
+  it('o か、選んだ投稿の上の Enter で、その投稿を開く。ほかの場所の Enter は横取りしない（#31）', () => {
+    render(
+      <>
+        <KeyboardShortcuts username="me" />
+        <Page />
+      </>,
+    );
+    press('o');
+    expect(open).not.toHaveBeenCalled();
+    press('j');
+    press('o');
+    expect(open).toHaveBeenLastCalledWith(1);
+    press('j');
+    press('Enter', document.activeElement!);
+    expect(open).toHaveBeenLastCalledWith(2);
+    open.mockClear();
+    // Enter on a button inside the post is the button's own.
+    const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    screen.getAllByRole('button', { name: /^いいね/ })[1].dispatchEvent(enter);
+    expect(enter.defaultPrevented).toBe(false);
+    expect(open).not.toHaveBeenCalled();
+  });
+
   it('l・t は選んだ投稿のいいね・リポストを押す。選んでいなければ何もしない', () => {
     render(
       <>
@@ -110,6 +137,29 @@ describe('KeyboardShortcuts（#29、ui-ux.md の 10 節）', () => {
     press('t');
     expect(like).toHaveBeenCalledWith(2);
     expect(repost).toHaveBeenCalledWith(2);
+  });
+
+  it('o で開いたら、開いた先の投稿の本体へフォーカスを移す（Tab がそこから続く、#31）', async () => {
+    const { rerender } = render(
+      <>
+        <KeyboardShortcuts username="me" />
+        <Page />
+      </>,
+    );
+    press('j');
+    press('o');
+    pathname = '/someone/status/1';
+    rerender(
+      <>
+        <KeyboardShortcuts username="me" />
+        <main>
+          <article aria-label="投稿の本体" data-post="main">
+            本体
+          </article>
+        </main>
+      </>,
+    );
+    await waitFor(() => expect(screen.getByRole('article', { name: '投稿の本体' })).toHaveFocus());
   });
 
   it('r は選んだ投稿を開き、返信の欄が出たらフォーカスする', async () => {
@@ -177,6 +227,7 @@ describe('KeyboardShortcuts（#29、ui-ux.md の 10 節）', () => {
             <button
               type="button"
               aria-label="いいね"
+              data-action="like"
               onClick={(event) => {
                 event.stopPropagation();
                 like('A');

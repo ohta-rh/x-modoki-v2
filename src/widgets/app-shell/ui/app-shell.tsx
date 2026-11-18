@@ -51,8 +51,8 @@ export function AppShell({
       <div className="fixed right-4 bottom-20 z-10 sm:hidden">
         <Link
           href={COMPOSE_PATH}
-          aria-label="投稿する"
-          className="flex size-14 items-center justify-center rounded-full bg-brand text-white shadow-lg"
+          aria-label="ポストする"
+          className="flex size-14 items-center justify-center rounded-full bg-brand-fill text-on-brand shadow-lg"
         >
           <Feather aria-hidden="true" className="size-6" />
         </Link>

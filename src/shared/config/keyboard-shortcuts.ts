@@ -5,6 +5,7 @@ export type ShortcutAction =
   | 'next'
   | 'previous'
   | 'reply'
+  | 'open'
   | 'repost'
   | 'go-home'
   | 'go-notifications'
@@ -20,6 +21,8 @@ export const KEYBOARD_SHORTCUTS: readonly Shortcut[] = [
   { keys: ['j'], label: '次のポスト', action: 'next' },
   { keys: ['k'], label: '前のポスト', action: 'previous' },
   { keys: ['r'], label: '返信', action: 'reply' },
+  // Enter on the selected post opens it too; the widget handles it, Enter elsewhere is not ours.
+  { keys: ['o'], label: 'ポストを開く（選んだポストの上では Enter も）', action: 'open' },
   { keys: ['t'], label: 'リポスト', action: 'repost' },
   { keys: ['g', 'h'], label: 'ホーム', action: 'go-home' },
   { keys: ['g', 'n'], label: '通知', action: 'go-notifications' },

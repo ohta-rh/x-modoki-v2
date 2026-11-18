@@ -21,7 +21,8 @@ describe('RepostMenu（#22）', () => {
 
   it('リポスト済みなら --repost の色で数を出し、メニューは「リポストを取り消す」', async () => {
     render(<RepostMenu reposted count={3} onToggle={() => undefined} onQuote={() => undefined} />);
-    const button = screen.getByRole('button', { name: 'リポスト' });
+    // The name holds the number shown (WCAG 2.5.3, #31).
+    const button = screen.getByRole('button', { name: 'リポスト 3' });
     expect(button).toHaveClass('text-repost');
     expect(button).toHaveTextContent('3');
     await userEvent.click(button);

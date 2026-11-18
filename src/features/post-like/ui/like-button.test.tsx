@@ -18,7 +18,8 @@ describe('LikeButton（#21、ui-ux.md の 5 節）', () => {
 
   it('押してあれば --like の色・塗ったハート・弾む動き（動きを減らす設定では止まる）。数は短く', () => {
     render(<LikeButton liked count={12_345} onToggle={() => undefined} />);
-    const button = screen.getByRole('button', { name: 'いいね' });
+    // NFR-A11Y-06: the name holds the number shown (WCAG 2.5.3, #31).
+    const button = screen.getByRole('button', { name: 'いいね 1.2万' });
     expect(button).toHaveAttribute('aria-pressed', 'true');
     expect(button).toHaveClass('text-like');
     expect(button).toHaveTextContent('1.2万');

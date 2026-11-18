@@ -4,13 +4,20 @@ import { useId } from 'react';
 import type { Trend } from '@/entities/hashtag';
 
 /** いまどうしてる？ (#27): the trending hashtags, each opening its search. */
-export function Trends({ trends }: { trends: Trend[] }) {
+export function Trends({
+  trends,
+  title = 'いまどうしてる？',
+}: {
+  trends: Trend[];
+  /** The section's heading and name: /explore names its own apart from the sidebar's (#31). */
+  title?: string;
+}) {
   // /explore shows it twice (the page and the right sidebar): each heading needs its own id.
   const titleId = useId();
   return (
     <section aria-labelledby={titleId} className="rounded-2xl border border-line">
       <h2 id={titleId} className="px-4 py-3 text-title font-extrabold">
-        いまどうしてる？
+        {title}
       </h2>
       {trends.length === 0 ? (
         <p className="px-4 pb-4 text-text-muted">トレンドはまだありません</p>

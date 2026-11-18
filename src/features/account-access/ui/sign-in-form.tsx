@@ -34,7 +34,7 @@ export function SignInForm({ action, next = '' }: Props) {
       </Button>
       <p className="text-body text-text-muted">
         アカウントが無い場合は{' '}
-        <Link href={SIGNUP_PATH} className="text-brand hover:underline">
+        <Link href={SIGNUP_PATH} className="text-brand underline">
           アカウントを作成
         </Link>
       </p>

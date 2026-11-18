@@ -57,7 +57,7 @@ test('640px 未満では、左ナビが出ず、下のタブバーと右下の�
   await open(page, 375);
   await expect(leftNav(page)).toBeHidden();
   await expect(tabBar(page)).toBeVisible();
-  await expect(page.getByRole('link', { name: '投稿する' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'ポストする' })).toBeVisible();
   expect(await width(page, main(page))).toBe(375);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(375);
 });
@@ -98,7 +98,8 @@ test('フォーカスの輪は、キーボードで動かしたときだけ 2px 
   // transition-colors also animates outline-color, so wait for the transition to finish.
   await expect
     .poll(() => focused.evaluate((el) => getComputedStyle(el).outlineColor))
-    .toBe('rgb(29, 155, 240)');
+    // The accent as text on the light page: the shade with 4.5:1 against it (ADR-0054).
+    .toBe('rgb(12, 108, 174)');
 });
 
 // FR-SHELL-09: 関係の無い旨の表示

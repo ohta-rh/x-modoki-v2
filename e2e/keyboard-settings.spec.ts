@@ -160,16 +160,18 @@ test('選んだアクセントの色が、投稿のボタンと本文のリン�
   await page.getByRole('radio', { name: '紫' }).check();
   await done;
   await page.goto('/home?tab=following');
+  // The fill keeps X's purple; text on the light page is the nearest shade with 4.5:1 (ADR-0054).
   const purple = 'rgb(120, 86, 255)';
+  const purpleText = 'rgb(103, 65, 255)';
   const button = page.getByRole('navigation', { name: 'メインのメニュー' }).getByRole('link', {
-    name: '投稿する',
+    name: 'ポストする',
   });
   await expect(button).toHaveCSS('background-color', purple);
   const link = page
     .getByRole('article')
     .first()
     .getByRole('link', { name: /example\.com/ });
-  await expect(link).toHaveCSS('color', purple);
+  await expect(link).toHaveCSS('color', purpleText);
 });
 
 // FR-SET-03: アカウントの情報

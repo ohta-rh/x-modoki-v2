@@ -67,7 +67,11 @@ export function ClearBookmarksMenu({ action, onCleared }: Props) {
               {error}
             </p>
           ) : null}
-          <Button className="h-11 w-full bg-danger text-white" disabled={pending} onClick={clear}>
+          <Button
+            className="h-11 w-full bg-danger-fill text-white"
+            disabled={pending}
+            onClick={clear}
+          >
             削除
           </Button>
           <Button variant="outline" className="h-11 w-full" onClick={() => setConfirming(false)}>

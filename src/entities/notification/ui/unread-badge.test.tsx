@@ -39,7 +39,10 @@ describe('UnreadBadge（#26）', () => {
     expect(screen.getByRole('link')).toHaveAccessibleName('通知 未読 2 件');
     expect(screen.getByRole('link')).toHaveTextContent('2');
     // The brand blue, as on X (`accent` is the grey hover colour in this theme).
-    expect(screen.getByText('2', { exact: false }).closest('span')).toHaveClass('bg-brand');
+    expect(screen.getByText('2', { exact: false }).closest('span')).toHaveClass(
+      'bg-brand-fill',
+      'text-on-brand',
+    );
   });
 
   // NFR-PERF-07: 新着と未読の確認の GET は 30 秒に 1 回で、タブが見えていない間は送らない

@@ -15,7 +15,10 @@ export function LandingPage() {
           <h1 className="text-5xl font-extrabold lg:text-6xl">x-modoki</h1>
           <p className="text-title font-bold">今日の話題に、参加しよう。</p>
           <div className="flex flex-col gap-3">
-            <Link href={SIGNUP_PATH} className={`${pill} bg-brand text-white hover:opacity-90`}>
+            <Link
+              href={SIGNUP_PATH}
+              className={`${pill} bg-brand-fill text-on-brand hover:opacity-90`}
+            >
               アカウントを作成
             </Link>
             <p className="mt-6 font-bold">アカウントをお持ちの場合</p>

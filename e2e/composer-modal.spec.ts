@@ -12,7 +12,7 @@ test('投稿ボタンで /compose/post がモーダルで開く。フォーカ�
 }) => {
   await signUp(page);
   await page.goto('/explore');
-  const button = page.getByRole('navigation').getByRole('link', { name: '投稿する' });
+  const button = page.getByRole('navigation').getByRole('link', { name: 'ポストする' });
   await button.click();
   await expect(page).toHaveURL(/\/compose\/post$/);
   await expect(box(page)).toBeFocused();
@@ -37,7 +37,7 @@ test('投稿ボタンで /compose/post がモーダルで開く。フォーカ�
 test('375px では右下の投稿ボタンからも開く', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 800 });
   await signUp(page);
-  await page.getByRole('link', { name: '投稿する' }).click();
+  await page.getByRole('link', { name: 'ポストする' }).click();
   await expect(page).toHaveURL(/\/compose\/post$/);
   await expect(box(page)).toBeVisible();
 });
@@ -56,7 +56,7 @@ test('中身があるときに閉じると「破棄 / 保存」を聞き、保�
 }) => {
   await signUp(page);
   const open = async () => {
-    await page.getByRole('navigation').getByRole('link', { name: '投稿する' }).click();
+    await page.getByRole('navigation').getByRole('link', { name: 'ポストする' }).click();
     await expect(box(page)).toBeVisible();
   };
   await open();
@@ -87,7 +87,7 @@ test('送ったあと、下の中央に「ポストを送信しました」と�
   page,
 }) => {
   const me = await signUp(page);
-  await page.getByRole('navigation').getByRole('link', { name: '投稿する' }).click();
+  await page.getByRole('navigation').getByRole('link', { name: 'ポストする' }).click();
   await box(page).fill('モーダルから投稿');
   await composer(page).getByRole('button', { name: 'ポストする' }).click();
   await expect(composer(page)).toBeHidden();

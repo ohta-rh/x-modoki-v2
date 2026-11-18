@@ -12,10 +12,15 @@ describe('Avatar（ui-ux.md の 4 節: 円、タイムラインは 40px）', () 
     expect(image).toHaveAttribute('width', '40');
   });
 
-  it('画像が無ければ、名前の最初の 1 文字を円の中に出す', () => {
+  it('画像が無ければ、名前の最初の 1 文字を円の中に描く。文字としては持たない（#31）', () => {
     render(<Avatar name="サンプル 01" size={48} />);
     const fallback = screen.getByRole('img', { name: 'サンプル 01' });
-    expect(fallback).toHaveTextContent('サ');
+    // Drawn by ::before: as text it would be visible text that the button around it does not name
+    // (WCAG 2.5.3, the account menu).
+    expect(fallback).toHaveAttribute('data-initial', 'サ');
+    expect(fallback).toHaveClass('before:content-[attr(data-initial)]');
+    expect(fallback).toHaveTextContent('');
+    expect(fallback.textContent).toBe('');
     expect(fallback).toHaveStyle({ width: '48px', height: '48px' });
   });
 });

@@ -65,3 +65,5 @@ status: stable
 | [0051](0051-theme-from-a-head-script-not-the-root-layout.md) | テーマとアクセントの色は、ルートのレイアウトではなく head の小さなスクリプトで html に付ける | 採用 | エージェント |
 | [0052](0052-local-webkit-in-the-playwright-image.md) | macOS の手元では、画面のテストの WebKit を CI と同じ Playwright のイメージで動かす | 採用 | エージェント |
 | [0053](0053-requirements-trace-to-tests.md) | 全部の要件を、通っているテストに結びつけ、CI の最初の確認で確かめる | 採用 | エージェント |
+| [0054](0054-text-and-fill-colours-meet-wcag-contrast.md) | 文字と塗りに使う色は、X の色を背景と 4.5:1 以上の差がある最も近い濃さに変える | 採用 | エージェント |
+| [0055](0055-axe-runs-on-chromium-and-webkit.md) | 画面のアクセシビリティの検査（axe）は、Chromium と WebKit で流し、Firefox では流さない | 採用 | ユーザー |

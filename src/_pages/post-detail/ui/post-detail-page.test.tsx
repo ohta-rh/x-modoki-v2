@@ -141,14 +141,14 @@ describe('PostDetailPage のいいね・ブックマーク（#21）', () => {
   it('ログインしていれば、本体と返信にいいねとブックマーク。ログインしていなければ出さない', () => {
     const { unmount } = renderDetail(true);
     const main = within(screen.getByRole('article', { name: '投稿の本体' }));
-    expect(main.getByRole('button', { name: 'いいね' })).toBeInTheDocument();
+    expect(main.getByRole('button', { name: /^いいね/ })).toBeInTheDocument();
     expect(main.getByRole('button', { name: 'ブックマーク' })).toBeInTheDocument();
     const reply = within(within(screen.getByRole('region', { name: '返信' })).getByRole('article'));
-    expect(reply.getByRole('button', { name: 'いいね' })).toBeInTheDocument();
-    expect(reply.getByRole('button', { name: 'リポスト' })).toBeInTheDocument();
+    expect(reply.getByRole('button', { name: /^いいね/ })).toBeInTheDocument();
+    expect(reply.getByRole('button', { name: /^リポスト/ })).toBeInTheDocument();
     unmount();
     renderDetail(false);
-    expect(screen.queryByRole('button', { name: 'いいね' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^いいね/ })).toBeNull();
   });
 
   it('本体のいいねは押した直後に変わり、終わったら画面を読み直す', async () => {
@@ -156,7 +156,7 @@ describe('PostDetailPage のいいね・ブックマーク（#21）', () => {
     setLikeAction.mockImplementationOnce(() => new Promise((done) => (resolve = done)));
     renderDetail(true);
     const main = within(screen.getByRole('article', { name: '投稿の本体' }));
-    const like = main.getByRole('button', { name: 'いいね' });
+    const like = main.getByRole('button', { name: /^いいね/ });
     await userEvent.click(like);
     expect(like).toHaveAttribute('aria-pressed', 'true');
     expect(like).toHaveTextContent('3');
@@ -183,7 +183,7 @@ describe('PostDetailPage のいいね・ブックマーク（#21）', () => {
     setLikeAction.mockRejectedValueOnce(new Error('network'));
     renderDetail(true);
     const like = within(screen.getByRole('article', { name: '投稿の本体' })).getByRole('button', {
-      name: 'いいね',
+      name: /^いいね/,
     });
     await userEvent.click(like);
     await waitFor(() => expect(add).toHaveBeenCalledWith({ title: 'いいねできませんでした' }));
@@ -208,7 +208,7 @@ describe('PostDetailPage のいいね・ブックマーク（#21）', () => {
       </QueryClientProvider>,
     );
     const like = within(screen.getByRole('article', { name: '投稿の本体' })).getByRole('button', {
-      name: 'いいね',
+      name: /^いいね/,
     });
     await userEvent.click(like);
     expect(like).toHaveAttribute('aria-pressed', 'false');
@@ -238,7 +238,7 @@ describe('PostDetailPage のいいね・ブックマーク（#21）', () => {
     );
     await userEvent.click(
       within(screen.getByRole('article', { name: '投稿の本体' })).getByRole('button', {
-        name: 'いいね',
+        name: /^いいね/,
       }),
     );
     const cached = () =>

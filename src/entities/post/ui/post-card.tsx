@@ -119,7 +119,8 @@ export function PostCard({
           <UserHoverCard
             username={post.author.username}
             name={post.author.name}
-            className="truncate font-bold hover:underline"
+            // 24px to press, the line unchanged (WCAG 2.5.8, #31).
+            className="-my-0.5 truncate py-0.5 font-bold hover:underline"
           >
             {post.author.name}
           </UserHoverCard>

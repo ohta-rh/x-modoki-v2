@@ -72,7 +72,11 @@ export function DeletePostMenu({ postId, action, onDeleted, items }: Props) {
               {error}
             </p>
           ) : null}
-          <Button className="h-11 w-full bg-danger text-white" disabled={pending} onClick={remove}>
+          <Button
+            className="h-11 w-full bg-danger-fill text-white"
+            disabled={pending}
+            onClick={remove}
+          >
             削除
           </Button>
           <Button variant="outline" className="h-11 w-full" onClick={() => setConfirming(false)}>

@@ -13,7 +13,7 @@ describe('Button（ui-ux.md の 4 節: 15px / 700、角は丸）', () => {
   });
 
   it.each([
-    ['brand', 'bg-brand'],
+    ['brand', 'bg-brand-fill'],
     ['solid', 'bg-text'],
     ['outline', 'border-line'],
   ] as const)('種類 %s', (variant, className) => {

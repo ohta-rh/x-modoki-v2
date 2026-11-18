@@ -20,6 +20,7 @@ describe('resolveShortcut（#29、ui-ux.md の 10 節）', () => {
     expect(resolveShortcut(key('l'), null)).toEqual({ action: 'like', pending: null });
     expect(resolveShortcut(key('r'), null)).toEqual({ action: 'reply', pending: null });
     expect(resolveShortcut(key('t'), null)).toEqual({ action: 'repost', pending: null });
+    expect(resolveShortcut(key('o'), null)).toEqual({ action: 'open', pending: null });
     expect(resolveShortcut(key('?'), null)).toEqual({ action: 'help', pending: null });
   });
 
@@ -54,6 +55,7 @@ describe('resolveShortcut（#29、ui-ux.md の 10 節）', () => {
       'j',
       'k',
       'r',
+      'o',
       't',
       'g h',
       'g n',

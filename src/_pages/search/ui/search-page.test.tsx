@@ -6,8 +6,9 @@ import { SearchPage } from './search-page';
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
 vi.mock('next/form', () => ({
-  default: ({ action, children }: { action: string; children: React.ReactNode }) => (
-    <form action={action}>{children}</form>
+  // Every attribute through, role and aria-label included (#31).
+  default: ({ children, ...props }: React.ComponentProps<'form'>) => (
+    <form {...props}>{children}</form>
   ),
 }));
 vi.mock('@/features/post-like/index.server', () => ({ setLikeAction: async () => ({ ok: true }) }));
@@ -69,6 +70,19 @@ describe('SearchPage（#27）', () => {
     ]);
     expect(tabs.getByRole('tab', { name: '話題' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('article')).toHaveTextContent('猫の話');
+  });
+
+  // NFR-A11Y-08: 見出しの順とランドマーク
+  it('画面の名前の h1 と、名前の付いた検索のランドマークがある（#31）', () => {
+    show({
+      q: '猫',
+      filter: 'top',
+      now: '2026-11-18T03:00:00.000Z',
+      signedIn: true,
+      results: { kind: 'posts', page: { items: [], nextCursor: null } },
+    });
+    expect(screen.getByRole('heading', { level: 1, name: '「猫」の検索結果' })).toBeInTheDocument();
+    expect(screen.getByRole('search', { name: '話題を検索' })).toBeInTheDocument();
   });
 
   it('結果が無ければ案内。ユーザーのタブは人の一覧（ログインしていなければフォローはログインへ）', () => {

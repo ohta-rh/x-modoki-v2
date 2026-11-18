@@ -4,10 +4,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { SearchBox } from './search-box';
 
 vi.mock('next/form', () => ({
-  default: ({ action, children, ...props }: { action: string; children: React.ReactNode }) => (
-    <form action={action} {...props}>
-      {children}
-    </form>
+  // Every attribute through, role and aria-label included (#31).
+  default: ({ children, ...props }: React.ComponentProps<'form'>) => (
+    <form {...props}>{children}</form>
   ),
 }));
 

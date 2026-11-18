@@ -13,8 +13,9 @@ vi.mock('@/features/user-follow/index.server', () => ({
   setFollowAction: async () => ({ ok: true }),
 }));
 vi.mock('next/form', () => ({
-  default: ({ action, children }: { action: string; children: React.ReactNode }) => (
-    <form action={action}>{children}</form>
+  // Every attribute through, role and aria-label included (#31).
+  default: ({ children, ...props }: React.ComponentProps<'form'>) => (
+    <form {...props}>{children}</form>
   ),
 }));
 
@@ -32,7 +33,7 @@ describe('MainLayout', () => {
         ページ
       </MainLayout>,
     );
-    expect(screen.queryByRole('button', { name: 'アカウントのメニュー' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /アカウントのメニュー/ })).toBeNull();
     expect(within(screen.getByRole('main')).getByText('ページ')).toBeInTheDocument();
   });
 
@@ -61,7 +62,7 @@ describe('MainLayout', () => {
         name: /^通知/,
       }),
     ).toHaveAccessibleName('通知 未読 3 件');
-    expect(screen.getByRole('button', { name: 'アカウントのメニュー' })).toHaveTextContent('@taro');
+    expect(screen.getByRole('button', { name: /アカウントのメニュー/ })).toHaveTextContent('@taro');
     expect(within(screen.getByRole('main')).getByText('ページ')).toBeInTheDocument();
     expect(screen.getByRole('dialog')).toHaveTextContent('モーダル');
     expect(within(screen.getByRole('complementary')).getByRole('contentinfo')).toBeInTheDocument();

@@ -8,7 +8,7 @@ export function ProfileNotFound() {
       <p className="text-body text-text-muted">別のアカウントを検索してみましょう。</p>
       <Link
         href="/explore"
-        className="rounded-full bg-brand px-4 py-2 text-body font-bold text-white hover:opacity-90"
+        className="rounded-full bg-brand-fill px-4 py-2 text-body font-bold text-on-brand hover:opacity-90"
       >
         検索
       </Link>

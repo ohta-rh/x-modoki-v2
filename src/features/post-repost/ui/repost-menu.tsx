@@ -17,7 +17,9 @@ export function RepostMenu({ reposted, count, onToggle, onQuote }: Props) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        aria-label="リポスト"
+        // The number shown is part of the name (WCAG 2.5.3, #31).
+        aria-label={count > 0 ? `リポスト ${compactCount(count)}` : 'リポスト'}
+        data-action="repost"
         className={cn(
           'group flex items-center gap-1 text-[13px] hover:text-repost',
           reposted ? 'text-repost' : 'text-text-muted',

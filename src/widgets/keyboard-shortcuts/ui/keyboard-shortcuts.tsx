@@ -32,6 +32,11 @@ const dialogOpen = () =>
     (dialog) => dialog.checkVisibility?.() ?? true,
   );
 const replyBox = () => document.querySelector<HTMLElement>('textarea[aria-label="返信の本文"]');
+/** The opened post's own article, not one Next.js keeps hidden (Activity). */
+const mainPost = () =>
+  [...document.querySelectorAll<HTMLElement>('main article[data-post="main"]')].find(
+    (article) => article.checkVisibility?.() ?? true,
+  );
 
 /** Focuses a post: the focus ring shows it, and it is scrolled into the screen. */
 function select(post: HTMLElement | undefined) {
@@ -52,7 +57,8 @@ export function KeyboardShortcuts({ username }: { username: string }) {
   const pathname = usePathname();
   const [helpOpen, setHelpOpen] = useState(false);
   const pending = useRef<string | null>(null);
-  const replyNext = useRef(false);
+  // Where the focus goes when the opened post's page arrives (`r`: its reply box, `o`: the post).
+  const focusNext = useRef<'reply' | 'post' | null>(null);
 
   useEffect(() => {
     const run = (action: ShortcutAction) => {
@@ -66,16 +72,22 @@ export function KeyboardShortcuts({ username }: { username: string }) {
         case 'previous':
           return select(current ? list[list.indexOf(current) - 1] : undefined);
         case 'like':
-          return current?.querySelector<HTMLElement>('button[aria-label="いいね"]')?.click();
+          // By role, not name: the name carries the count shown (#31).
+          return current?.querySelector<HTMLElement>('[data-action="like"]')?.click();
         case 'repost':
-          return current?.querySelector<HTMLElement>('button[aria-label="リポスト"]')?.click();
+          return current?.querySelector<HTMLElement>('[data-action="repost"]')?.click();
+        case 'open':
+          // A post card opens on click; a keyboard user opens the one selected (#31, WCAG 2.1.1).
+          if (current?.dataset.post !== 'card') return;
+          focusNext.current = 'post';
+          return current.click();
         case 'reply':
           if (!current) return;
           // The page's own post: its reply box is right here (review 1).
           if (current.dataset.post === 'main') return replyBox()?.focus();
           // Only a post card opens its post; another article (a notification) goes nowhere (review 3).
           if (current.dataset.post !== 'card') return;
-          replyNext.current = true;
+          focusNext.current = 'reply';
           return current.click();
         case 'go-home':
           return router.push('/home' as Route);
@@ -89,6 +101,13 @@ export function KeyboardShortcuts({ username }: { username: string }) {
     };
     const onKeyDown = (event: KeyboardEvent) => {
       if (typing(event.target) || dialogOpen()) return;
+      // Enter is a shortcut only on the selected post itself: on a link or button it is theirs.
+      if (event.key === 'Enter') {
+        if (!(event.target instanceof HTMLElement && event.target.matches('[data-post="card"]')))
+          return;
+        event.preventDefault();
+        return run('open');
+      }
       const result = resolveShortcut(event, pending.current);
       pending.current = result.pending;
       if (result.action) {
@@ -100,15 +119,20 @@ export function KeyboardShortcuts({ username }: { username: string }) {
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [router, username]);
 
-  // After `r`, the post's page arrives: focus its reply box once it is there.
+  // After `r` / `o`, the post's page arrives: focus its reply box / the post once it is there.
+  // Moving the focus there also moves where Tab goes next: left on the card the page came from,
+  // Firefox kept tabbing from that hidden card and never reached the page (#31).
   useEffect(() => {
-    if (!replyNext.current) return;
+    if (!focusNext.current) return;
     let frames = 0;
     let handle = requestAnimationFrame(function find() {
-      const box = replyBox();
-      if (box || frames > 120) {
-        replyNext.current = false;
-        box?.focus();
+      const target = focusNext.current === 'reply' ? replyBox() : mainPost();
+      if (target || frames > 120) {
+        focusNext.current = null;
+        if (target) {
+          target.tabIndex = target.tabIndex < 0 ? -1 : target.tabIndex;
+          target.focus({ preventScroll: true });
+        }
         return;
       }
       frames += 1;

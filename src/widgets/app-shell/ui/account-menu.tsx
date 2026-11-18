@@ -22,7 +22,7 @@ export function AccountMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        aria-label="アカウントのメニュー"
+        aria-label={`${account.name} @${account.username} のアカウントのメニュー`}
         className="mt-auto mb-3 flex w-full items-center gap-3 rounded-full p-3 text-left hover:bg-hover"
       >
         <Avatar name={account.name} src={account.image} />

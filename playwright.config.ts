@@ -15,7 +15,13 @@ export default defineConfig({
   use: { baseURL, trace: 'retain-on-failure', screenshot: 'only-on-failure' },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+      // Firefox's content process dies on signal 11 while axe runs beside other browsers; axe reads
+      // the DOM and CSS, which Chromium and WebKit check the same (ADR-0055, decided by the user).
+      testIgnore: /a11y\.spec\.ts$/,
+    },
     {
       name: 'webkit',
       use: {

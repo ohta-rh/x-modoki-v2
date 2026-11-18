@@ -27,7 +27,9 @@ export function SearchPage({ q, filter, now, signedIn, results }: SearchPageData
   return (
     <>
       <div className="sticky top-0 z-10 bg-[var(--header-bg)] px-4 pt-2 backdrop-blur-[12px]">
-        <SearchBox key={q} defaultValue={q} />
+        {/* The screen's name for assistive technology; the box says it to the eye (#31). */}
+        <h1 className="sr-only">{`「${q}」の検索結果`}</h1>
+        <SearchBox key={q} defaultValue={q} label="話題を検索" />
         <div role="tablist" className="mt-2 flex border-b border-line">
           {TABS.map((tab) => {
             const selected = tab.filter === filter;

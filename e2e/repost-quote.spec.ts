@@ -20,7 +20,8 @@ test('リポストすると、タイムラインに「〜さんがリポスト�
   await repost.click();
   const done = actionDone(page);
   await page.getByRole('menuitem', { name: 'リポスト' }).click();
-  await expect(repost).toHaveCSS('color', 'rgb(0, 186, 124)');
+  // The repost green as text on the light page: the shade with 4.5:1 against it (ADR-0054).
+  await expect(repost).toHaveCSS('color', 'rgb(0, 119, 79)');
   await expect(repost).toContainText('1');
   await done;
   await page.reload();

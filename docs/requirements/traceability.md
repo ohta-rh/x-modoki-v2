@@ -122,14 +122,14 @@ status: stable
 | FR-SET-02 | #29 | `src/features/display-settings/api/actions.test.ts` › 自分のテーマとアクセントの色を users に残し、cookie にも書く。ほかの人は変えない |
 | FR-SET-03 | #29 | `e2e/keyboard-settings.spec.ts` › /settings は 2 ペイン。/settings/account にユーザー名・メールアドレス・登録した日が出る |
 | FR-SET-04 | #29 | `e2e/keyboard-settings.spec.ts` › 一覧と中身は 1 ペインずつ |
-| NFR-A11Y-01 | #31 | #31 で確かめる |
-| NFR-A11Y-02 | #31 | #31 で確かめる |
-| NFR-A11Y-03 | #31 | #31 で確かめる |
-| NFR-A11Y-04 | #28・#31 | #31 で確かめる |
+| NFR-A11Y-01 | #31 | `e2e/a11y.spec.ts` › ${theme}: ルーティングの全部の画面に、WCAG 2.2 の A と AA の違反が無い（#31） |
+| NFR-A11Y-02 | #31 | `src/_app/styles/tokens.test.ts` › %s・%s: 文字に使う色は、どれも背景とも、ホバーした行の背景とも 4.5:1 以上 |
+| NFR-A11Y-03 | #31 | `e2e/keyboard-only.spec.ts` › キーボードだけで、登録・投稿・いいね・返信・フォロー・検索・設定の変更ができる（#31） |
+| NFR-A11Y-04 | #28・#31 | `e2e/modals.spec.ts` › 全部のモーダルが、フォーカスを中に閉じ、Esc で閉じ、開いた要素へフォーカスを戻す（#31） |
 | NFR-A11Y-05 | #17 | `e2e/app-shell.spec.ts` › フォーカスの輪は、キーボードで動かしたときだけ 2px のアクセント色で出る |
-| NFR-A11Y-06 | #17・#31 | #31 で確かめる |
+| NFR-A11Y-06 | #17・#31 | `e2e/a11y.spec.ts` › ${theme}: ルーティングの全部の画面に、WCAG 2.2 の A と AA の違反が無い（#31） |
 | NFR-A11Y-07 | #21 | `e2e/reduced-motion.spec.ts` › 動きを減らす設定のとき、モーダルの出入りもリンクの色の遷移も動かない |
-| NFR-A11Y-08 | #31 | #31 で確かめる |
+| NFR-A11Y-08 | #31 | `e2e/a11y.spec.ts` › ${theme}: ルーティングの全部の画面に、WCAG 2.2 の A と AA の違反が無い（#31） |
 | NFR-PERF-01 | #32 | #32 で確かめる |
 | NFR-PERF-02 | #32 | #32 で確かめる |
 | NFR-PERF-03 | #32 | #32 で確かめる |
@@ -138,7 +138,7 @@ status: stable
 | NFR-PERF-06 | #32 | #32 で確かめる |
 | NFR-PERF-07 | #26・#28 | `src/entities/notification/ui/unread-badge.test.tsx` › 30 秒ごとに確かめて数を変える。タブが見えていない間は確かめない |
 | NFR-COMPAT-01 | #15 | `scripts/quality-gates.test.ts` › 画面のテストは Chromium・Firefox・WebKit の 3 つで流す |
-| NFR-COMPAT-02 | #17・#31 | #31 で確かめる |
+| NFR-COMPAT-02 | #17・#31 | `e2e/narrow.spec.ts` › 幅 360px で、ルーティングの全部の画面が横にはみ出さない（#31） |
 | NFR-COMPAT-03 | #19 | `e2e/server-render.spec.ts` › アプリの JavaScript が届かなくても、最初の描画で投稿の本文が読める（サーバーで描く、#60） |
 | NFR-SEC-01 | #18〜#29・#33 | #33 で確かめる |
 | NFR-SEC-02 | #18〜#29 | `src/_app/api-routes/search.test.ts` › 知らない f は 400 で、検索しない（#62） |

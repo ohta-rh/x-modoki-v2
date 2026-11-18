@@ -83,3 +83,14 @@ describe('SignInForm', () => {
     expect((action.mock.calls[0][1] as FormData).get('next')).toBe('');
   });
 });
+
+// NFR-A11Y-02: 文の中のリンクは、色だけで見分けさせない（WCAG 1.4.1）
+describe('文の中のリンク（#31）', () => {
+  it('ログインと登録の画面の、もう一方へのリンクには下線がある', () => {
+    const { unmount } = render(<SignUpForm action={vi.fn(async () => undefined)} />);
+    expect(screen.getByRole('link', { name: 'ログイン' })).toHaveClass('underline');
+    unmount();
+    render(<SignInForm action={vi.fn(async () => undefined)} next="/home" />);
+    expect(screen.getByRole('link', { name: 'アカウントを作成' })).toHaveClass('underline');
+  });
+});

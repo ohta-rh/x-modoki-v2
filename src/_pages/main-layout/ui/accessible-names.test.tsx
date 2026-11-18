@@ -16,7 +16,10 @@ vi.mock('@/features/user-follow/index.server', () => ({
   setFollowAction: async () => ({ ok: true }),
 }));
 vi.mock('next/form', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <form>{children}</form>,
+  // Every attribute through, role and aria-label included (#31).
+  default: ({ children, ...props }: React.ComponentProps<'form'>) => (
+    <form {...props}>{children}</form>
+  ),
 }));
 
 const post: Post = {

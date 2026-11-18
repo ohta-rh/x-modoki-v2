@@ -42,7 +42,7 @@ describe('LeftNav（ui-ux.md の 3 節）', () => {
       '通知',
       'ブックマーク',
       'プロフィール',
-      '投稿する',
+      'ポストする',
     ]);
     expect(within(nav()).getByRole('button', { name: 'もっと見る' })).toBeInTheDocument();
     expect(within(nav()).queryByText('メッセージ')).toBeNull();
@@ -51,12 +51,19 @@ describe('LeftNav（ui-ux.md の 3 節）', () => {
   it('ロゴは x-modoki のホームへのリンク、投稿ボタンは投稿の画面へのリンク', () => {
     render(<LeftNav currentPath="/home" />);
     expect(link('x-modoki のホーム')).toHaveAttribute('href', '/home');
-    expect(link('投稿する')).toHaveAttribute('href', '/compose/post');
+    expect(link('ポストする')).toHaveAttribute('href', '/compose/post');
+  });
+
+  // NFR-A11Y-06: 名前は見えている文字を含む（WCAG 2.5.3）
+  it('投稿のボタンの名前は、見えている文字「ポストする」と同じ（#31）', () => {
+    render(<LeftNav currentPath="/home" />);
+    const post = link('ポストする');
+    expect(post).toHaveAccessibleName(post.textContent!);
   });
 
   it('ログインしていれば、下にアカウントのメニューを出し、していなければ出さない', () => {
     const { unmount } = render(<LeftNav currentPath="/home" />);
-    expect(screen.queryByRole('button', { name: 'アカウントのメニュー' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /アカウントのメニュー/ })).toBeNull();
     unmount();
     render(
       <LeftNav
@@ -65,7 +72,7 @@ describe('LeftNav（ui-ux.md の 3 節）', () => {
         signOut={async () => undefined}
       />,
     );
-    expect(screen.getByRole('button', { name: 'アカウントのメニュー' })).toHaveTextContent('@taro');
+    expect(screen.getByRole('button', { name: /アカウントのメニュー/ })).toHaveTextContent('@taro');
   });
 
   it('ログインしていれば、プロフィールはその人の URL', () => {

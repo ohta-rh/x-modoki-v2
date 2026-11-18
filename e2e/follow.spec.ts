@@ -41,9 +41,10 @@ test('フォローすると、相手の投稿が「フォロー中」に出る',
   // Coming back onto the button offers to unfollow, in the danger colour.
   await page.mouse.move(0, 0);
   await following.hover();
+  // The danger colour as text on the light page: the shade with 4.5:1 against it (ADR-0054).
   await expect(header.getByRole('button', { name: 'フォロー解除' })).toHaveCSS(
     'color',
-    'rgb(244, 33, 46)',
+    'rgb(210, 10, 23)',
   );
 
   await (await refreshed).finished();

@@ -25,7 +25,8 @@ test('いいねを押すと、すぐに数が 1 増える。もう一度押す�
   await like.click();
   await expect(like).toHaveAttribute('aria-pressed', 'true');
   await expect(like).toContainText('1');
-  await expect(like).toHaveCSS('color', 'rgb(249, 24, 128)');
+  // The like pink as text on the light page: the shade with 4.5:1 against it (ADR-0054).
+  await expect(like).toHaveCSS('color', 'rgb(205, 5, 98)');
   // The server kept it: a reload shows the same.
   await liked;
   await page.reload();

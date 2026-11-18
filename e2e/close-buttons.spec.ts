@@ -3,7 +3,7 @@ import { signUp } from './support/auth';
 
 test('ダイアログとトーストの閉じるボタンは「閉じる」という名前（#57）', async ({ page }) => {
   await signUp(page);
-  await page.getByRole('navigation').getByRole('link', { name: '投稿する' }).click();
+  await page.getByRole('navigation').getByRole('link', { name: 'ポストする' }).click();
   const composer = page.getByRole('dialog', { name: 'ポストする' });
   await expect(composer.getByRole('button', { name: '閉じる' })).toBeVisible();
   await composer.getByRole('textbox', { name: '投稿の本文' }).fill('閉じるボタンの確認');

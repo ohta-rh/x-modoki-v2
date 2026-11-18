@@ -23,7 +23,7 @@ export function UnreadBadge({ initial }: { initial: number }) {
   return (
     <>
       {' '}
-      <span className="ml-1 inline-flex min-w-5 items-center justify-center rounded-full bg-brand px-1.5 text-[11px] leading-5 font-bold text-white">
+      <span className="ml-1 inline-flex min-w-5 items-center justify-center rounded-full bg-brand-fill px-1.5 text-[11px] leading-5 font-bold text-on-brand">
         {/* Spaces outside the hidden words: a name keeps text spaces, not an element's edges.
             A flex box shows no whitespace-only text. */}
         <span className="sr-only">未読</span> {count} <span className="sr-only">件</span>

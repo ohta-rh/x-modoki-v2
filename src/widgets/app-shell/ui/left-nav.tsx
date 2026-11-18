@@ -84,8 +84,8 @@ export function LeftNav({ currentPath, username, account, signOut, unread }: Pro
       </DropdownMenu>
       <Link
         href={COMPOSE_PATH}
-        aria-label="投稿する"
-        className="mt-4 flex size-14 items-center justify-center rounded-full bg-brand text-body-lg font-bold text-white transition-opacity hover:opacity-90 xl:h-[52px] xl:w-[233px]"
+        aria-label="ポストする"
+        className="mt-4 flex size-14 items-center justify-center rounded-full bg-brand-fill text-body-lg font-bold text-on-brand transition-opacity hover:opacity-90 xl:h-[52px] xl:w-[233px]"
       >
         <Feather aria-hidden="true" className="size-6 xl:hidden" />
         <span className="hidden xl:inline">ポストする</span>

@@ -144,13 +144,13 @@ describe('ComposerDialog のフォーカスの戻し先（#28）', () => {
   it('開く前にどこにもフォーカスが無ければ（Safari はリンクを押してもフォーカスしない）、見えている投稿ボタンへ戻す', async () => {
     const links = (
       <>
-        <Link href="/compose/post" aria-label="隠れた投稿する" />
-        <Link href="/compose/post" aria-label="投稿する" />
+        <Link href="/compose/post" aria-label="隠れたポストする" />
+        <Link href="/compose/post" aria-label="ポストする" />
       </>
     );
     const { rerender } = render(<Screen open={false}>{links}</Screen>);
     // jsdom lays nothing out: only the second link has a box.
-    const shown = screen.getByRole('link', { name: '投稿する' });
+    const shown = screen.getByRole('link', { name: 'ポストする' });
     shown.getClientRects = () => [new DOMRect(0, 0, 10, 10)] as unknown as DOMRectList;
     rerender(<Screen open>{links}</Screen>);
     await waitFor(() => expect(box()).toHaveFocus());

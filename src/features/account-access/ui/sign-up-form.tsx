@@ -53,7 +53,7 @@ export function SignUpForm({ action }: Props) {
       </Button>
       <p className="text-body text-text-muted">
         アカウントをお持ちの場合は{' '}
-        <Link href={LOGIN_PATH} className="text-brand hover:underline">
+        <Link href={LOGIN_PATH} className="text-brand underline">
           ログイン
         </Link>
       </p>

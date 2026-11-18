@@ -6,7 +6,7 @@ import { signUp } from './support/auth';
  * how a spinner (`animate-spin`, an infinite rotation) would run.
  */
 async function motion(page: Page) {
-  await page.getByRole('link', { name: '投稿する' }).click();
+  await page.getByRole('link', { name: 'ポストする' }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   return page.evaluate(() => {

@@ -37,3 +37,14 @@ export async function insertPosts(
     await client.end();
   }
 }
+
+/** Saves `theme` as `username`'s look, as /settings/display would (#31). */
+export async function setTheme(username: string, theme: 'light' | 'dim' | 'dark'): Promise<void> {
+  const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
+  await client.connect();
+  try {
+    await client.query('UPDATE users SET theme = $2 WHERE username = $1', [username, theme]);
+  } finally {
+    await client.end();
+  }
+}
