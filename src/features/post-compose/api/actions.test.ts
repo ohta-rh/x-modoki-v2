@@ -17,8 +17,11 @@ beforeEach(signOut);
 describe('createPostAction', () => {
   it('投稿して ok を返す', async () => {
     signInAs(await makeUser());
-    expect(await createPostAction('こんにちは')).toEqual({ ok: true });
-    expect(await testDb().select().from(posts)).toHaveLength(1);
+    const result = await createPostAction('こんにちは');
+    const rows = await testDb().select().from(posts);
+    expect(rows).toHaveLength(1);
+    // The new post's id, for the toast's 表示 link (#28).
+    expect(result).toEqual({ ok: true, id: rows[0].id.toString() });
   });
 
   it.each([
@@ -56,7 +59,10 @@ describe('createReplyAction', () => {
     const me = await makeUser();
     const parent = await makePost({ authorId: me.id });
     signInAs(me);
-    expect(await createReplyAction('返信', parent.id.toString())).toEqual({ ok: true });
+    expect(await createReplyAction('返信', parent.id.toString())).toEqual({
+      ok: true,
+      id: expect.stringMatching(/^\d+$/),
+    });
   });
 
   it.each(['abc', '999999999999999'])('ID %s の投稿が無ければ、見つからないと言う', async (id) => {
@@ -81,7 +87,10 @@ describe('createQuoteAction（#22）', () => {
     const me = await makeUser();
     const post = await makePost({ authorId: me.id });
     signInAs(me);
-    expect(await createQuoteAction('意見', post.id.toString())).toEqual({ ok: true });
+    expect(await createQuoteAction('意見', post.id.toString())).toEqual({
+      ok: true,
+      id: expect.stringMatching(/^\d+$/),
+    });
     for (const id of ['999999999999999', 'abc']) {
       expect(await createQuoteAction('意見', id)).toEqual({
         ok: false,
@@ -102,6 +111,7 @@ describe('createPostAction の画像（#25）', () => {
     const upload = await makeUpload(me.id);
     expect(await createPostAction('', [{ id: upload.id.toString(), alt: '青' }])).toEqual({
       ok: true,
+      id: expect.stringMatching(/^\d+$/),
     });
     for (const bad of [[{ id: 'abc', alt: '' }], [{ id: '1' }], 'not a list']) {
       expect(await createPostAction('本文', bad as never)).toEqual({

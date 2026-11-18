@@ -74,7 +74,7 @@ describe('HomeTimeline', () => {
   it('投稿したら、タイムラインの 1 ページ目を読み直して先頭に出す', async () => {
     const fetchSpy = vi.fn(async () => Response.json(page([4, 3], null)));
     vi.stubGlobal('fetch', fetchSpy);
-    const action = vi.fn(async () => ({ ok: true as const }));
+    const action = vi.fn(async () => ({ ok: true as const, id: '1' }));
     render(
       wrap(<HomeTimeline kind="following" firstPage={page([3], null)} now={now} action={action} />),
     );

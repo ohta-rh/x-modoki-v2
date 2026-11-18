@@ -18,7 +18,13 @@ export type ComposeAttachments = {
 type Props = {
   action: (text: string, media: ComposeAttachments['media']) => Promise<CreatePostActionResult>;
   attachments?: ComposeAttachments;
-  onPosted?: () => void;
+  /** Gets the new post's id (#28). */
+  onPosted?: (id: string) => void;
+  /** The text to open with (a saved draft, #28). */
+  initialText?: string;
+  /** Told of every change of the text, so a container knows whether there is anything to lose. */
+  onTextChange?: (text: string) => void;
+  autoFocus?: boolean;
   label?: string;
   submitLabel?: string;
   placeholder?: string;
@@ -33,11 +39,18 @@ export function ComposeBox({
   action,
   attachments,
   onPosted,
+  initialText = '',
+  onTextChange,
+  autoFocus,
   label = '投稿の本文',
   submitLabel = 'ポストする',
   placeholder = 'いまの話題は？',
 }: Props) {
-  const [text, setText] = useState('');
+  const [text, setTextState] = useState(initialText);
+  const setText = (next: string) => {
+    setTextState(next);
+    onTextChange?.(next);
+  };
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -45,7 +58,7 @@ export function ComposeBox({
   useEffect(() => {
     const typed = ref.current!.value;
     if (typed === '') return;
-    setText(typed);
+    setTextState(typed);
     ref.current!.style.height = `${ref.current!.scrollHeight}px`;
   }, []);
   const { weighted, remaining, postable: textPostable } = measurePost(text);
@@ -65,7 +78,7 @@ export function ComposeBox({
       attachments?.clear();
       setError(null);
       ref.current!.style.height = ''; // the textarea is mounted while its form submits
-      onPosted?.();
+      onPosted?.(result.id);
     });
 
   return (
@@ -80,6 +93,7 @@ export function ComposeBox({
         ref={ref}
         aria-label={label}
         placeholder={placeholder}
+        autoFocus={autoFocus}
         rows={1}
         value={text}
         onChange={(event) => {

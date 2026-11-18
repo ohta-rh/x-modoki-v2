@@ -136,10 +136,7 @@ test('/home を開くと、コンソールのエラーと失敗した通信が 0
   expect(errors).toEqual([]);
 });
 
-for (const [path, title] of [
-  ['/compose/post', 'ポストする'],
-  ['/settings', '設定'],
-] as const) {
+for (const [path, title] of [['/settings', '設定']] as const) {
   test(`${path} はまだ準備中の画面を、3 カラムの中に出す`, async ({ page }) => {
     await page.goto(path);
     await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible();

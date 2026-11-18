@@ -36,7 +36,7 @@ export async function createPostAction(
   if (!parsed.success) return { ok: false, message: MESSAGES.VALIDATION };
   const [body, items] = parsed.data;
   const result = await createPost(body, { media: items });
-  return result.ok ? { ok: true } : { ok: false, message: MESSAGES[result.error] };
+  return result.ok ? { ok: true, id: result.id } : { ok: false, message: MESSAGES[result.error] };
 }
 
 export async function createReplyAction(
@@ -48,7 +48,7 @@ export async function createReplyAction(
   const parentId = parseId(String(replyToId));
   if (parentId === null) return { ok: false, message: MESSAGES.NOT_FOUND };
   const result = await createPost(parsed.data, { replyToId: parentId });
-  return result.ok ? { ok: true } : { ok: false, message: MESSAGES[result.error] };
+  return result.ok ? { ok: true, id: result.id } : { ok: false, message: MESSAGES[result.error] };
 }
 
 /** Posts `text` quoting another post (#22). */
@@ -61,5 +61,5 @@ export async function createQuoteAction(
   const targetId = parseId(String(quoteOfId));
   if (targetId === null) return { ok: false, message: MESSAGES.NOT_FOUND };
   const result = await createPost(parsed.data, { quoteOfId: targetId });
-  return result.ok ? { ok: true } : { ok: false, message: MESSAGES[result.error] };
+  return result.ok ? { ok: true, id: result.id } : { ok: false, message: MESSAGES[result.error] };
 }

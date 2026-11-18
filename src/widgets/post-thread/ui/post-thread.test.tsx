@@ -34,7 +34,7 @@ const wrap = (children: ReactNode) => (
   <QueryClientProvider client={new QueryClient()}>{children}</QueryClientProvider>
 );
 const actions = () => ({
-  replyAction: vi.fn(async () => ({ ok: true as const })),
+  replyAction: vi.fn(async () => ({ ok: true as const, id: '1' })),
   deleteAction: vi.fn(async () => ({ ok: true as const })),
   repliesKey: ['replies', '3'],
   replies: <p>返信の一覧</p>,

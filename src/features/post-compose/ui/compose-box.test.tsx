@@ -7,7 +7,7 @@ import { ComposeBox } from './compose-box';
 const box = () => screen.getByRole('textbox', { name: '投稿の本文' });
 const button = () => screen.getByRole('button', { name: 'ポストする' });
 type Action = Parameters<typeof ComposeBox>[0]['action'];
-const ok = () => vi.fn<Action>(async () => ({ ok: true }));
+const ok = () => vi.fn<Action>(async () => ({ ok: true, id: '1' }));
 
 describe('ComposeBox（ui-ux.md の 7 節）', () => {
   it('空のときは押せず、書けば押せる', async () => {
@@ -75,7 +75,7 @@ describe('ComposeBox のハイドレーション（#47）', () => {
     const { renderToString } = await import('react-dom/server');
     const { hydrateRoot } = await import('react-dom/client');
     const { act } = await import('react');
-    const action = vi.fn(async () => ({ ok: true as const }));
+    const action = vi.fn(async () => ({ ok: true as const, id: '1' }));
     const container = document.createElement('div');
     container.innerHTML = renderToString(<ComposeBox action={action} />);
     document.body.append(container);
@@ -118,5 +118,24 @@ describe('ComposeBox の画像（#25）', () => {
   it('画像を送り終えるまで（ready でない間）は送れない', () => {
     render(<ComposeBox action={ok()} attachments={attachments({ ready: false })} />);
     expect(button()).toBeDisabled();
+  });
+
+  it('下書きを入れて開き、本文が変わるたびに知らせ、送れたら新しい投稿の ID を渡す（#28）', async () => {
+    const onTextChange = vi.fn();
+    const onPosted = vi.fn();
+    render(
+      <ComposeBox
+        action={vi.fn<Action>(async () => ({ ok: true, id: '42' }))}
+        initialText="書きかけ"
+        onTextChange={onTextChange}
+        onPosted={onPosted}
+      />,
+    );
+    expect(box()).toHaveValue('書きかけ');
+    await userEvent.type(box(), '!');
+    expect(onTextChange).toHaveBeenLastCalledWith('書きかけ!');
+    await userEvent.click(button());
+    await waitFor(() => expect(onPosted).toHaveBeenCalledWith('42'));
+    expect(onTextChange).toHaveBeenLastCalledWith('');
   });
 });
