@@ -1,10 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { type Accent, ACCENTS, type Theme } from '@/shared/config';
+import { applyDisplay as apply, type Display } from '../lib/apply-display';
 import type { SetDisplayActionResult } from '../api/actions';
-
-type Display = { theme: Theme; accent: Accent };
 
 const THEME_LABELS: Record<Theme, string> = {
   light: 'デフォルト',
@@ -19,12 +18,6 @@ const ACCENT_LABELS: Record<Accent, string> = {
   orange: 'オレンジ',
   green: '緑',
 };
-
-/** Puts the choice on <html> at once, as the head script does on the next load (ADR-0051). */
-function apply({ theme, accent }: Display) {
-  document.documentElement.dataset.theme = theme;
-  document.documentElement.dataset.accent = accent;
-}
 
 /**
  * /settings/display (#29, ui-ux.md 4): the three backgrounds and six accent colours. A choice shows
@@ -42,14 +35,28 @@ export function DisplaySettings({
     setDisplay(next);
     setFailed(false);
     apply(next);
-    const result = await action(next);
-    if (result.ok) return;
+    // A failed request (offline) is a failed save too (review 1).
+    const saved = await action(next).then(
+      (result) => result.ok,
+      () => false,
+    );
+    if (saved) return;
     setDisplay(before);
     apply(before);
     setFailed(true);
   };
+  // A choice made before hydration is in the DOM, not in state (ADR-0044, review 1): take it in.
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const checked = (name: string) =>
+      root.current!.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`)!.value;
+    const typed = { theme: checked('theme') as Theme, accent: checked('accent') as Accent };
+    if (typed.theme !== theme || typed.accent !== accent) void choose(typed);
+    // Once, on mount: later choices arrive through onChange.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only the DOM as it was at hydration
+  }, []);
   return (
-    <div className="flex flex-col gap-6 px-4 py-3">
+    <div ref={root} className="flex flex-col gap-6 px-4 py-3">
       <fieldset>
         <legend className="mb-2 text-title font-extrabold">色</legend>
         <div className="flex flex-wrap gap-3">

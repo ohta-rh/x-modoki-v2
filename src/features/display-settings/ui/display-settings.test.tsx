@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DisplaySettings } from './display-settings';
@@ -32,5 +34,30 @@ describe('DisplaySettings（#29）', () => {
     await waitFor(() => expect(html.dataset.theme).toBe('light'));
     expect(screen.getByRole('radio', { name: 'デフォルト' })).toBeChecked();
     expect(screen.getByRole('alert')).toHaveTextContent('保存できませんでした');
+  });
+
+  it('保存の通信そのものが失敗しても、元に戻して知らせる（レビュー 1）', async () => {
+    const action = vi.fn(async () => {
+      throw new Error('offline');
+    });
+    render(<DisplaySettings theme="light" accent="blue" action={action} />);
+    await userEvent.click(screen.getByRole('radio', { name: 'ブラック' }));
+    await waitFor(() => expect(html.dataset.theme).toBe('light'));
+    expect(screen.getByRole('alert')).toHaveTextContent('保存できませんでした');
+  });
+
+  it('動き出す前に選んだものも取り込んで、見た目を変えて保存する（ADR-0044、レビュー 1）', async () => {
+    const action = vi.fn(async () => ({ ok: true as const }));
+    const ui = <DisplaySettings theme="light" accent="blue" action={action} />;
+    const container = document.createElement('div');
+    container.innerHTML = renderToString(ui);
+    document.body.append(container);
+    (container.querySelector('input[value="dim"]') as HTMLInputElement).checked = true;
+    await act(async () => {
+      hydrateRoot(container, ui);
+    });
+    await waitFor(() => expect(action).toHaveBeenCalledWith({ theme: 'dim', accent: 'blue' }));
+    expect(html.dataset.theme).toBe('dim');
+    container.remove();
   });
 });

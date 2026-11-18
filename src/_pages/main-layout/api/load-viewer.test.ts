@@ -47,6 +47,9 @@ describe('loadViewer', () => {
       username: 'sample_01',
       image: null,
       unread: 0,
+      // The saved look, for keeping the cookie in step with the account (#29 review 1).
+      theme: 'light',
+      accent: 'blue',
     });
   });
 

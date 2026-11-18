@@ -104,8 +104,15 @@ test('/settings/display でテーマと色を選ぶとすぐ変わり、次に�
   await signUp(page);
   await page.goto('/settings/display');
   const html = page.locator('html');
+  const saved = () =>
+    page.waitForResponse((response) => response.request().headers()['next-action'] !== undefined);
+  // Each choice is saved before the next: the account's saved look is put back on other screens.
+  let done = saved();
   await page.getByRole('radio', { name: 'ダークブルー' }).check();
+  await done;
+  done = saved();
   await page.getByRole('radio', { name: 'ピンク' }).check();
+  await done;
   await expect(html).toHaveAttribute('data-theme', 'dim');
   await expect(html).toHaveAttribute('data-accent', 'pink');
   // The accent colour reaches the page's own colours.
@@ -132,5 +139,5 @@ test('/settings/display でテーマと色を選ぶとすぐ変わり、次に�
   await page.goto('/home');
   await expect(html).toHaveAttribute('data-theme', 'dim');
   expect(seen.length).toBeGreaterThan(0);
-  expect(seen.every((theme) => theme === 'dim')).toBe(true);
+  expect(seen.filter((theme) => theme !== 'dim')).toEqual([]);
 });

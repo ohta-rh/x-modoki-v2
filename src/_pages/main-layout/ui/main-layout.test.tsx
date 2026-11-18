@@ -40,7 +40,14 @@ describe('MainLayout', () => {
     render(
       <QueryClientProvider client={new QueryClient()}>
         <MainLayout
-          viewer={{ name: 'サンプル', username: 'taro', image: null, unread: 3 }}
+          viewer={{
+            name: 'サンプル',
+            username: 'taro',
+            image: null,
+            unread: 3,
+            theme: 'light',
+            accent: 'blue',
+          }}
           sidebar={sidebar}
           modal={<div role="dialog">モーダル</div>}
         >
@@ -88,7 +95,16 @@ describe('MainLayout', () => {
     fireEvent.keyDown(document.body, { key: '?' });
     expect(screen.queryByRole('dialog', { name: 'キーボードショートカット' })).toBeNull();
     unmount();
-    render(layout({ name: 'サンプル', username: 'taro', image: null, unread: 0 }));
+    render(
+      layout({
+        name: 'サンプル',
+        username: 'taro',
+        image: null,
+        unread: 0,
+        theme: 'light',
+        accent: 'blue',
+      }),
+    );
     fireEvent.keyDown(document.body, { key: '?' });
     expect(await screen.findByRole('dialog', { name: 'キーボードショートカット' })).toBeTruthy();
   });

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { signOutAction } from '@/features/account-access/index.server';
+import { DisplaySync } from '@/features/display-settings';
 import { SearchBox } from '@/features/search-box';
 import { setFollowAction } from '@/features/user-follow/index.server';
 import { LOGIN_PATH } from '@/shared/config';
@@ -36,7 +37,12 @@ export function MainLayout({ viewer, sidebar, children, modal }: Props) {
         {children}
       </AppShell>
       {modal}
-      {viewer ? <KeyboardShortcuts username={viewer.username} /> : null}
+      {viewer ? (
+        <>
+          <KeyboardShortcuts username={viewer.username} />
+          <DisplaySync theme={viewer.theme} accent={viewer.accent} />
+        </>
+      ) : null}
     </>
   );
 }
