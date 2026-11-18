@@ -23,6 +23,7 @@ pnpm 12 は、依存の build のスクリプト（`postinstall` など）も、
 
 - **全ての依存（`dependencies` と `devDependencies`）を、`package.json` に正確な版で書く**（`^` や `~` を付けない）
 - **版は、公開から 7 日以上たったものの中で、いちばん新しいものを選ぶ。** 7 日たっていない版が要るときは、7 日たつのを待つ
+- **`pnpm-workspace.yaml` に `minimumReleaseAge: 10080`（7 日）を書き、直接の依存も間接の依存も、pnpm に年齢を守らせる。** `packageManager` の pnpm 自身も 7 日以上たった版にする
 - **`pnpm-workspace.yaml` に `minimumReleaseAgeExclude` を書かない。** pnpm が自分で書き足したら、その版をやめて、7 日たった版に替える
 - 依存の build のスクリプトは、`pnpm-workspace.yaml` の `allowBuilds` で 1 つずつ許す。今は `esbuild` と `unrs-resolver`。Next.js の任意の依存の `sharp` は許さない（`images.unoptimized` で使わない。ADR-0008・ADR-0018）
 - `pnpm install --frozen-lockfile` を CI で使い、ロックファイルに無い版を入れない

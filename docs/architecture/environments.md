@@ -25,8 +25,8 @@ status: stable
 | 部分 | ローカル | CI | プレビュー（マイルストーン 2） | 本番（マイルストーン 2） |
 |---|---|---|---|---|
 | Next.js | `pnpm dev` | `pnpm build` して `pnpm start` | `opennextjs-cloudflare preview`（手元の Workers の実行環境） | Cloudflare Workers（`@opennextjs/cloudflare`） |
-| PostgreSQL | Docker Compose（`xmodoki`） | サービスのコンテナ（`xmodoki_test`） | ローカルの PostgreSQL を Hyperdrive の `localConnectionString` で指す | Neon を Hyperdrive でつなぐ |
-| 画像の置き場所 | Docker Compose の Garage | サービスのコンテナ | ローカルの Garage | Cloudflare R2 |
+| PostgreSQL | Docker Compose（`xmodoki`） | 同じ Docker Compose（`scripts/setup-local.sh` で立ち上げる） | ローカルの PostgreSQL を Hyperdrive の `localConnectionString` で指す | Neon を Hyperdrive でつなぐ |
+| 画像の置き場所 | Docker Compose の Garage | 同じ Docker Compose | ローカルの Garage | Cloudflare R2 |
 | 定期的な処理 | 手で呼ぶ | 無し | 手で呼ぶ | Cron Triggers が 1 日に 1 回呼ぶ |
 | HTTPS | 無し（`http://localhost:3000`） | 無し | 無し | Cloudflare |
 
@@ -55,15 +55,15 @@ status: stable
 
 | コマンド | すること |
 |---|---|
-| `docker compose up -d` | PostgreSQL と Garage を立ち上げる |
+| `sh scripts/setup-local.sh` | 初めての準備と、毎回の立ち上げ。Garage の設定を作り、PostgreSQL と Garage を立ち上げ、バケットとキーを作り、`.env.local` の空の値を埋める。何度流してもよい（`docker compose up -d` だけでは、Garage の設定が無くて立ち上がらない） |
 | `pnpm install` | 依存を入れる |
 | `pnpm db:generate` | スキーマの差分からマイグレーションの SQL を作る |
 | `pnpm db:migrate` | マイグレーションを流す |
 | `pnpm db:seed` | 架空のユーザーと投稿を入れる |
 | `pnpm dev` | 開発のサーバー |
 | `pnpm docs:check` | `node scripts/check-docs.mjs`。`docs/` の OKF の形・リンク・ADR のステータスを確かめる |
-| `pnpm typecheck` | `tsc --noEmit` |
-| `pnpm lint` | `eslint` と `steiger ./src`（FSD の層と公開 API。[ADR-0022](../adr/0022-feature-sliced-design.md)） |
+| `pnpm typecheck` | `next typegen && tsc --noEmit`（ルートの型を作ってから確かめる） |
+| `pnpm lint` | `eslint`・`steiger ./src`・`node scripts/check-src-layers.mjs`（FSD の層と公開 API と `src/` の直下。[ADR-0022](../adr/0022-feature-sliced-design.md)・[ADR-0030](../adr/0030-fsd-lint-exceptions-and-own-layer-check.md)） |
 | `pnpm format:check` | `prettier --check .` |
 | `pnpm test` | Vitest（単体とデータアクセス層）。`--coverage` でカバレッジ |
 | `pnpm test:e2e` | Playwright |
@@ -81,7 +81,7 @@ pnpm dev                    # http://localhost:3000（使われていれば PORT
 ```
 
 - ホストのポート: PostgreSQL は 54320（5432 と重ならないように）、Garage は 3900（S3）と 3902（公開の URL）
-- 手元の pnpm が 12 でないときは `npx -y pnpm@12.21.0 <コマンド>` で動かす（pnpm 10 からの自動の切り替えは失敗する。[Better Auth の調査](../research/better-auth-on-next-16.md) の 3.4）
+- 手元の pnpm が 12 でないときは `npx -y pnpm@12.19.0 <コマンド>` で動かす（pnpm 10 からの自動の切り替えは失敗する。[Better Auth の調査](../research/better-auth-on-next-16.md) の 3.4）
 - `scripts/setup-local.sh` は何度流してもよい。Garage の秘密の値は、機械ごとに乱数で作る（リポジトリには入れない）
 
 ## 6. CI
@@ -98,7 +98,7 @@ GitHub Actions が、`main` への push と全ての PR で動かす（[ADR-0020
 | 6 | ビルド | `pnpm build` | ビルドのエラー（`<Suspense>` の包み忘れを含む） |
 | 7 | 画面を通したテスト | `pnpm test:e2e` | Chromium・Firefox・WebKit のどれかでのテストの失敗。最初の失敗で止める。失敗のときは、画面の写真と操作の記録を成果物に残す |
 
-- PostgreSQL と S3 互換のストレージは、CI のサービスのコンテナで動かす
+- PostgreSQL と S3 互換のストレージは、CI でも `scripts/setup-local.sh` の Docker Compose で動かす。GitHub Actions の `services:` は、リポジトリの Garage の設定をマウントする前に立ち上がるので使わない。手元と CI が同じ手順になる
 - Node.js と pnpm の版は、`.nvmrc` と `package.json` の `packageManager` から読む
 - 手元では `pnpm verify` が同じ 7 つを動かす。通してから push し、push のあと CI の結果を最後まで見る
 - CI が緑でも、完了ではない。`pnpm build && pnpm start` のアプリを本物の Chrome で操作して確かめ、エビデンスつきの試験レポートを `docs/test-reports/` に残すまでが完了（[ADR-0024](../adr/0024-definition-of-done-requires-browser-testing.md)、[ADR-0025](../adr/0025-test-report-with-evidence.md)）

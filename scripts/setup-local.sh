@@ -1,6 +1,7 @@
 #!/bin/sh
-# One-time local setup (also used by CI): Garage config, containers, bucket and key, .env.local.
-# Idempotent: rerunning keeps existing secrets and keys.
+# Local setup, also used by CI: Garage config, containers, bucket and key, .env.local.
+# Idempotent: rerunning keeps existing secrets and keys. The container provisioning below is
+# exercised by every CI run; the only decision logic (filling .env.local) is scripts/lib/fill-env.mjs.
 set -eu
 cd "$(dirname "$0")/.."
 
@@ -38,13 +39,10 @@ KEY_ID=$(g key info "$KEY" | awk '/Key ID:/{print $3}')
 KEY_SECRET=$(g key info --show-secret "$KEY" | awk '/Secret key:/{print $3}')
 
 [ -f .env.local ] || cp .env.example .env.local
-fill() { # fill KEY only if it is still empty in .env.local
-  if grep -q "^$1=$" .env.local; then
-    sed -i.bak "s|^$1=$|$1=$2|" .env.local && rm -f .env.local.bak
-  fi
-}
-fill BETTER_AUTH_SECRET "$(rand 32)"
-fill S3_ACCESS_KEY_ID "$KEY_ID"
-fill S3_SECRET_ACCESS_KEY "$KEY_SECRET"
-fill CRON_SECRET "$(rand 16)"
+# Fills only empty values (scripts/lib/fill-env.mjs, tested): rerunning keeps existing secrets.
+node scripts/fill-env.mjs .env.local \
+  "BETTER_AUTH_SECRET=$(rand 32)" \
+  "S3_ACCESS_KEY_ID=$KEY_ID" \
+  "S3_SECRET_ACCESS_KEY=$KEY_SECRET" \
+  "CRON_SECRET=$(rand 16)"
 echo "setup-local: containers up, bucket $BUCKET ready, .env.local filled"

@@ -1,3 +1,6 @@
+# Supply-chain policy (ADR-0032): resolve only versions published 7+ days ago (10080 minutes).
+# Never add minimumReleaseAgeExclude; wait for the version to age instead.
+minimumReleaseAge: 10080
 allowBuilds:
   esbuild: true
   unrs-resolver: true

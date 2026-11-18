@@ -16,10 +16,10 @@ status: stable
 | 役割 | 選んだもの | 版 | 決定 |
 |---|---|---|---|
 | 実行環境 | Node.js | 24 LTS | [ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md) |
-| パッケージの管理 | pnpm | 12.21.x | [ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md) |
+| パッケージの管理 | pnpm（`minimumReleaseAge` で公開から 7 日未満の版を入れない。[ADR-0032](../adr/0032-pin-dependencies-published-at-least-seven-days-ago.md)） | 12.19.0 | [ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md) |
 | 言語 | TypeScript | 6.0.x（7 は使わない） | [ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md) |
 | lint | ESLint と `eslint-config-next`、Steiger と `@feature-sliced/steiger-plugin` | 10.14.x / 16.4.x、0.10.x / 0.8.x | [ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md) |
-| 整形 | Prettier（`prettier-plugin-tailwindcss` は #17 で足す） | 3.10.0 | [ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md) |
+| 整形 | Prettier（`prettier-plugin-tailwindcss` は #17 で足す） | 3.9.10 | [ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md) |
 | 構造のリンター | Steiger と `@feature-sliced/steiger-plugin`（Feature-Sliced Design） | 0.10.x / 0.8.x | [ADR-0022](../adr/0022-feature-sliced-design.md) |
 
 ## 2. アプリ

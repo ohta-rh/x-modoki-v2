@@ -34,7 +34,7 @@ status: stable
 | ビルド | `pnpm build` |
 | 画面を通したテスト | `pnpm test:e2e` |
 
-- テストは、CI の中の PostgreSQL と S3 互換のストレージ（サービスのコンテナ）に対して動かす。偽物にしない（ADR-0013）
+- テストは、CI の中の PostgreSQL と S3 互換のストレージ（サービスのコンテナ）に対して動かす。偽物にしない（ADR-0013）（2026-11-18 追記: コンテナは GitHub Actions の `services:` ではなく、手元と同じ `scripts/setup-local.sh` の Docker Compose で動かす。[環境と配備](../architecture/environments.md) の 6 節）
 - **CI が通っていない変更は、完了としない。** PBI の受け入れ条件に「CI が通っている」を必ず入れる
 - **手元で同じ確認（`pnpm verify`）を通してから push する。** push のあと、CI の結果を最後まで見る
 - `main` の CI が落ちたら、ほかの作業より先に直す。直せないなら、その commit を取り消す
