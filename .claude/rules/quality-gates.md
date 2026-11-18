@@ -15,6 +15,9 @@ Decided in ADR-0017, ADR-0019, ADR-0020, ADR-0021; this file is the operating ru
 - **A change is not done until CI is green on the commit that contains it.** "Passes locally"
   is not a substitute, and a gate that did not run is not a gate that passed.
 - **Before pushing:** run `pnpm verify` (the same seven gates) and see it exit 0.
+- **Join a check and the commit after it with `&&`, never `;`.** A `;` lets the commit run
+  after a failed check (it happened twice on 2026-11-18: a red `pnpm verify` before #48's commit,
+  a red `check-docs` before #52's). If the check failed, there is no commit to undo.
   **After pushing:** watch the CI run to its end. Do not end the turn on "CI is running".
 - **Red `main` is fixed first.** Nothing else starts until it is green; if it cannot be fixed
   quickly, revert the commit.
