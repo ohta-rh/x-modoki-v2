@@ -25,6 +25,11 @@ Decided in ADR-0017, ADR-0019, ADR-0020, ADR-0021; this file is the operating ru
   exists and is green.
 - Node.js and pnpm versions come from `.nvmrc` and `packageManager`; never hard-code them in
   the workflow.
+- **Your local Node.js may not be the `.nvmrc` version.** A gate that passes locally on a
+  newer Node can fail in CI (2026-11-18: `node --test <directory>` works on Node 26 and fails
+  on Node 24). Check `node -v` against `.nvmrc` before trusting a local pass; when they
+  differ, say so in the test report and treat the CI run as the real result. Prefer forms
+  that do not depend on the Node version (name the test file, not a directory).
 
 ## 2. Coverage is 100% (ADR-0021)
 

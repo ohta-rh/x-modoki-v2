@@ -3,7 +3,7 @@
 // (.claude/rules/documentation.md, .claude/rules/definition-of-done.md, .claude/rules/tdd.md,
 // .claude/rules/code-review.md). No dependencies.
 //
-//   node scripts/check-docs.mjs [--root <dir>]     tests: node --test scripts/
+//   node scripts/check-docs.mjs [--root <dir>]     tests: node --test scripts/check-docs.test.mjs
 //
 // Frontmatter is read with a small parser, not a YAML library: one `key: value` per line,
 // values either quoted, a `[a, b]` list, or a plain scalar without ": ". Anything else is

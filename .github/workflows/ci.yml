@@ -31,6 +31,6 @@ jobs:
         with:
           node-version-file: .nvmrc
       - name: Tests for the repository scripts
-        run: node --test scripts/
+        run: node --test scripts/check-docs.test.mjs
       - name: Documentation check
         run: node scripts/check-docs.mjs

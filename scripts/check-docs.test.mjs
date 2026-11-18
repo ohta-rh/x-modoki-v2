@@ -1,4 +1,4 @@
-// Tests for scripts/check-docs.mjs. Run with `node --test scripts/`.
+// Tests for scripts/check-docs.mjs. Run with `node --test scripts/check-docs.test.mjs`.
 // Each test builds a small valid docs/ bundle in a temp directory, breaks one thing, and runs
 // the script against it with `--root`.
 
