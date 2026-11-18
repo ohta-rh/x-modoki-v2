@@ -31,15 +31,15 @@ describe('下書き（#28、その端末の中だけ）', () => {
     expect(() => clearDraft()).not.toThrow();
   });
 
-  it('保存・消去・ほかのタブでの変更を、購読している人に知らせ、やめれば知らせない', () => {
+  it('このタブでの保存と消去を、購読している人に知らせ、やめれば知らせない。ほかのタブの変更は知らせない（書きかけを消さない、レビュー 1）', () => {
     const heard = vi.fn();
     const stop = subscribeDraft(heard);
     saveDraft('a');
     clearDraft();
     window.dispatchEvent(new StorageEvent('storage', { key: 'x-modoki:compose-draft' }));
-    expect(heard).toHaveBeenCalledTimes(3);
+    expect(heard).toHaveBeenCalledTimes(2);
     stop();
     saveDraft('b');
-    expect(heard).toHaveBeenCalledTimes(3);
+    expect(heard).toHaveBeenCalledTimes(2);
   });
 });

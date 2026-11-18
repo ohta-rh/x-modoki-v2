@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-19
+* **Update**: [UI/UX 仕様](architecture/ui-ux.md)の 7 節に、下書きは本文だけをそのブラウザの中に持つことを書いた（#28）。
 * **New**: [#56 の試験レポート](test-reports/issue-0056-photo-viewer-test-scroll.md)（画像のビューアの画面のテストの揺らぎ）。
 * **New**: [#27 の試験レポート](test-reports/issue-0027-search.md)（検索・トレンド・おすすめのユーザー）。
 

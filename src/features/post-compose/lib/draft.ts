@@ -1,6 +1,9 @@
 /** The composer's draft (#28): kept in this browser only, text alone. Storage may be refused. */
 const KEY = 'x-modoki:compose-draft';
-/** Told within this tab; `storage` tells the others. */
+/**
+ * Told within this tab only. Another tab's change is not followed: a composer open here keeps what
+ * is being written (review 1 of #28); it reads the draft again the next time it opens.
+ */
 const CHANGED = 'x-modoki:compose-draft-changed';
 
 export function readDraft(): string {
@@ -32,9 +35,5 @@ export function clearDraft() {
 /** For `useSyncExternalStore`: calls `onChange` whenever the draft may have changed. */
 export function subscribeDraft(onChange: () => void) {
   window.addEventListener(CHANGED, onChange);
-  window.addEventListener('storage', onChange);
-  return () => {
-    window.removeEventListener(CHANGED, onChange);
-    window.removeEventListener('storage', onChange);
-  };
+  return () => window.removeEventListener(CHANGED, onChange);
 }

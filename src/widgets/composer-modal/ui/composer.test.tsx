@@ -64,6 +64,34 @@ describe('ComposerDialog（#28、ui-ux.md の 7 節）', () => {
     expect(window.localStorage.getItem(DRAFT)).toBeNull();
   });
 
+  it('送っている間は閉じない（答えてから送り終わると、2 回戻ってしまう、レビュー 1）', async () => {
+    const onClose = vi.fn();
+    const never = vi.fn<Action>(() => new Promise(() => {}));
+    render(wrap(<ComposerDialog username="me" action={never} onClose={onClose} />));
+    await userEvent.type(await screen.findByRole('textbox', { name: '投稿の本文' }), '送る途中');
+    await userEvent.click(screen.getByRole('button', { name: 'ポストする' }));
+    expect(never).toHaveBeenCalled();
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('画像だけで本文が無ければ、保存は出さず破棄だけを聞く（保存するのは本文だけ、レビュー 1）', async () => {
+    const onClose = vi.fn();
+    render(wrap(<ComposerDialog username="me" action={posted()} onClose={onClose} />));
+    const box = await screen.findByRole('textbox', { name: '投稿の本文' });
+    await userEvent.type(box, 'x');
+    await userEvent.clear(box);
+    await userEvent.upload(
+      screen.getByLabelText('画像を追加'),
+      new File([new Uint8Array([137, 80, 78, 71])], 'a.png', { type: 'image/png' }),
+    );
+    await userEvent.keyboard('{Escape}');
+    const ask = await screen.findByRole('alertdialog', { name: 'ポストを破棄しますか？' });
+    expect(ask).toHaveTextContent('画像は保存されません');
+    expect(screen.queryByRole('button', { name: '保存' })).toBeNull();
+  });
+
   it('破棄すると下書きを消して閉じる', async () => {
     window.localStorage.setItem(DRAFT, '前の下書き');
     const onClose = vi.fn();

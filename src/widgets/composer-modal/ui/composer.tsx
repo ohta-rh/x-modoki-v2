@@ -112,6 +112,16 @@ export function ComposerDialog({ username, action, onClose }: DialogProps) {
   // dialog again with its state (React Activity), and an old answer must not close it then.
   const answered = useRef(false);
   const dirty = content.text !== '' || content.images > 0;
+  // A post on its way: closing now would leave twice, once now and once when it is sent (review 1).
+  const sending = useRef(false);
+  const send: Action = async (text, media) => {
+    sending.current = true;
+    try {
+      return await action(text, media);
+    } finally {
+      sending.current = false;
+    }
+  };
   // The question closes first; the composer goes once it has: leaving with both dialogs still
   // open left the screen behind hidden from assistive technology.
   const answer = (choice: 'keep' | 'discard') => {
@@ -125,6 +135,7 @@ export function ComposerDialog({ username, action, onClose }: DialogProps) {
       <Dialog
         open
         onOpenChange={() => {
+          if (sending.current) return;
           if (!dirty) {
             onClose();
             return;
@@ -137,7 +148,7 @@ export function ComposerDialog({ username, action, onClose }: DialogProps) {
           <DialogTitle className="sr-only">ポストする</DialogTitle>
           <Composer
             username={username}
-            action={action}
+            action={send}
             onTextChange={(text, images) =>
               setContent((was) =>
                 was.text === text && was.images === images ? was : { text, images },
@@ -159,13 +170,25 @@ export function ComposerDialog({ username, action, onClose }: DialogProps) {
           showCloseButton={false}
           className="max-w-80 rounded-card p-8"
         >
-          <DialogTitle className="text-title font-bold">ポストを保存しますか？</DialogTitle>
-          <DialogDescription className="text-text-muted">
-            保存すると、次に開いたときに続きから書けます（このブラウザの中だけ）。
-          </DialogDescription>
-          <Button className="h-11 w-full" onClick={() => answer('keep')}>
-            保存
-          </Button>
+          {/* Only the text is kept (ui-ux.md 7): with no text there is nothing to save. */}
+          {content.text !== '' ? (
+            <>
+              <DialogTitle className="text-title font-bold">ポストを保存しますか？</DialogTitle>
+              <DialogDescription className="text-text-muted">
+                保存すると、次に開いたときに本文の続きから書けます（このブラウザの中だけ。画像は保存されません）。
+              </DialogDescription>
+              <Button className="h-11 w-full" onClick={() => answer('keep')}>
+                保存
+              </Button>
+            </>
+          ) : (
+            <>
+              <DialogTitle className="text-title font-bold">ポストを破棄しますか？</DialogTitle>
+              <DialogDescription className="text-text-muted">
+                画像は保存されません。
+              </DialogDescription>
+            </>
+          )}
           <Button
             variant="outline"
             className="h-11 w-full text-danger"
