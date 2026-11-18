@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **New**: [ADR-0036](adr/0036-auth-rate-limit-configurable-for-e2e.md)（登録とログインの回数の制限）と [ADR-0037](adr/0037-pool-closes-when-idle-not-after-response.md)（接続の pool の閉じ方）を記録し、[環境と配備](architecture/environments.md)と[アプリケーションの構造](architecture/application-structure.md)を直した（#18）。
 * **New**: [#43 の試験レポート](test-reports/issue-0043-ci-browser-setup.md)（CI のブラウザの準備）を足した。
 * **New**: [#17 の試験レポート](test-reports/issue-0017-app-shell.md)（3 カラムの骨格とテーマ）を足した。
 * **New**: [ADR-0035](adr/0035-vendor-shadcn-from-registry-and-base-ui-toast.md)（shadcn の部品の取り込み方とトースト）を記録し、[技術スタック](architecture/tech-stack.md)に UI の依存の版を書いた（#17）。

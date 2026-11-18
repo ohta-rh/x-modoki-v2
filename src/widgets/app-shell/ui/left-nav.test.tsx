@@ -53,6 +53,20 @@ describe('LeftNav（ui-ux.md の 3 節）', () => {
     expect(link('投稿する')).toHaveAttribute('href', '/compose/post');
   });
 
+  it('ログインしていれば、下にアカウントのメニューを出し、していなければ出さない', () => {
+    const { unmount } = render(<LeftNav currentPath="/home" />);
+    expect(screen.queryByRole('button', { name: 'アカウントのメニュー' })).toBeNull();
+    unmount();
+    render(
+      <LeftNav
+        currentPath="/home"
+        account={{ name: 'サンプル', username: 'taro', image: null }}
+        signOut={async () => undefined}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'アカウントのメニュー' })).toHaveTextContent('@taro');
+  });
+
   it('ログインしていれば、プロフィールはその人の URL', () => {
     render(<LeftNav currentPath="/taro" username="taro" />);
     expect(link('プロフィール')).toHaveAttribute('href', '/taro');

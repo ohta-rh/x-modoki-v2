@@ -1,4 +1,5 @@
 import { expect, type Page, test } from '@playwright/test';
+import { signUp } from './support/auth';
 
 // docs/architecture/ui-ux.md 2 (layout and breakpoints) and 10 (focus ring).
 const leftNav = (page: Page) => page.getByRole('navigation', { name: 'メインのメニュー' });
@@ -8,9 +9,16 @@ const tabBar = (page: Page) => page.getByRole('navigation', { name: '下のタ�
 const width = async (page: Page, locator: ReturnType<Page['locator']>) =>
   Math.round((await locator.boundingBox())!.width);
 
+// /home and the screens below need a signed-in user (#18): each test signs up a fresh account.
+test.beforeEach(async ({ page }) => {
+  await signUp(page);
+});
+
 async function open(page: Page, viewportWidth: number) {
   await page.setViewportSize({ width: viewportWidth, height: 900 });
   await page.goto('/home');
+  // The shell streams in under <Suspense> once the session is read (#18).
+  await expect(page.getByRole('main')).toBeVisible();
 }
 
 test('1280px で 275 / 600 / 350px の 3 カラムが出る', async ({ page }) => {
@@ -138,8 +146,3 @@ for (const [path, title] of [
     await expect(page.getByText('この画面は準備中です')).toBeVisible();
   });
 }
-
-test('/i/flow/login はまだ準備中の画面を出す（#18 で作る）', async ({ page }) => {
-  await page.goto('/i/flow/login');
-  await expect(page.getByRole('heading', { level: 1, name: 'ログイン' })).toBeVisible();
-});

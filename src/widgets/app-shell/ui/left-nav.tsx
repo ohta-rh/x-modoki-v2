@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/kit';
 import { Logo } from '@/shared/ui/logo';
+import { type Account, AccountMenu } from './account-menu';
 
 const ICONS: Record<NavKey, typeof House> = {
   home: House,
@@ -26,13 +27,23 @@ const itemClass =
   'flex items-center gap-5 rounded-full p-3 text-xl text-text transition-colors hover:bg-hover';
 
 /** The left navigation (docs/architecture/ui-ux.md 3). Labels show from 1280px; icons only below. */
-export function LeftNav({ currentPath, username }: { currentPath: string; username?: string }) {
+type Props = {
+  currentPath: string;
+  username?: string;
+  account?: Account;
+  signOut?: () => Promise<void>;
+};
+
+export function LeftNav({ currentPath, username, account, signOut }: Props) {
   return (
-    <nav aria-label="メインのメニュー" className="flex flex-col items-center gap-1 xl:items-start">
+    <nav
+      aria-label="メインのメニュー"
+      className="flex h-full flex-col items-center gap-1 xl:items-start"
+    >
       <Link href="/home" aria-label="x-modoki のホーム" className={cn(itemClass, 'text-brand')}>
         <Logo />
       </Link>
-      {navItems(username).map((item) => {
+      {navItems(username ?? account?.username).map((item) => {
         const active = isCurrent(currentPath, item.href);
         const Icon = ICONS[item.key];
         return (
@@ -73,6 +84,7 @@ export function LeftNav({ currentPath, username }: { currentPath: string; userna
         <Feather aria-hidden="true" className="size-6 xl:hidden" />
         <span className="hidden xl:inline">ポストする</span>
       </Link>
+      {account && signOut ? <AccountMenu account={account} signOut={signOut} /> : null}
     </nav>
   );
 }

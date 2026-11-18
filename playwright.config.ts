@@ -26,5 +26,7 @@ export default defineConfig({
     // (found in #15). A busy port fails loudly instead.
     reuseExistingServer: false,
     timeout: 120_000,
+    // Every test signs up from the same IP; the 10-per-minute limit is tested in Vitest (ADR-0036).
+    env: { AUTH_RATE_LIMIT_PER_MINUTE: '1000' },
   },
 });

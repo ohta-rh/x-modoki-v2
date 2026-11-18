@@ -29,8 +29,17 @@ describe('AppShell（ui-ux.md の 2 節）', () => {
     expect(compose?.closest('div')).toHaveClass('fixed', 'sm:hidden');
   });
 
-  it('今いるパスを左ナビと下のタブに渡す', () => {
-    render(<AppShell>中身</AppShell>);
+  it('今いるパスと今の人を、左ナビと下のタブに渡す', () => {
+    render(
+      <AppShell
+        account={{ name: 'サンプル', username: 'taro', image: null }}
+        signOut={async () => undefined}
+      >
+        中身
+      </AppShell>,
+    );
+    expect(screen.getByRole('button', { name: 'アカウントのメニュー' })).toHaveTextContent('@taro');
+    expect(screen.getByRole('link', { name: 'プロフィール' })).toHaveAttribute('href', '/taro');
     const nav = screen.getByRole('navigation', { name: 'メインのメニュー' });
     expect(within(nav).getByRole('link', { name: '話題を検索' })).toHaveAttribute(
       'aria-current',

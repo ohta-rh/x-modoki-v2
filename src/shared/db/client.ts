@@ -1,17 +1,17 @@
 import 'server-only';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { after } from 'next/server';
 import { Pool } from 'pg';
 import { cache } from 'react';
-import { env } from '@/shared/config/env';
+import { env } from '@/shared/config';
 import * as schema from './schema';
 
 /**
- * One connection pool per request (ADR-0017): nothing is opened at module load, the pool is shared
- * within the request through React's cache(), and it is closed after the response.
+ * One connection pool per request (ADR-0017): nothing is opened at module load and the pool is
+ * shared within the request through React's cache(). It is never ended explicitly: an idle
+ * connection closes itself after a second (ADR-0037), so nothing can use a pool that was ended
+ * while the same request is still running.
  */
 export const getDb = cache(() => {
-  const pool = new Pool({ connectionString: env.DATABASE_URL, max: 2 });
-  after(() => pool.end());
+  const pool = new Pool({ connectionString: env.DATABASE_URL, max: 2, idleTimeoutMillis: 1_000 });
   return drizzle(pool, { schema });
 });

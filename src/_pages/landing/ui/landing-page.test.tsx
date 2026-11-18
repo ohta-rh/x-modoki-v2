@@ -13,4 +13,14 @@ describe('LandingPage', () => {
     render(<LandingPage />);
     expect(screen.getByText('X Corp. とは関係の無い学習用のアプリ')).toBeTruthy();
   });
+
+  it('ログインしていない人の入口: 登録とログインへのリンクと、自前のロゴを出す', () => {
+    render(<LandingPage />);
+    expect(screen.getByRole('link', { name: 'アカウントを作成' })).toHaveAttribute(
+      'href',
+      '/i/flow/signup',
+    );
+    expect(screen.getByRole('link', { name: 'ログイン' })).toHaveAttribute('href', '/i/flow/login');
+    expect(document.querySelector('svg[viewBox="0 0 64 64"]')).not.toBeNull();
+  });
 });

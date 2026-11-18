@@ -46,6 +46,16 @@ describe('env', () => {
     await expect(load({ CRON_SECRET: '' })).rejects.toThrow(/Invalid environment variables/);
   });
 
+  it('AUTH_RATE_LIMIT_PER_MINUTE は既定で 10、入れれば整数として読む（ADR-0036）', async () => {
+    expect((await load()).AUTH_RATE_LIMIT_PER_MINUTE).toBe(10);
+    expect((await load({ AUTH_RATE_LIMIT_PER_MINUTE: '1000' })).AUTH_RATE_LIMIT_PER_MINUTE).toBe(
+      1000,
+    );
+    await expect(load({ AUTH_RATE_LIMIT_PER_MINUTE: '0' })).rejects.toThrow(
+      /Invalid environment variables/,
+    );
+  });
+
   it('短すぎる秘密の値を拒む', async () => {
     await expect(load({ BETTER_AUTH_SECRET: 'short' })).rejects.toThrow(
       /Invalid environment variables/,

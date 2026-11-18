@@ -46,6 +46,7 @@ status: stable
 | `S3_FORCE_PATH_STYLE` | `true`（本番は `false`） | |
 | `NEXT_PUBLIC_MEDIA_BASE_URL` | `http://xmodoki-media.web.garage.localhost:3902`（Garage はホスト名でバケットを選ぶ） | 画像を読むときの公開の URL。アプリとは別のドメインにする |
 | `CRON_SECRET` | 乱数 | 定期的な処理の Route Handler を守る |
+| `AUTH_RATE_LIMIT_PER_MINUTE` | 省略（既定 10） | 登録とログインの、IP ごとの 1 分の回数。Playwright のサーバーだけ 1000（[ADR-0036](../adr/0036-auth-rate-limit-configurable-for-e2e.md)） |
 
 - `.env.example` をリポジトリに入れる。`.env` と `.env.local` は入れない
 - `NEXT_PUBLIC_` を付けるのは、ブラウザに見せてよい値だけ

@@ -9,6 +9,7 @@ export type NavItem = { key: NavKey; label: string; href: Route };
 const route = (path: string) => path as Route;
 
 export const LOGIN_PATH = route('/i/flow/login');
+export const SIGNUP_PATH = route('/i/flow/signup');
 export const COMPOSE_PATH = route('/compose/post');
 export const SETTINGS_PATH = route('/settings');
 

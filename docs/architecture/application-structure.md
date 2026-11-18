@@ -179,7 +179,7 @@ Server Action は例外を投げずに、上の形で返す。想定していな
 | `features/notifications-read` | `markNotificationsRead` |
 | `features/display-settings` | `updateDisplaySettings`（テーマとアクセント） |
 
-登録・ログイン・ログアウトは、`features/auth` の Better Auth のクライアントが `/api/auth/*` を呼ぶ。
+登録・ログイン・ログアウトは、`features/account-access` の Server Action が、サーバーの Better Auth（`src/shared/auth`）を呼ぶ（スライスの名前は、`shared/auth` と紛らわしくならないように `account-access` にした。#18）。
 
 ### Route Handler
 

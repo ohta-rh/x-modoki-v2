@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { COMPOSE_PATH } from '@/shared/config';
 import { SiteFooter } from '@/shared/ui/site-footer';
+import type { Account } from './account-menu';
 import { LeftNav } from './left-nav';
 import { TabBar } from './tab-bar';
 
@@ -16,11 +17,13 @@ import { TabBar } from './tab-bar';
 export function AppShell({
   children,
   sidebar,
-  username,
+  account,
+  signOut,
 }: {
   children: ReactNode;
   sidebar?: ReactNode;
-  username?: string;
+  account?: Account;
+  signOut?: () => Promise<void>;
 }) {
   const currentPath = usePathname();
   return (
@@ -29,7 +32,7 @@ export function AppShell({
         data-testid="left-column"
         className="sticky top-0 hidden h-screen w-[88px] shrink-0 flex-col px-2 sm:flex xl:w-[275px] xl:px-3"
       >
-        <LeftNav currentPath={currentPath} username={username} />
+        <LeftNav currentPath={currentPath} account={account} signOut={signOut} />
       </div>
       <main className="min-h-screen w-full max-w-[600px] min-w-0 border-line pb-[53px] sm:border-x sm:pb-0">
         {children}

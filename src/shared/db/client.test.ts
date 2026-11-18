@@ -1,11 +1,6 @@
 import { sql } from 'drizzle-orm';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-// after() needs a Next.js request scope; capture the callback instead (the only Next.js seam).
-const afterCallbacks: Array<() => unknown> = [];
-vi.mock('next/server', () => ({
-  after: (callback: () => unknown) => afterCallbacks.push(callback),
-}));
 // Outside a React server render cache() keeps nothing, so give it the per-request memo it has there.
 vi.mock('react', async (importOriginal) => ({
   ...(await importOriginal<typeof import('react')>()),
@@ -20,11 +15,7 @@ async function realGetDb() {
   return (await vi.importActual<typeof import('./client')>('./client')).getDb;
 }
 
-afterEach(async () => {
-  for (const callback of afterCallbacks.splice(0)) await callback();
-});
-
-describe('getDb (ADR-0017)', () => {
+describe('getDb (ADR-0017, ADR-0037)', () => {
   it('DATABASE_URL の PostgreSQL に問い合わせられる', async () => {
     const getDb = await realGetDb();
     const { rows } = await getDb().execute<{ one: number }>(sql`SELECT 1 AS one`);
@@ -34,20 +25,19 @@ describe('getDb (ADR-0017)', () => {
   it('同じリクエストの中では、同じ接続を返す', async () => {
     const getDb = await realGetDb();
     expect(getDb()).toBe(getDb());
-    expect(afterCallbacks).toHaveLength(1);
   });
 
-  it('応答のあとで接続を閉じる', async () => {
+  it('使わなくなった接続は 1 秒ほどで閉じ、そのあとも使える（閉じた pool を使う誤りが起きない）', async () => {
     const getDb = await realGetDb();
     const db = getDb();
-    await afterCallbacks.splice(0)[0]();
-    await expect(db.execute(sql`SELECT 1`)).rejects.toMatchObject({
-      cause: { message: expect.stringMatching(/after calling end/) },
+    await db.execute(sql`SELECT 1`);
+    expect(db.$client.totalCount).toBe(1);
+    await vi.waitFor(() => expect(db.$client.totalCount).toBe(0), {
+      timeout: 3_000,
+      interval: 100,
     });
-  });
-
-  it('読み込んだだけでは接続を作らない', async () => {
-    await realGetDb();
-    expect(afterCallbacks).toHaveLength(0);
+    const { rows } = await db.execute<{ one: number }>(sql`SELECT 1 AS one`);
+    expect(rows).toEqual([{ one: 1 }]);
+    expect(db.$client.ending).toBe(false);
   });
 });

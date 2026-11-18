@@ -17,6 +17,8 @@ export const env = createEnv({
     S3_SECRET_ACCESS_KEY: z.string().min(1),
     S3_FORCE_PATH_STYLE: z.enum(['true', 'false']).transform((value) => value === 'true'),
     CRON_SECRET: z.string().min(16),
+    // Sign-up and sign-in attempts per IP per minute (NFR-SEC-05). Raised only for e2e (ADR-0036).
+    AUTH_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(10),
   },
   client: {
     NEXT_PUBLIC_MEDIA_BASE_URL: z.url(),

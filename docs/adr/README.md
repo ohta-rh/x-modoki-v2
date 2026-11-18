@@ -47,3 +47,5 @@ status: stable
 | [0033](0033-ci-services-via-docker-compose.md) | CI の PostgreSQL と Garage は、GitHub Actions の services: ではなく、手元と同じ Docker Compose で動かす | 採用 | エージェント |
 | [0034](0034-foreign-keys-cascade-from-users-and-detach-thread-links.md) | 外部キーは、人を消すとその人のものを一緒に消し、投稿の間のつながりは外すだけにする | 採用 | エージェント |
 | [0035](0035-vendor-shadcn-from-registry-and-base-ui-toast.md) | shadcn の部品は CLI を使わずレジストリの定義から取り込み、トーストは Base UI 版にする | 採用 | エージェント |
+| [0036](0036-auth-rate-limit-configurable-for-e2e.md) | 登録とログインの回数の制限は、IP ごとに 1 分 10 回を既定にし、画面のテストのサーバーだけ環境変数で上げる | 採用 | エージェント |
+| [0037](0037-pool-closes-when-idle-not-after-response.md) | リクエストごとの接続の pool は、after() で閉じず、使わなくなって 1 秒で接続を閉じる | 採用 | エージェント |
