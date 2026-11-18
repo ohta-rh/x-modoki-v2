@@ -127,7 +127,7 @@ describe('ProfilePage のフォロー（#24）', () => {
     page({ profile: { ...profile, isSelf: false, followersCount: 4 } });
     const header = within(screen.getByRole('region', { name: 'プロフィール' }));
     await userEvent.click(header.getByRole('button', { name: 'フォロー' }));
-    expect(header.getByRole('button', { name: /フォロー中|フォロー解除/ })).toBeInTheDocument();
+    expect(header.getByRole('button', { name: 'フォロー中' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'プロフィール' })).toHaveTextContent('5 フォロワー');
     expect(setFollowAction).toHaveBeenCalledWith('hanako', true);
     resolve({ ok: true, followersCount: 5 });

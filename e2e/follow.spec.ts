@@ -23,13 +23,12 @@ test('フォローすると、相手の投稿が「フォロー中」に出る',
   const follow = header.getByRole('button', { name: 'フォロー', exact: true });
   const done = actionDone(page);
   await follow.click();
-  // The pointer still rests on the button, which then offers フォロー解除; move it away.
-  await page.mouse.move(0, 0);
   const following = header.getByRole('button', { name: 'フォロー中' });
   await expect(following).toBeVisible();
   await expect(header).toContainText('1 フォロワー');
   await done;
-  // On hover the button offers to unfollow, in the danger colour.
+  // Coming back onto the button offers to unfollow, in the danger colour.
+  await page.mouse.move(0, 0);
   await following.hover();
   await expect(header.getByRole('button', { name: 'フォロー解除' })).toHaveCSS(
     'color',

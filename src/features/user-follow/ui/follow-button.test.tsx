@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { FollowButton } from './follow-button';
 
@@ -25,6 +26,21 @@ describe('FollowButton（#24、ui-ux.md の 8 節）', () => {
     expect(button).toHaveAccessibleName('フォロー解除');
     act(() => button.blur());
     expect(button).toHaveAccessibleName('フォロー中');
+  });
+
+  it('押して「フォロー中」になった直後は、ポインタが乗っていても「フォロー中」（#24 のレビュー）', async () => {
+    function Harness() {
+      const [following, setFollowing] = useState(false);
+      return <FollowButton following={following} onToggle={() => setFollowing(!following)} />;
+    }
+    render(<Harness />);
+    const button = screen.getByRole('button', { name: 'フォロー' });
+    await userEvent.click(button);
+    expect(button).toHaveAccessibleName('フォロー中');
+    expect(button).not.toHaveClass('text-danger');
+    await userEvent.unhover(button);
+    await userEvent.hover(button);
+    expect(button).toHaveAccessibleName('フォロー解除');
   });
 
   it('ログインしていなければ、ログインへのリンク（戻り先つき）', () => {

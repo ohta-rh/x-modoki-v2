@@ -66,7 +66,7 @@ describe('FollowListPage（#24）', () => {
     const first = within(screen.getAllByRole('listitem')[0]);
     await userEvent.click(first.getByRole('button', { name: 'フォロー' }));
     expect(setFollowAction).toHaveBeenCalledWith('aa', true);
-    expect(first.getByRole('button', { name: /フォロー中|フォロー解除/ })).toBeInTheDocument();
+    expect(first.getByRole('button', { name: 'フォロー中' })).toBeInTheDocument();
     await userEvent.click(first.getByRole('button', { name: /フォロー中|フォロー解除/ }));
     await waitFor(() => expect(add).toHaveBeenCalledWith({ title: 'フォローが多すぎます' }));
     expect(first.getByRole('button', { name: /フォロー中|フォロー解除/ })).toBeInTheDocument();

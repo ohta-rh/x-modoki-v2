@@ -29,7 +29,11 @@ export function FollowButton(props: Props) {
   return (
     <button
       type="button"
-      onClick={onToggle}
+      onClick={() => {
+        // Just followed: show フォロー中 until the next hover or focus, not フォロー解除.
+        if (!following) setArmed(false);
+        onToggle();
+      }}
       onMouseEnter={() => setArmed(true)}
       onMouseLeave={() => setArmed(false)}
       onFocus={() => setArmed(true)}
