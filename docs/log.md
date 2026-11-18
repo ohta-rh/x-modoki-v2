@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **New**: [#19 の試験レポート](test-reports/issue-0019-home-timeline.md)（投稿とホームのタイムライン）を足した。
 * **Update**: [UI/UX 仕様](architecture/ui-ux.md)の 10 節に、枠の無いテキストの入力欄はフォーカスの輪を出さない例外を書いた（#19）。
 * **New**: [ADR-0038](adr/0038-e2e-sign-up-per-test-and-direct-bulk-fixtures.md)（画面のテストの登録と前提のデータ）を記録し、[テストの設計](architecture/test-strategy.md)の 5 節を直した（#19）。
 * **New**: [#18 の試験レポート](test-reports/issue-0018-auth.md)（登録・ログイン・ログアウト）と [#44 の試験レポート](test-reports/issue-0044-ci-root-timeout.md)（CI の apt の上限）を足した。
