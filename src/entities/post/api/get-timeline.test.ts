@@ -102,4 +102,28 @@ describe('getTimeline（data-model.md の 4 節、ADR-0015）', () => {
     const result = await getTimeline('following', null);
     expect(result.ok && result.page.items[0].author.avatarUrl).toMatch(/\/avatars\/a\.webp$/);
   });
+
+  it('1 ページ目は、いちばん上の行そのものの ID を newestId で返す（リポストなら元の投稿ではなくリポストの行、#28 レビュー 1）', async () => {
+    const me = await makeUser();
+    const friend = await makeUser();
+    await makeFollow(me.id, friend.id);
+    const old = await makePost({ id: at(1), authorId: friend.id, text: '古い投稿' });
+    await makePost({ id: at(2), authorId: friend.id, text: '新しい投稿' });
+    await makePost({ id: at(3), authorId: friend.id, text: '', repostOfId: old.id });
+    signInAs(me);
+    const first = await getTimeline('following', null);
+    expect(first.ok && first.page.items[0].id).toBe(old.id.toString());
+    expect(first.ok && first.page.newestId).toBe(at(3).toString());
+    const next = await getTimeline('following', at(3));
+    expect(next.ok && next.page.newestId).toBeUndefined();
+  });
+
+  it('一覧が空なら、読んだときの時刻の ID を newestId にする（それより新しい投稿を待てる、#28 レビュー 1）', async () => {
+    signInAs(await makeUser());
+    const before = newId({ now: Date.now(), random: 0 });
+    const first = await getTimeline('following', null);
+    const newest = BigInt((first.ok && first.page.newestId) || '0');
+    expect(newest).toBeGreaterThanOrEqual(before);
+    expect(newest).toBeLessThanOrEqual(newId({ now: Date.now() + 1, random: 0 }));
+  });
 });

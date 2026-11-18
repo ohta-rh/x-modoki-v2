@@ -24,7 +24,15 @@ export type QuotedPost =
   | { id: string; author: UserSummary; text: string; createdAt: string; quotesAnother: boolean }
   | { id: string; deleted: true };
 
-export type PostPage = { items: Post[]; nextCursor: string | null };
+export type PostPage = {
+  items: Post[];
+  nextCursor: string | null;
+  /**
+   * A timeline's first page only: the top row's own ID (a repost's, not its original's), or the
+   * moment it was read when there is none. Newer posts are counted from it (#28).
+   */
+  newestId?: string;
+};
 
 export type TimelineKind = 'following' | 'for-you';
 

@@ -26,7 +26,11 @@ export function TimelineFeed({ kind, ...props }: TimelineFeedProps) {
       endpoint={`/api/timeline/${kind}`}
       top={
         kind === 'following'
-          ? (posts) => <NewPostsButton since={posts[0].id} queryKey={timelineKey(kind)} />
+          ? (first) => (
+              // A timeline's first page always says where it starts (newestId): the top row's
+              // own ID, which for a repost is newer than the post shown (#28 review 1).
+              <NewPostsButton since={first.newestId!} queryKey={timelineKey(kind)} />
+            )
           : undefined
       }
       {...props}

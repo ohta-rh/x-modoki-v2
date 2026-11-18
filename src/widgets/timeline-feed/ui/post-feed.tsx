@@ -34,8 +34,8 @@ export type PostFeedProps = {
   /** Pins one of the viewer's posts to their profile (#23); without it the menu has no pin item. */
   pinAction?: (postId: string, pinned: boolean) => Promise<SetPinActionResult>;
   emptyText?: string;
-  /** Shown above a list that has posts, given them (the timeline's 「N 件のポストを表示」, #28). */
-  top?: (posts: Post[]) => ReactNode;
+  /** Shown above the list, empty or not, given its first page (the timeline's 「N 件のポストを表示」, #28). */
+  top?: (first: PostPage) => ReactNode;
 };
 
 async function fetchPage(url: string): Promise<PostPage> {
@@ -98,13 +98,19 @@ export function PostFeed({
     if (hasNextPage && !isFetchingNextPage && lastShown >= posts.length - 1) void fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage, lastShown, posts.length]);
 
+  const above = top?.(query.data.pages[0]);
   if (posts.length === 0) {
-    return <p className="px-4 py-8 text-center text-text-muted">{emptyText}</p>;
+    return (
+      <>
+        {above}
+        <p className="px-4 py-8 text-center text-text-muted">{emptyText}</p>
+      </>
+    );
   }
   const date = new Date(now);
   return (
     <div>
-      {top?.(posts)}
+      {above}
       <div className="relative" style={{ height: virtualizer.getTotalSize() }}>
         {rows.map((row) => (
           <div

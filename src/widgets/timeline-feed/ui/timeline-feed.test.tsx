@@ -92,17 +92,49 @@ describe('新しい投稿（#28）', () => {
     try {
       const fetchSpy = vi.fn(async () => Response.json({ count: 2 }));
       vi.stubGlobal('fetch', fetchSpy);
+      // The top row's own ID (a repost row, newer than its original post 3), from the server.
       const { unmount } = render(
-        wrap(<TimelineFeed kind="following" firstPage={page([3, 2], null)} now={now} />),
+        wrap(
+          <TimelineFeed
+            kind="following"
+            firstPage={{ ...page([3, 2], null), newestId: '9' }}
+            now={now}
+          />,
+        ),
       );
       await act(() => vi.advanceTimersByTimeAsync(30_000));
-      expect(fetchSpy).toHaveBeenCalledWith('/api/timeline/following/new-count?since=3');
+      expect(fetchSpy).toHaveBeenCalledWith('/api/timeline/following/new-count?since=9');
       expect(await screen.findByRole('button', { name: '2 件のポストを表示' })).toBeTruthy();
       unmount();
       fetchSpy.mockClear();
       render(wrap(<TimelineFeed kind="for-you" firstPage={page([3, 2], null)} now={now} />));
       await act(() => vi.advanceTimersByTimeAsync(60_000));
       expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+      focusManager.setFocused(undefined);
+    }
+  });
+
+  it('フォロー中が空でも、読んだ時刻より新しい投稿を聞いて知らせる（#28 レビュー 1）', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    focusManager.setFocused(true);
+    try {
+      const fetchSpy = vi.fn(async () => Response.json({ count: 1 }));
+      vi.stubGlobal('fetch', fetchSpy);
+      render(
+        wrap(
+          <TimelineFeed
+            kind="following"
+            firstPage={{ ...page([], null), newestId: '5' }}
+            now={now}
+          />,
+        ),
+      );
+      expect(screen.getByText('まだポストがありません')).toBeInTheDocument();
+      await act(() => vi.advanceTimersByTimeAsync(30_000));
+      expect(fetchSpy).toHaveBeenCalledWith('/api/timeline/following/new-count?since=5');
+      expect(await screen.findByRole('button', { name: '1 件のポストを表示' })).toBeTruthy();
     } finally {
       vi.useRealTimers();
       focusManager.setFocused(undefined);
