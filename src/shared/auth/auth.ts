@@ -16,7 +16,7 @@ export const getAuth = cache(() =>
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
     database: drizzleAdapter(getDb(), { provider: 'pg', schema }),
-    emailAndPassword: { enabled: true, minPasswordLength: 8 },
+    emailAndPassword: { enabled: true, minPasswordLength: 8, maxPasswordLength: 128 },
     // One rate limit mechanism for the whole app: rate_limits (ADR-0010, NFR-SEC-05).
     rateLimit: { enabled: false },
     // Sign-up and sign-in only through the Server Actions, which validate and rate-limit them

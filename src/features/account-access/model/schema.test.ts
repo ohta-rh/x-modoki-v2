@@ -60,6 +60,13 @@ describe('signUpSchema（FR-AUTH、routing.md の 4 節）', () => {
     ]);
   });
 
+  it('パスワードは 128 文字まで（Better Auth の上限と同じ）', () => {
+    expect(errors({ password: 'p'.repeat(129) }).password).toEqual([
+      'パスワードは 128 文字までにしてください',
+    ]);
+    expect(errors({ password: 'p'.repeat(128) }).password).toBeUndefined();
+  });
+
   it('名前は 1〜50 文字、メールアドレスは形を確かめる', () => {
     expect(errors({ name: '' }).name).toEqual(['名前を入れてください']);
     expect(errors({ name: 'あ'.repeat(51) }).name).toEqual(['名前は 50 文字までにしてください']);

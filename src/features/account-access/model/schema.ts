@@ -17,7 +17,10 @@ export const signUpSchema = z
         'このユーザー名は使えません',
       ),
     email: z.string().trim().toLowerCase().pipe(z.email('メールアドレスの形が正しくありません')),
-    password: z.string().min(8, 'パスワードは 8 文字以上にしてください'),
+    password: z
+      .string()
+      .min(8, 'パスワードは 8 文字以上にしてください')
+      .max(128, 'パスワードは 128 文字までにしてください'),
   })
   .transform(({ username, ...rest }) => ({
     ...rest,
