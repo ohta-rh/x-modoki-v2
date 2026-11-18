@@ -53,3 +53,4 @@ status: stable
 | [0039](0039-not-found-route-file-is-a-thin-shell.md) | 404 の画面は、アプリの not-found.tsx から同期の画面のコンポーネントを出し、Next.js の既定の画面を使わない | 採用 | エージェント |
 | [0040](0040-bookmark-cursor-is-time-and-post-id.md) | ブックマークの一覧のカーソルは、付けた時刻のマイクロ秒と投稿の ID の組にする | 採用 | エージェント |
 | [0041](0041-repost-and-quote-target-the-original.md) | リポストと引用の対象は、リポストの行なら元の投稿、返信ならその返信にする | 採用 | エージェント |
+| [0042](0042-profile-routes-in-a-group-with-their-own-not-found.md) | プロフィールのルートは [username] の中のルートグループに置き、無いアカウントの 404 をそこだけに出す | 採用 | エージェント |

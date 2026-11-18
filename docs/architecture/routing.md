@@ -70,11 +70,12 @@ app/                                   リポジトリのルート。各ファ�
 │   │   ├── display/page.tsx
 │   │   └── profile/page.tsx           直接開いたとき
 │   └── [username]/
-│       ├── layout.tsx                 バナー・プロフィール・タブ
-│       ├── page.tsx
-│       ├── with_replies/page.tsx
-│       ├── media/page.tsx
-│       ├── likes/page.tsx
+│       ├── (profile)/                 バナー・プロフィール・タブは各ページが出す（ADR-0042）
+│       │   ├── page.tsx
+│       │   ├── with_replies/page.tsx
+│       │   ├── media/page.tsx
+│       │   ├── likes/page.tsx
+│       │   └── not-found.tsx          「このアカウントは存在しません」
 │       ├── following/page.tsx
 │       ├── followers/page.tsx
 │       └── status/[postId]/

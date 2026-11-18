@@ -190,7 +190,8 @@ Server Action は例外を投げずに、上の形で返す。想定していな
 | `GET /api/timeline/following?cursor=` | 「フォロー中」の続き |
 | `GET /api/timeline/for-you?cursor=` | 「おすすめ」の続き |
 | `GET /api/timeline/following/new-count?since=` | 新しい投稿の数 |
-| `GET /api/users/{username}/posts?tab=&cursor=` | プロフィールの各タブの続き |
+| `GET /api/users/{username}` | プロフィール（ホバーのカード。#23） |
+| `GET /api/users/{username}/posts?tab=&cursor=` | プロフィールの各タブの続き。`tab` は `posts`・`with_replies`・`media`・`likes`（本人だけ、403）。`likes` のカーソルは [ADR-0040](../adr/0040-bookmark-cursor-is-time-and-post-id.md) の形。ポストのタブの 1 ページ目の先頭に、固定した投稿が `pinned: true` で 1 回だけ出る |
 | `GET /api/users/{username}/follows?type=&cursor=` | フォロー中とフォロワーの続き |
 | `GET /api/posts/{id}/replies?cursor=` | 返信の続き |
 | `GET /api/search?q=&f=&cursor=` | 検索の結果の続き |

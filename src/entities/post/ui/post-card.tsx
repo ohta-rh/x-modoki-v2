@@ -1,11 +1,12 @@
 'use client';
 
-import { BarChart2, Heart, MessageCircle, Repeat2 } from 'lucide-react';
+import { BarChart2, Heart, MessageCircle, Pin, Repeat2 } from 'lucide-react';
 import type { Route } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { MouseEvent, ReactNode } from 'react';
 import { compactCount, relativeTime } from '@/shared/lib/format';
+import { UserHoverCard } from '@/entities/user/@x/post';
 import { Avatar } from '@/shared/ui/avatar';
 import type { Post } from '../model/types';
 import { PostText } from './post-text';
@@ -54,7 +55,6 @@ export function PostCard({
   repost,
 }: Props) {
   const router = useRouter();
-  const profile = `/${post.author.username}` as Route;
   const detail = `/${post.author.username}/status/${post.id}` as Route;
   return (
     <article
@@ -65,8 +65,14 @@ export function PostCard({
         if (!event.currentTarget.contains(event.target as Node)) return;
         if (!ownAction(event)) router.push(detail);
       }}
-      className={`relative flex cursor-pointer gap-3 px-4 py-3 hover:bg-hover/50 ${post.repostedBy ? 'pt-7' : ''} ${connector ? '' : 'border-b border-line'}`}
+      className={`relative flex cursor-pointer gap-3 px-4 py-3 hover:bg-hover/50 ${post.repostedBy || post.pinned ? 'pt-7' : ''} ${connector ? '' : 'border-b border-line'}`}
     >
+      {post.pinned ? (
+        <p className="absolute top-1 left-[52px] flex items-center gap-1 text-[13px] font-bold text-text-muted">
+          <Pin aria-hidden="true" className="size-4" />
+          固定
+        </p>
+      ) : null}
       {post.repostedBy ? (
         <p className="absolute top-1 left-[52px] flex items-center gap-1 text-[13px] font-bold text-text-muted">
           <Repeat2 aria-hidden="true" className="size-4" />
@@ -82,14 +88,23 @@ export function PostCard({
           className="absolute top-[56px] bottom-0 left-[35px] w-0.5 bg-line"
         />
       ) : null}
-      <Link href={profile} aria-label={`${post.author.name} のプロフィール`} className="shrink-0">
+      <UserHoverCard
+        username={post.author.username}
+        name={post.author.name}
+        label={`${post.author.name} のプロフィール`}
+        className="shrink-0"
+      >
         <Avatar name={post.author.name} src={post.author.avatarUrl} />
-      </Link>
+      </UserHoverCard>
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-1 text-body">
-          <Link href={profile} className="truncate font-bold hover:underline">
+          <UserHoverCard
+            username={post.author.username}
+            name={post.author.name}
+            className="truncate font-bold hover:underline"
+          >
             {post.author.name}
-          </Link>
+          </UserHoverCard>
           <span className="truncate text-text-muted">@{post.author.username}</span>
           <span className="text-text-muted">·</span>
           <time dateTime={post.createdAt} className="shrink-0 text-text-muted">

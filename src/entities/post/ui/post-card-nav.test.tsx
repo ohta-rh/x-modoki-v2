@@ -88,3 +88,25 @@ describe('PostCard の操作の差し込み（#21）', () => {
     ]);
   });
 });
+
+describe('PostCard のホバーのカード（#23）', () => {
+  it('アバターと名前に約 0.5 秒ホバーすると、作者の小さなカードが出る', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        Response.json({
+          username: 'taro',
+          name: '太郎',
+          bio: '',
+          followersCount: 0,
+          followingCount: 0,
+        }),
+      ),
+    );
+    render(<PostCard post={post} now={now} />);
+    await userEvent.hover(screen.getByRole('link', { name: '太郎 のプロフィール' }));
+    expect(
+      await screen.findByRole('dialog', { name: '太郎 のプロフィールのカード' }, { timeout: 2000 }),
+    ).toHaveTextContent('@taro');
+  });
+});

@@ -5,7 +5,7 @@ import { useActionState } from 'react';
 import { SIGNUP_PATH } from '@/shared/config';
 import { Button } from '@/shared/ui/button';
 import type { SignInState } from '../api/actions';
-import { Field } from './field';
+import { Field } from '@/shared/ui/field';
 
 type Props = {
   action: (state: SignInState, data: FormData) => Promise<SignInState>;

@@ -237,3 +237,29 @@ describe('PostFeed のリポストと引用（#22）', () => {
     errors.mockRestore();
   });
 });
+
+describe('PostFeed の固定とプロフィールの一覧（#23）', () => {
+  it('自分の投稿のメニューに固定を出し、固定したら一覧を読み直す。endpoint に ? があれば & でつなぐ', async () => {
+    const fetchSpy = vi.fn(async () => Response.json({ items: [], nextCursor: null }));
+    vi.stubGlobal('fetch', fetchSpy);
+    const pinAction = vi.fn(async () => ({ ok: true as const }));
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <PostFeed
+          queryKey={['profile', 'taro', 'posts']}
+          endpoint="/api/users/taro/posts?tab=posts"
+          firstPage={{ items: [post(1, true)], nextCursor: null }}
+          now="2026-11-18T03:00:00.000Z"
+          deleteAction={vi.fn()}
+          pinAction={pinAction}
+        />
+      </QueryClientProvider>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'もっと見る' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'プロフィールに固定する' }));
+    expect(pinAction).toHaveBeenCalledWith('1', true);
+    await waitFor(() =>
+      expect(fetchSpy).toHaveBeenCalledWith('/api/users/taro/posts?tab=posts&cursor='),
+    );
+  });
+});

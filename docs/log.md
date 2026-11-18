@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **New**: [ADR-0042](adr/0042-profile-routes-in-a-group-with-their-own-not-found.md)（プロフィールのルートと 404）を記録し、[ルーティング](architecture/routing.md)の 2 節と[アプリケーションの構造](architecture/application-structure.md)の 5 節を直した（#23）。
 * **New**: [#22 の試験レポート](test-reports/issue-0022-repost-quote.md)（リポストと引用）を足した。
 * **New**: [#47 の試験レポート](test-reports/issue-0047-prehydration-input.md)（ハイドレーションの前に打った文字）を足した。
 * **New**: [ADR-0041](adr/0041-repost-and-quote-target-the-original.md)（リポストと引用の対象）を記録し、[アプリケーションの構造](architecture/application-structure.md)の 5 節に `repostedBy` と `quoted` の形を書いた（#22）。

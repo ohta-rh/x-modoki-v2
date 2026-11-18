@@ -12,6 +12,8 @@ export type Post = {
   repostedBy: UserSummary | null;
   replyTo: { username: string } | null;
   quoted: QuotedPost | null;
+  /** Shown first on its author's profile with 「固定」 (#23); absent elsewhere. */
+  pinned?: true;
 };
 
 /**
@@ -25,6 +27,9 @@ export type QuotedPost =
 export type PostPage = { items: Post[]; nextCursor: string | null };
 
 export type TimelineKind = 'following' | 'for-you';
+
+/** The tabs of a profile (#23, ui-ux.md 8). */
+export type UserPostsTab = 'posts' | 'with_replies' | 'media' | 'likes';
 
 /** A post above the one being read: a post, or only a mark when it was deleted. */
 export type ThreadItem = Post | { id: string; deleted: true };

@@ -42,4 +42,20 @@ describe('DeletePostMenu（#20）', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('この投稿は削除できません');
     expect(onDeleted).not.toHaveBeenCalled();
   });
+
+  it('items を渡すと、削除の上に並べる（#23）', async () => {
+    render(
+      <DeletePostMenu
+        postId="1"
+        action={async () => ({ ok: true })}
+        onDeleted={() => undefined}
+        items={<div role="menuitem">ほかの項目</div>}
+      />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'もっと見る' }));
+    const names = (await screen.findAllByRole('menuitem')).map((item) => item.textContent);
+    expect(names).toEqual(['ほかの項目', '削除']);
+    // Wide enough that 「プロフィールに固定する」 stays on one line (found in Chrome, #23).
+    expect(screen.getByRole('menu')).toHaveClass('min-w-56');
+  });
 });

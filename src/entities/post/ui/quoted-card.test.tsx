@@ -83,3 +83,27 @@ describe('PostCard のリポストと引用（#22）', () => {
     expect([...group.children][1]).toHaveTextContent('リポストの部品');
   });
 });
+
+describe('PostCard の固定（#23）', () => {
+  it('pinned なら上に「固定」と出す', () => {
+    render(
+      <PostCard
+        post={{
+          id: '1',
+          author: { username: 'taro', name: '太郎', avatarUrl: null },
+          text: '固定した投稿',
+          createdAt: '2026-11-18T02:59:00.000Z',
+          media: [],
+          counts: { replies: 0, reposts: 0, likes: 0, bookmarks: 0, views: 0 },
+          viewer: { liked: false, reposted: false, bookmarked: false, isAuthor: true },
+          repostedBy: null,
+          replyTo: null,
+          quoted: null,
+          pinned: true,
+        }}
+        now={now}
+      />,
+    );
+    expect(screen.getByRole('article')).toHaveTextContent(/^固定/);
+  });
+});

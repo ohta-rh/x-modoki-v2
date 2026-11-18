@@ -3,3 +3,5 @@ export { getBookmarkList } from './bookmarks';
 export { postView } from './post-view';
 export { getPostReplies } from './replies';
 export { getFollowingTimeline, getForYouTimeline } from './timeline';
+export { getUserPostList } from './user-posts';
+export { getUserProfile } from './user-profile';

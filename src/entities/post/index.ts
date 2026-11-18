@@ -5,6 +5,7 @@ export type {
   QuotedPost,
   ThreadItem,
   TimelineKind,
+  UserPostsTab,
 } from './model/types';
 export { MainPost } from './ui/main-post';
 export { PostCard } from './ui/post-card';

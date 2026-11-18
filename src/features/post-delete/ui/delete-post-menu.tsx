@@ -1,7 +1,7 @@
 'use client';
 
 import { Ellipsis, Trash2 } from 'lucide-react';
-import { useState, useTransition } from 'react';
+import { type ReactNode, useState, useTransition } from 'react';
 import { Button } from '@/shared/ui/button';
 import {
   Dialog,
@@ -19,10 +19,12 @@ type Props = {
   postId: string;
   action: (postId: string) => Promise<DeletePostActionResult>;
   onDeleted: () => void;
+  /** More items for the same menu, composed by the caller (e.g. pin, #23). */
+  items?: ReactNode;
 };
 
 /** The ⋯ menu on the viewer's own post: 削除, then a confirmation (#20). */
-export function DeletePostMenu({ postId, action, onDeleted }: Props) {
+export function DeletePostMenu({ postId, action, onDeleted, items }: Props) {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -47,7 +49,8 @@ export function DeletePostMenu({ postId, action, onDeleted }: Props) {
         >
           <Ellipsis aria-hidden="true" className="size-[18px]" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
+        <DropdownMenuContent className="min-w-56">
+          {items}
           <DropdownMenuItem className="font-bold text-danger" onClick={() => setConfirming(true)}>
             <Trash2 aria-hidden="true" />
             削除

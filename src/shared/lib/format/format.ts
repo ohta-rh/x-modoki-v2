@@ -54,3 +54,13 @@ export function absoluteTime(date: Date): string {
   const clock = `${hour < 12 ? '午前' : '午後'}${hour % 12}:${values.minute}`;
   return `${clock} · ${values.year}年${values.month}月${values.day}日`;
 }
+
+/** When a user joined, as on a profile (#23): 「2025年4月から利用しています」, in Japan time. */
+export function joinedMonth(date: Date): string {
+  const values = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', { timeZone: TIME_ZONE, year: 'numeric', month: 'numeric' })
+      .formatToParts(date)
+      .map((part) => [part.type, part.value]),
+  );
+  return `${values.year}年${values.month}月から利用しています`;
+}

@@ -10,6 +10,7 @@ import { BookmarkButton } from '@/features/post-bookmark';
 import type { CreatePostActionResult } from '@/features/post-compose';
 import { type DeletePostActionResult, DeletePostMenu } from '@/features/post-delete';
 import { LikeButton } from '@/features/post-like';
+import { PinMenuItem, type SetPinActionResult } from '@/features/post-pin';
 import { RepostMenu } from '@/features/post-repost';
 import { Spinner } from '@/shared/ui/spinner';
 import { type ReactionAction, useReaction } from '../lib/use-reaction';
@@ -30,6 +31,8 @@ export type PostFeedProps = {
   /** Repost / quote Server Actions (#22); without them the repost count is shown as text. */
   repostAction?: ReactionAction;
   quoteAction?: (text: string, quoteOfId: string) => Promise<CreatePostActionResult>;
+  /** Pins one of the viewer's posts to their profile (#23); without it the menu has no pin item. */
+  pinAction?: (postId: string, pinned: boolean) => Promise<SetPinActionResult>;
   emptyText?: string;
 };
 
@@ -54,6 +57,7 @@ export function PostFeed({
   bookmarkAction,
   repostAction,
   quoteAction,
+  pinAction,
   emptyText = 'まだポストがありません',
 }: PostFeedProps) {
   const queryClient = useQueryClient();
@@ -64,7 +68,9 @@ export function PostFeed({
   const router = useRouter();
   const query = useInfiniteQuery({
     queryKey,
-    queryFn: ({ pageParam }) => fetchPage(`${endpoint}?cursor=${pageParam}`),
+    // An endpoint may carry its own query (a profile's tab): the cursor is added to it.
+    queryFn: ({ pageParam }) =>
+      fetchPage(`${endpoint}${endpoint.includes('?') ? '&' : '?'}cursor=${pageParam}`),
     initialPageParam: '',
     getNextPageParam: (last) => last.nextCursor ?? undefined,
     initialData: { pages: [firstPage], pageParams: [''] },
@@ -136,6 +142,16 @@ export function PostFeed({
                   <DeletePostMenu
                     postId={posts[row.index].id}
                     action={deleteAction}
+                    items={
+                      pinAction ? (
+                        <PinMenuItem
+                          postId={posts[row.index].id}
+                          pinned={posts[row.index].pinned === true}
+                          action={pinAction}
+                          onDone={() => void queryClient.resetQueries({ queryKey })}
+                        />
+                      ) : undefined
+                    }
                     onDeleted={() => {
                       void queryClient.resetQueries({ queryKey });
                       // Counts outside the list (a parent's replies) are server data.
