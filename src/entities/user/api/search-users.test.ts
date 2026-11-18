@@ -4,7 +4,7 @@ import { currentSession, signInAs, signOut } from '@test/session';
 import { sql } from 'drizzle-orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { follows } from '@/shared/db';
-import { searchUsers } from './search-users';
+import { searchUsers, userSearchMatch } from './search-users';
 
 vi.mock('@/shared/auth/index.server', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/shared/auth/index.server')>()),
@@ -48,24 +48,19 @@ describe('searchUsers（#27）', () => {
     const all = [...first.page.items, ...second.page.items].map((item) => item.username);
     expect(new Set(all).size).toBe(22);
     expect(await searchUsers('page', 'nope')).toEqual({ ok: false, error: 'BAD_CURSOR' });
+    // Larger than the integer column holds: refused, not an error from PostgreSQL (review 1).
+    expect(await searchUsers('page', '9999999999_x')).toEqual({ ok: false, error: 'BAD_CURSOR' });
   });
 
-  it('本文とユーザーの検索の形は、gin_trgm_ops の索引を使える（EXPLAIN）', async () => {
-    const plans = await testDb().transaction(async (tx) => {
+  it('ユーザーの検索の条件は、users_search_trgm_idx を使える（EXPLAIN、本物の条件で）', async () => {
+    const plan = await testDb().transaction(async (tx) => {
       // Few rows make a full scan cheaper; turn it off to see whether the index can serve the shape.
       await tx.execute(sql`SET LOCAL enable_seqscan = off`);
-      const plan = async (query: ReturnType<typeof sql>) =>
-        (await tx.execute<{ 'QUERY PLAN': string }>(sql`EXPLAIN ${query}`)).rows
-          .map((row) => row['QUERY PLAN'])
-          .join('\n');
-      return [
-        await plan(sql`SELECT id FROM posts WHERE text ILIKE '%りんご%' ESCAPE '\\'`),
-        await plan(
-          sql`SELECT id FROM users WHERE (name || ' ' || coalesce(username, '')) ILIKE '%hanako%' ESCAPE '\\'`,
-        ),
-      ];
+      const rows = await tx.execute<{ 'QUERY PLAN': string }>(
+        sql`EXPLAIN SELECT id FROM users WHERE ${userSearchMatch('hanako')}`,
+      );
+      return rows.rows.map((row) => row['QUERY PLAN']).join('\n');
     });
-    expect(plans[0]).toContain('posts_text_trgm_idx');
-    expect(plans[1]).toContain('users_search_trgm_idx');
+    expect(plan).toContain('users_search_trgm_idx');
   });
 });

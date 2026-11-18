@@ -47,4 +47,22 @@ describe('getSuggestions（#27）', () => {
       'z_sg',
     ]);
   });
+
+  it('上位のほとんどをフォローしていても、まだフォローしていない人を 3 人出す（レビュー 1）', async () => {
+    const me = await makeUser({ username: 'me_many' });
+    const top = [];
+    for (let i = 0; i < 20; i += 1) {
+      top.push(await makeUser({ username: `top_${i}`, followersCount: 100 + i }));
+    }
+    for (const person of top.slice(0, 18)) {
+      await testDb().insert(follows).values({ followerId: me.id, followeeId: person.id });
+    }
+    for (let i = 0; i < 3; i += 1) await makeUser({ username: `low_${i}`, followersCount: 10 - i });
+    signInAs(me);
+    expect((await getSuggestions()).map((person) => person.username)).toEqual([
+      'top_19',
+      'top_18',
+      'low_0',
+    ]);
+  });
 });

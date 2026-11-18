@@ -10,6 +10,13 @@ const PAGE_SIZE = 20;
 /** `<followers count>_<user id>`, the order it pages in. */
 const CURSOR = /^(0|[1-9]\d{0,9})_(.+)$/;
 
+/**
+ * People whose name or username contains `q`: exactly the `users_search_trgm_idx` expression, so
+ * the index serves it (its test runs EXPLAIN on this).
+ */
+export const userSearchMatch = (q: string) =>
+  sql`(${user.name} || ' ' || coalesce(${user.username}, '')) ILIKE ${likePattern(q)} ESCAPE '\\'`;
+
 export type SearchUsersResult = { ok: true; page: FollowPage } | { ok: false; error: 'BAD_CURSOR' };
 
 /**
@@ -19,12 +26,13 @@ export type SearchUsersResult = { ok: true; page: FollowPage } | { ok: false; er
  */
 export async function searchUsers(q: string, cursor: string | null): Promise<SearchUsersResult> {
   const viewerId = (await getSession())?.id ?? null;
-  const where: SQL[] = [
-    sql`(${user.name} || ' ' || coalesce(${user.username}, '')) ILIKE ${likePattern(q)} ESCAPE '\\'`,
-  ];
+  const where: SQL[] = [userSearchMatch(q)];
   if (cursor !== null) {
     const [, followers = '', id = ''] = CURSOR.exec(cursor) ?? [];
-    if (followers === '') return { ok: false, error: 'BAD_CURSOR' };
+    // The count must fit the integer column, or PostgreSQL refuses the cast (review 1).
+    if (followers === '' || Number(followers) > 2_147_483_647) {
+      return { ok: false, error: 'BAD_CURSOR' };
+    }
     where.push(sql`(${user.followersCount}, ${user.id}) < (${Number(followers)}::integer, ${id})`);
   }
   const rows = await getDb()

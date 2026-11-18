@@ -11,6 +11,9 @@ const PAGE_SIZE = 20;
 /** 話題's cursor: `<like count>_<post id>`, the order it pages in. */
 const TOP_CURSOR = /^(\d+)_(\d+)$/;
 
+/** Posts whose text contains `q`, served by `posts_text_trgm_idx` (its test runs EXPLAIN on this). */
+export const postTextMatch = (q: string) => sql`${posts.text} ILIKE ${likePattern(q)} ESCAPE '\\'`;
+
 export type SearchPostsTab = 'top' | 'live' | 'media';
 export type SearchPostsResult = { ok: true; page: PostPage } | { ok: false; error: 'BAD_CURSOR' };
 
@@ -40,7 +43,7 @@ export async function searchPosts(
       ),
     );
   } else {
-    where.push(sql`${posts.text} ILIKE ${likePattern(q)} ESCAPE '\\'`);
+    where.push(postTextMatch(q));
   }
   if (tab === 'media') {
     where.push(exists(db.select().from(postMedia).where(eq(postMedia.postId, posts.id))));

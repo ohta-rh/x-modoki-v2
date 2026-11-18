@@ -70,5 +70,7 @@ test('1024px 以上で、右サイドバーに検索の欄・トレンド・お�
   const aside = page.getByRole('complementary');
   await expect(aside.getByRole('searchbox', { name: '検索' })).toBeVisible();
   await expect(aside.getByRole('region', { name: 'いまどうしてる？' })).toBeVisible();
+  // Earlier sign-ups mean there is always someone this new user does not follow (review 1).
+  await expect(aside.getByRole('region', { name: 'おすすめユーザー' })).toBeVisible();
   await expect(aside.getByText('X Corp. とは関係の無い学習用のアプリ')).toBeVisible();
 });

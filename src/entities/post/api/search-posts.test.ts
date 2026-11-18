@@ -2,10 +2,11 @@ import { makePost, makeUser } from '@test/factories';
 import { setupTestDb, testDb } from '@test/db';
 import { makeUpload } from '@test/uploads';
 import { currentSession, signOut } from '@test/session';
+import { sql } from 'drizzle-orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { hashtags, postHashtags, postMedia } from '@/shared/db';
 import { newId } from '@/shared/lib/id';
-import { searchPosts } from './search-posts';
+import { postTextMatch, searchPosts } from './search-posts';
 
 vi.mock('@/shared/auth/index.server', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/shared/auth/index.server')>()),
@@ -94,5 +95,17 @@ describe('searchPosts（#27、data-model.md の 4 節）', () => {
     }
     expect(await searchPosts('続き', 'top', 'nope')).toEqual({ ok: false, error: 'BAD_CURSOR' });
     expect(await searchPosts('続き', 'live', 'nope')).toEqual({ ok: false, error: 'BAD_CURSOR' });
+  });
+
+  it('本文の検索の条件は、posts_text_trgm_idx を使える（EXPLAIN、本物の条件で）', async () => {
+    const plan = await testDb().transaction(async (tx) => {
+      // Few rows make a full scan cheaper; turn it off to see whether the index can serve the shape.
+      await tx.execute(sql`SET LOCAL enable_seqscan = off`);
+      const rows = await tx.execute<{ 'QUERY PLAN': string }>(
+        sql`EXPLAIN SELECT id FROM posts WHERE ${postTextMatch('りんご')}`,
+      );
+      return rows.rows.map((row) => row['QUERY PLAN']).join('\n');
+    });
+    expect(plan).toContain('posts_text_trgm_idx');
   });
 });
