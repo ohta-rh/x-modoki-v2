@@ -12,7 +12,19 @@ Applies whenever work is planned or filed as GitHub issues in this repository.
 - **PBI** = one vertical slice that delivers observable value on its own and can be
   implemented, verified, and merged independently. Split by behavior, never by layer
   ("backend part" / "frontend part" is not a PBI).
+- **A milestone is one EPIC whose children are the six SDLC-phase EPICs** (ADR-0023), in this
+  order: requirements → design → implementation → verification → release → operations. PBIs
+  hang under the phase they belong to. Do not skip a phase: a milestone with no requirements,
+  verification, or operations PBIs is incomplete, not lean.
+  - Phase labels: `sdlc:1-requirements`, `sdlc:2-design`, `sdlc:3-implementation`,
+    `sdlc:4-verification`, `sdlc:5-release`, `sdlc:6-operations`.
+  - The milestone EPIC lists every PBI in one numbered table — that order is the order the
+    delivery loop takes them (`.claude/rules/delivery-loop.md`).
+  - An assumption no one has run yet (a library on a new framework version, an emulator, a
+    tool) becomes an investigation PBI in the design phase, before anything is built on it.
 - Link children as GitHub sub-issues of the EPIC, and keep the EPIC's checklist in sync.
+- `blocked` is applied only by the rule in `.claude/rules/delivery-loop.md` §3, with the
+  evidence and a recommendation written on the issue.
 - Labels: `epic` on the EPIC, `pbi` on each child. Titles: `[EPIC] <outcome>` /
   `<what the user can do or what stops happening>`.
 - A PBI that depends on another PBI names it under 依存関係 (`blocked by #N`). Order the
