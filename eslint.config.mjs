@@ -76,8 +76,8 @@ const config = defineConfig([
       'no-restricted-syntax': [
         'error',
         {
-          selector:
-            "CallExpression[callee.property.name='wheel'][callee.object.property.name='mouse']",
+          // Any .wheel(): an alias of page.mouse would slip past a narrower match (review 1).
+          selector: "CallExpression[callee.property.name='wheel']",
           message:
             "Scroll with window.scrollTo / scrollBy and behavior: 'instant', then wait for the position (ADR-0049).",
         },
