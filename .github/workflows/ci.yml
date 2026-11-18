@@ -51,8 +51,9 @@ jobs:
         run: pnpm exec playwright install chromium firefox webkit
       # The .deb files of the browsers' system packages are cached too, so a run with a cache hit
       # never talks to the apt mirror, which can be slow for longer than any retry (#45).
-      # The runner image is rebuilt about weekly; a new image must miss the cache so it is saved
-      # again (actions/cache never saves on a primary-key hit).
+      # Runners mix several image builds. The primary key is per image, so a new image saves its own
+      # set (a primary-key hit never saves); restore-keys still bring back the newest set from any
+      # image, and dpkg -i decides whether it fits.
       - name: Runner image
         id: image
         run: echo "version=$ImageOS-$ImageVersion" >> "$GITHUB_OUTPUT"
@@ -62,10 +63,11 @@ jobs:
         with:
           path: ~/apt-debs
           key: playwright-debs-${{ steps.image.outputs.version }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: playwright-debs-
       - name: Playwright system packages
         timeout-minutes: 15
         run: |
-          if [ "${{ steps.debs-cache.outputs.cache-hit }}" = "true" ] && sudo dpkg -i ~/apt-debs/*.deb; then
+          if ls ~/apt-debs/*.deb > /dev/null 2>&1 && sudo dpkg -i ~/apt-debs/*.deb; then
             exit 0
           fi
           sudo dpkg --configure -a || true
