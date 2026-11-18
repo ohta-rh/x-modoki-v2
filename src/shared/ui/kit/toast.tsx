@@ -29,6 +29,8 @@ function ToastPortal({ ...props }: ToastPrimitive.Portal.Props) {
 function ToastViewport({ className, ...props }: ToastPrimitive.Viewport.Props) {
   return (
     <ToastPrimitive.Viewport
+      // Base UI names the region "Notifications"; the app speaks Japanese (#64).
+      aria-label="お知らせ"
       data-slot="toast-viewport"
       className={cn(
         // Bottom centre at every width (ui-ux.md 7, #28).

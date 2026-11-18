@@ -15,3 +15,11 @@ test('ダイアログとトーストの閉じるボタンは「閉じる」と�
   await toast.hover();
   await expect(page.getByRole('button', { name: '閉じる' })).toBeVisible();
 });
+
+test('トーストの置き場は「お知らせ」という名前で、英語の名前ではない（#64）', async ({ page }) => {
+  await signUp(page);
+  await page.goto('/home');
+  const region = page.locator('[data-slot="toast-viewport"]');
+  await expect(region).toHaveAttribute('role', 'region');
+  await expect(region).toHaveAttribute('aria-label', 'お知らせ');
+});
