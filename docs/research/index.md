@@ -4,3 +4,4 @@
 * [バックエンド技術選定（DB / ORM / 認証 / ストレージ / リアルタイム / ジョブ / デプロイ）](backend.md) - データベース・ORM・認証・画像の置き場所・リアルタイム・ジョブ・配備の候補を、2026-11-18 の時点の版と料金で比べた結果。
 * [X (x.com) Web UI/UX 仕様調査](x-uiux.md) - X の Web 版のレイアウト・配色・部品・操作・URL の形と、名前やロゴを使うときの制約を、2026-11-18 に公開の情報から調べた結果。
 * [Next.js 16.4 を Cloudflare Workers で動かす方法の調査](cloudflare.md) - Next.js 16.4 を Cloudflare Workers で動かす手段（OpenNext と vinext）、対応している機能、Workers・Hyperdrive・Images の制限と料金を、2026-11-18 に公式の情報で調べた結果。
+* [Better Auth 1.7 を Next.js 16.4 で動かした結果](better-auth-on-next-16.md) - Better Auth 1.7.25 と Drizzle と PostgreSQL を、Cache Components を有効にした Next.js 16.4.6 で動かし、登録からログアウトまでと `proxy.ts` を確かめた結果と、動かすのに要った設定。
