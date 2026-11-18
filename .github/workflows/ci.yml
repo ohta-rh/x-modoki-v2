@@ -51,6 +51,8 @@ jobs:
           for attempt in 1 2 3; do
             timeout 240 pnpm exec playwright install-deps chromium firefox webkit && exit 0
             echo "attempt $attempt did not finish in 4 minutes; retrying"
+            # A cap that fires mid-install leaves dpkg half done; finish it before the next attempt.
+            sudo dpkg --configure -a || true
           done
           exit 1
 
