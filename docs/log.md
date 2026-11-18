@@ -1,6 +1,9 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-19
+* **Update**: [UI/UX 仕様](architecture/ui-ux.md)の 5 節に、長い本文を 8 行で切り詰める決まりを書いた（#28）。
+* **New**: [#57 の試験レポート](test-reports/issue-0057-close-labels.md)。
+* **New**: [#58 の試験レポート](test-reports/issue-0058-right-sidebar-scroll.md)。
 * **Update**: [UI/UX 仕様](architecture/ui-ux.md)の 7 節に、下書きは本文だけをそのブラウザの中に持つことを書いた（#28）。
 * **New**: [#56 の試験レポート](test-reports/issue-0056-photo-viewer-test-scroll.md)（画像のビューアの画面のテストの揺らぎ）。
 * **New**: [#27 の試験レポート](test-reports/issue-0027-search.md)（検索・トレンド・おすすめのユーザー）。

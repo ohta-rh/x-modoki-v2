@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { MouseEvent, ReactNode } from 'react';
 import { compactCount, relativeTime } from '@/shared/lib/format';
+import { truncateLines } from '@/shared/lib/text';
 import { UserHoverCard } from '@/entities/user/@x/post';
 import { Avatar } from '@/shared/ui/avatar';
 import type { Post } from '../model/types';
@@ -40,6 +41,21 @@ type Props = {
 /** True when the click started on something with its own action: a link or a button. */
 const ownAction = (event: MouseEvent) =>
   (event.target as HTMLElement).closest('a, button') !== null;
+
+/** A long body is cut to its first lines in a list, with 「さらに表示」 to the post (#28). */
+function ListText({ text, href }: { text: string; href: string }) {
+  const shown = truncateLines(text);
+  return (
+    <>
+      <PostText text={shown.text} />
+      {shown.truncated ? (
+        <Link href={href as Route} className="text-body text-brand hover:underline">
+          さらに表示
+        </Link>
+      ) : null}
+    </>
+  );
+}
 
 /**
  * One post (docs/architecture/ui-ux.md 5). The whole card opens the post's detail; links and buttons
@@ -124,7 +140,7 @@ export function PostCard({
             </Link>
           </p>
         ) : null}
-        <PostText text={post.text} />
+        <ListText text={post.text} href={`/${post.author.username}/status/${post.id}`} />
         <PostMedia media={post.media} photos={`/${post.author.username}/status/${post.id}`} />
         {post.quoted ? <QuotedCard quoted={post.quoted} now={now} /> : null}
         <div

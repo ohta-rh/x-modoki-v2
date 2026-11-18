@@ -81,3 +81,20 @@ describe('PostCard（ui-ux.md の 5 節）', () => {
     expect(screen.getByText('返信 0').nextElementSibling).toHaveTextContent('');
   });
 });
+
+describe('PostCard の長い本文（#28、ui-ux.md の 5 節）', () => {
+  it('9 行以上は最初の 8 行だけを出し、詳細への「さらに表示」を出す。8 行までは出さない', () => {
+    const long = Array.from({ length: 12 }, (_, i) => `行 ${i + 1}`).join('\n');
+    const { unmount } = render(<PostCard post={{ ...post, text: long }} now={now} />);
+    const article = screen.getByRole('article');
+    expect(article).toHaveTextContent('行 8');
+    expect(article).not.toHaveTextContent('行 9');
+    expect(screen.getByRole('link', { name: 'さらに表示' })).toHaveAttribute(
+      'href',
+      '/taro/status/123',
+    );
+    unmount();
+    render(<PostCard post={{ ...post, text: '行 1\n行 2' }} now={now} />);
+    expect(screen.queryByRole('link', { name: 'さらに表示' })).toBeNull();
+  });
+});
