@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **Creation**: [機能でない要件](requirements/non-functional.md)を置いた（#9）。
 * **Creation**: [機能の要件](requirements/functional.md)を置いた（#8、[試験レポート](test-reports/issue-0008-functional-requirements.md)）。
 * **Creation**: [ADR-0029](adr/0029-milestone-on-a-branch-when-a-pr-is-requested.md)（PR を求められたマイルストーンはブランチで進める）を記録した。
 * **Creation**: [試験レポート](test-reports/2026-11-18-bug-handling-rule.md)を置いた（バグのルールと、issue の本文への反映の確認）。
