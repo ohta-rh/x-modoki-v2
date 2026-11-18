@@ -40,6 +40,13 @@ const isIdCollision = (error: unknown) =>
   (error as { cause?: { code?: string; constraint?: string } })?.cause?.code === '23505' &&
   (error as { cause: { constraint?: string } }).cause.constraint === 'posts_pkey';
 
+/** A refusal decided inside the transaction; throwing it rolls the transaction back. */
+class Refused extends Error {
+  constructor(readonly reason: 'NOT_FOUND' | 'VALIDATION') {
+    super(reason);
+  }
+}
+
 /**
  * Creates a post — text, a reply (#20), a quote (#22), up to four checked images (#25) — and, in the
  * same transaction, its hashtags, mentions, images and the author's post count (FR-POST,
@@ -84,78 +91,82 @@ export async function createPost(
   const tags = unique(twitterText.extractHashtags(body));
   const names = unique(twitterText.extractMentions(body));
 
+  // A refusal inside the transaction throws, so everything it wrote — a claimed image above all —
+  // is rolled back; returning would commit it (#25 review 1).
   const insert = async (id: bigint) =>
-    getDb().transaction(async (tx): Promise<bigint | 'NOT_FOUND' | 'VALIDATION'> => {
-      // The images go first: only a still-pending one is claimed, so two posts never share one.
-      const claimed =
-        items.length === 0
-          ? []
-          : await tx
-              .update(media)
-              .set({ status: 'ready' })
-              .where(and(inArray(media.id, mediaIds), eq(media.status, 'pending')))
-              .returning({ id: media.id });
-      if (claimed.length !== items.length) return 'VALIDATION';
-      // The parent's count goes first and re-checks deleted_at: a parent deleted after the check
-      // above takes no reply (nothing has been written yet when this returns).
-      if (parent) {
-        const counted = await tx
-          .update(posts)
-          .set({ replyCount: sql`${posts.replyCount} + 1` })
-          .where(and(eq(posts.id, parent.id), isNull(posts.deletedAt)))
-          .returning({ id: posts.id });
-        if (counted.length === 0) return 'NOT_FOUND';
-      }
-      if (quoted !== undefined) {
-        const counted = await tx
-          .update(posts)
-          .set({ quoteCount: sql`${posts.quoteCount} + 1` })
-          .where(and(eq(posts.id, quoted), isNull(posts.deletedAt)))
-          .returning({ id: posts.id });
-        if (counted.length === 0) return 'NOT_FOUND';
-      }
-      await tx.insert(posts).values({
-        id,
-        authorId: viewer.id,
-        text: body,
-        replyToId: parent?.id ?? null,
-        rootId: parent ? (parent.rootId ?? parent.id) : null,
-        quoteOfId: quoted ?? null,
-      });
-      for (const [position, item] of items.entries()) {
-        await tx.update(media).set({ alt: item.alt }).where(eq(media.id, item.id));
-        await tx.insert(postMedia).values({ postId: id, mediaId: item.id, position });
-      }
-      if (tags.length > 0) {
-        await tx
-          .insert(hashtags)
-          .values(tags.map((tag) => ({ id: newId(), tag })))
-          .onConflictDoNothing({ target: hashtags.tag });
-        const rows = await tx
-          .select({ id: hashtags.id })
-          .from(hashtags)
-          .where(inArray(hashtags.tag, tags));
-        await tx
-          .insert(postHashtags)
-          .values(rows.map((row) => ({ postId: id, hashtagId: row.id })));
-      }
-      if (names.length > 0) {
-        const people = await tx
-          .select({ id: user.id })
-          .from(user)
-          .where(inArray(sql`lower(${user.username})`, names));
-        if (people.length > 0) {
-          await tx
-            .insert(mentions)
-            .values(people.map((person) => ({ postId: id, userId: person.id })));
+    getDb()
+      .transaction(async (tx): Promise<bigint> => {
+        // The images go first: only a still-pending one is claimed, so two posts never share one.
+        const claimed =
+          items.length === 0
+            ? []
+            : await tx
+                .update(media)
+                .set({ status: 'ready' })
+                .where(and(inArray(media.id, mediaIds), eq(media.status, 'pending')))
+                .returning({ id: media.id });
+        if (claimed.length !== items.length) throw new Refused('VALIDATION');
+        // The parent's count goes first and re-checks deleted_at: a parent deleted after the check
+        // above takes no reply.
+        if (parent) {
+          const counted = await tx
+            .update(posts)
+            .set({ replyCount: sql`${posts.replyCount} + 1` })
+            .where(and(eq(posts.id, parent.id), isNull(posts.deletedAt)))
+            .returning({ id: posts.id });
+          if (counted.length === 0) throw new Refused('NOT_FOUND');
         }
-      }
-      await tx
-        .update(user)
-        .set({ postsCount: sql`${user.postsCount} + 1` })
-        .where(eq(user.id, viewer.id));
-      return id;
-    });
+        if (quoted !== undefined) {
+          const counted = await tx
+            .update(posts)
+            .set({ quoteCount: sql`${posts.quoteCount} + 1` })
+            .where(and(eq(posts.id, quoted), isNull(posts.deletedAt)))
+            .returning({ id: posts.id });
+          if (counted.length === 0) throw new Refused('NOT_FOUND');
+        }
+        await tx.insert(posts).values({
+          id,
+          authorId: viewer.id,
+          text: body,
+          replyToId: parent?.id ?? null,
+          rootId: parent ? (parent.rootId ?? parent.id) : null,
+          quoteOfId: quoted ?? null,
+        });
+        for (const [position, item] of items.entries()) {
+          await tx.update(media).set({ alt: item.alt }).where(eq(media.id, item.id));
+          await tx.insert(postMedia).values({ postId: id, mediaId: item.id, position });
+        }
+        if (tags.length > 0) {
+          await tx
+            .insert(hashtags)
+            .values(tags.map((tag) => ({ id: newId(), tag })))
+            .onConflictDoNothing({ target: hashtags.tag });
+          const rows = await tx
+            .select({ id: hashtags.id })
+            .from(hashtags)
+            .where(inArray(hashtags.tag, tags));
+          await tx
+            .insert(postHashtags)
+            .values(rows.map((row) => ({ postId: id, hashtagId: row.id })));
+        }
+        if (names.length > 0) {
+          const people = await tx
+            .select({ id: user.id })
+            .from(user)
+            .where(inArray(sql`lower(${user.username})`, names));
+          if (people.length > 0) {
+            await tx
+              .insert(mentions)
+              .values(people.map((person) => ({ postId: id, userId: person.id })));
+          }
+        }
+        await tx
+          .update(user)
+          .set({ postsCount: sql`${user.postsCount} + 1` })
+          .where(eq(user.id, viewer.id));
+        return id;
+      })
+      .catch((error: unknown) => (error instanceof Refused ? error.reason : Promise.reject(error)));
 
   const created = (id: bigint | 'NOT_FOUND' | 'VALIDATION'): CreatePostResult =>
     typeof id === 'string' ? { ok: false, error: id } : { ok: true, id: toIdString(id) };

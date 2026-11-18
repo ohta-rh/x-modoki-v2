@@ -28,6 +28,11 @@ describe('PostMedia（#25、ui-ux.md の 5 節）', () => {
     expect(grid.firstElementChild).toHaveStyle({ aspectRatio: '800 / 600' });
   });
 
+  it('1 枚の画像の高さには上限がある（縦に長い画像がタイムラインを押し下げない、レビュー 1）', () => {
+    show([image(1, 1152, 2048)]);
+    expect(screen.getByTestId('post-media').firstElementChild).toHaveClass('max-h-[510px]');
+  });
+
   it('2 枚は左右、3 枚は左に大 1 と右に小 2、4 枚は 2×2。すき間は 2px', () => {
     const { unmount } = show([image(1), image(2)]);
     expect(screen.getByTestId('post-media')).toHaveClass('grid', 'grid-cols-2', 'gap-0.5');

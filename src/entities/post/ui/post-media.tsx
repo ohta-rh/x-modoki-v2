@@ -36,6 +36,8 @@ export function PostMedia({ media, wrap = (_, image) => image }: Props) {
           className={cn(
             'min-h-0 overflow-hidden',
             media.length === 3 && index === 0 && 'row-span-2',
+            // One image keeps its ratio, up to a height (ui-ux.md 5): a tall one is cropped.
+            media.length === 1 && 'max-h-[510px]',
           )}
           style={
             media.length === 1 ? { aspectRatio: `${image.width} / ${image.height}` } : undefined

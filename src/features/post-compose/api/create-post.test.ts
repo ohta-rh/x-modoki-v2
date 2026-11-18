@@ -305,4 +305,48 @@ describe('createPost の画像（#25、T-07・T-08）', () => {
     });
     expect(await db.select().from(posts).where(eq(posts.authorId, me.id))).toEqual([]);
   });
+
+  it('2 枚のうち 1 枚だけがほかの投稿に使われたら、拒み、もう 1 枚は pending のまま残す（レビュー 1）', async () => {
+    const me = await makeUser();
+    signInAs(me);
+    const a = await makeUpload(me.id);
+    const b = await makeUpload(me.id);
+    const db = testDb();
+    const transaction = db.transaction.bind(db);
+    vi.spyOn(db, 'transaction').mockImplementationOnce(async (run) => {
+      await db.update(media).set({ status: 'ready' }).where(eq(media.id, b.id));
+      return transaction(run);
+    });
+    expect(
+      await createPost('写真', {
+        media: [
+          { id: a.id, alt: '' },
+          { id: b.id, alt: '' },
+        ],
+      }),
+    ).toEqual({ ok: false, error: 'VALIDATION' });
+    const [row] = await db.select({ status: media.status }).from(media).where(eq(media.id, a.id));
+    expect(row.status).toBe('pending');
+  });
+
+  it('画像つきの返信で、書く前に親が消されたら、NOT_FOUND を返し、画像は pending のまま残す（レビュー 1）', async () => {
+    const me = await makeUser();
+    signInAs(me);
+    const parent = await makePost({ authorId: me.id });
+    const upload = await makeUpload(me.id);
+    const db = testDb();
+    const transaction = db.transaction.bind(db);
+    vi.spyOn(db, 'transaction').mockImplementationOnce(async (run) => {
+      await db.update(posts).set({ deletedAt: new Date() }).where(eq(posts.id, parent.id));
+      return transaction(run);
+    });
+    expect(
+      await createPost('返信', { replyToId: parent.id, media: [{ id: upload.id, alt: '' }] }),
+    ).toEqual({ ok: false, error: 'NOT_FOUND' });
+    const [row] = await db
+      .select({ status: media.status })
+      .from(media)
+      .where(eq(media.id, upload.id));
+    expect(row.status).toBe('pending');
+  });
 });
