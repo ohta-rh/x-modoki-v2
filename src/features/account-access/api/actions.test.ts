@@ -1,6 +1,6 @@
 import { setupTestDb, testDb } from '@test/db';
 import { count } from 'drizzle-orm';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { rateLimits, user } from '@/shared/db';
 
 const request = vi.hoisted(() => ({ headers: new Headers() }));
@@ -33,6 +33,15 @@ async function load() {
   vi.resetModules();
   return import('./actions');
 }
+
+// hitRateLimit counts in one-minute windows; pin the clock mid-minute so 11 attempts share one (#46).
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-11-18T12:00:10Z'));
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 beforeEach(() => {
   request.headers = new Headers({ 'x-forwarded-for': '198.51.100.9' });

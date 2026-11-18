@@ -1,6 +1,6 @@
 import { setupTestDb, testDb } from '@test/db';
 import { count, eq } from 'drizzle-orm';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { session, user } from '@/shared/db';
 
 // Next.js request APIs and React's per-request cache exist only inside a request; stand in for them.
@@ -40,6 +40,15 @@ async function load() {
   vi.resetModules();
   return import('./auth-flows');
 }
+
+// hitRateLimit counts in one-minute windows; pin the clock mid-minute so 11 attempts share one (#46).
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-11-18T12:00:10Z'));
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 beforeEach(() => {
   request.headers = new Headers({ 'x-forwarded-for': '203.0.113.7' });
