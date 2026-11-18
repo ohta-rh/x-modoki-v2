@@ -38,6 +38,7 @@ jobs:
       - name: Database migrations
         run: pnpm db:migrate
       # The browsers and their system packages come with the official Playwright image (ADR-0046),
+      # used by the two steps that launch a browser (5: a script's own test, 7: the browser tests),
       # so nothing is installed from apt, whose mirror stalled runs for minutes (#43–#45, #52). Its
       # version is @playwright/test's, and moves with it in the same change.
       - name: Playwright image
@@ -52,8 +53,16 @@ jobs:
         run: pnpm lint
       - name: 4. Format
         run: pnpm format:check
+      # In the image too: scripts/chrome-evidence.test.mjs launches Chromium (#52). Same options as
+      # step 7, which explains them.
       - name: 5. Tests and coverage (100%)
-        run: pnpm test --coverage
+        run: |
+          docker run --rm --network host --ipc=host --user "$(id -u):$(id -g)" \
+            -v "$HOME:$HOME" -w "$GITHUB_WORKSPACE" \
+            -v "$RUNNER_TOOL_CACHE:$RUNNER_TOOL_CACHE:ro" \
+            -e PATH="$PATH" -e HOME -e CI \
+            mcr.microsoft.com/playwright:v1.65.0-noble \
+            sh -c 'node -v && pnpm test --coverage'
       - name: 6. Build
         run: pnpm build
       # Inside the image, on the runner's network (PostgreSQL and Garage are on localhost), with the

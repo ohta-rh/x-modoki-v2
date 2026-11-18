@@ -8,7 +8,7 @@ status: stable
 
 # ADR-0046: CI の画面のテストは、公式の Playwright のイメージの中で、ランナーの Node.js で動かす
 
-- ステータス: 採用
+- ステータス: 採用（「7 番目だけ」を [ADR-0047](0047-ci-steps-that-launch-a-browser-run-in-the-playwright-image.md) で置き換え）
 - 日付: 2026-11-18
 - 決定者: ユーザー（方向: 「CI は Playwright のイメージを使えばいいのでは」）、エージェント（形の細部）
 - 関連: [ADR-0020](0020-ci-required-github-actions.md)（CI は必須）、ADR-0024（3 つのブラウザ）、#43・#44・#45・#52
