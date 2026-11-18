@@ -16,8 +16,17 @@ const typing = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
   (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
 
-const posts = () => [...document.querySelectorAll<HTMLElement>('main article')];
-const selectedPost = () => document.activeElement?.closest<HTMLElement>('main article') ?? null;
+/** Posts, not the quoted cards inside them (also articles, review 1). */
+const isPost = (article: HTMLElement) => !article.parentElement?.closest('article');
+const posts = () => [...document.querySelectorAll<HTMLElement>('main article')].filter(isPost);
+/** The post holding the focus: the outermost article around it. */
+function selectedPost() {
+  let article = document.activeElement?.closest<HTMLElement>('main article') ?? null;
+  while (article && !isPost(article))
+    article = article.parentElement!.closest<HTMLElement>('article');
+  return article;
+}
+const replyBox = () => document.querySelector<HTMLElement>('textarea[aria-label="返信の本文"]');
 
 /** Focuses a post: the focus ring shows it, and it is scrolled into the screen. */
 function select(post: HTMLElement | undefined) {
@@ -57,6 +66,8 @@ export function KeyboardShortcuts({ username }: { username: string }) {
           return current?.querySelector<HTMLElement>('button[aria-label="リポスト"]')?.click();
         case 'reply':
           if (!current) return;
+          // The page's own post: its reply box is right here (review 1).
+          if (current.dataset.post === 'main') return replyBox()?.focus();
           replyNext.current = true;
           return current.click();
         case 'go-home':
@@ -87,7 +98,7 @@ export function KeyboardShortcuts({ username }: { username: string }) {
     if (!replyNext.current) return;
     let frames = 0;
     let handle = requestAnimationFrame(function find() {
-      const box = document.querySelector<HTMLElement>('textarea[aria-label="返信の本文"]');
+      const box = replyBox();
       if (box || frames > 120) {
         replyNext.current = false;
         box?.focus();

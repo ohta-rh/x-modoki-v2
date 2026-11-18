@@ -29,7 +29,7 @@ export function MainPost({
 }) {
   const profile = `/${post.author.username}` as Route;
   return (
-    <article aria-label="投稿の本体" className="border-b border-line px-4 pt-3">
+    <article aria-label="投稿の本体" data-post="main" className="border-b border-line px-4 pt-3">
       <div className="flex items-center gap-3">
         <Link href={profile} aria-label={`${post.author.name} のプロフィール`}>
           <Avatar name={post.author.name} src={post.author.avatarUrl} />

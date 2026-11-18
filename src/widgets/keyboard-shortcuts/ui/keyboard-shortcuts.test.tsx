@@ -167,6 +167,70 @@ describe('KeyboardShortcuts（#29、ui-ux.md の 10 節）', () => {
     }
   });
 
+  it('引用のカード（投稿の中の article）は選ばない。中で押しても、外の投稿が選ばれている（レビュー 1）', () => {
+    render(
+      <>
+        <KeyboardShortcuts username="me" />
+        <main>
+          <article onClick={() => open('A')}>
+            投稿 A
+            <button
+              type="button"
+              aria-label="いいね"
+              onClick={(event) => {
+                event.stopPropagation();
+                like('A');
+              }}
+            />
+            <article onClick={() => open('引用')}>引用した投稿</article>
+          </article>
+          <article>投稿 B</article>
+        </main>
+      </>,
+    );
+    press('j');
+    press('j');
+    expect(selected()).toContain('投稿 B');
+    press('k');
+    expect(selected()).toContain('投稿 A');
+    press('l');
+    expect(like).toHaveBeenCalledWith('A');
+    // Focus inside the quoted card (a link in it, say) still means the post around it.
+    like.mockClear();
+    const quoted = screen.getByText('引用した投稿');
+    quoted.tabIndex = -1;
+    quoted.focus();
+    press('l');
+    expect(like).toHaveBeenCalledWith('A');
+  });
+
+  it('詳細の画面の本体で r を押すと、その画面の返信の欄にすぐフォーカスする。あとの移動では奪わない（レビュー 1）', async () => {
+    const shell = (children: React.ReactNode) => (
+      <>
+        <KeyboardShortcuts username="me" />
+        {children}
+      </>
+    );
+    const { rerender } = render(
+      shell(
+        <main>
+          <article data-post="main">本体</article>
+          <textarea aria-label="返信の本文" />
+        </main>,
+      ),
+    );
+    press('j');
+    press('r');
+    expect(screen.getByRole('textbox', { name: '返信の本文' })).toHaveFocus();
+    act(() => (document.activeElement as HTMLElement).blur());
+    pathname = '/other/status/9';
+    rerender(shell(<textarea aria-label="返信の本文" />));
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+    expect(screen.getByRole('textbox', { name: '返信の本文' })).not.toHaveFocus();
+  });
+
   it('? でキーの一覧のダイアログを出す', async () => {
     render(<KeyboardShortcuts username="me" />);
     act(() => {
