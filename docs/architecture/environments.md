@@ -98,7 +98,7 @@ GitHub Actions が、`main` への push と全ての PR で動かす（[ADR-0020
 - PostgreSQL と S3 互換のストレージは、CI のサービスのコンテナで動かす
 - Node.js と pnpm の版は、`.nvmrc` と `package.json` の `packageManager` から読む
 - 手元では `pnpm verify` が同じ 7 つを動かす。通してから push し、push のあと CI の結果を最後まで見る
-- CI が緑でも、完了ではない。`pnpm build && pnpm start` のアプリを本物のブラウザで操作して確かめ、記録を issue に残すまでが完了（[ADR-0024](../adr/0024-definition-of-done-requires-browser-testing.md)）
+- CI が緑でも、完了ではない。`pnpm build && pnpm start` のアプリを本物の Chrome で操作して確かめ、エビデンスつきの試験レポートを `docs/test-reports/` に残すまでが完了（[ADR-0024](../adr/0024-definition-of-done-requires-browser-testing.md)、[ADR-0025](../adr/0025-test-report-with-evidence.md)）
 
 ## 7. 本番への配備（マイルストーン 2 で作る）
 

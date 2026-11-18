@@ -23,6 +23,10 @@ Applies whenever work is planned or filed as GitHub issues in this repository.
   - An assumption no one has run yet (a library on a new framework version, an emulator, a
     tool) becomes an investigation PBI in the design phase, before anything is built on it.
 - Link children as GitHub sub-issues of the EPIC, and keep the EPIC's checklist in sync.
+- **In a task list, reference a child by number only** (`- [ ] #12`). GitHub expands the
+  reference to the issue title and state there; writing the title after it prints the title
+  twice (found in Chrome on 2026-11-18). In tables and prose GitHub does not expand, so write
+  `#12` plus the title.
 - `blocked` is applied only by the rule in `.claude/rules/delivery-loop.md` §3, with the
   evidence and a recommendation written on the issue.
 - Labels: `epic` on the EPIC, `pbi` on each child. Titles: `[EPIC] <outcome>` /
@@ -65,8 +69,10 @@ from a symptom gets fixed at the symptom and comes back.
 - [ ] The implementer can start from the issue alone, without the conversation that
       produced it.
 - [ ] Small enough to land as one PR; otherwise split.
-- [ ] The body ends with the 完了の定義 section — the seven Definition of Done items, verbatim,
-      as checkboxes (ADR-0024). A PBI without it is not ready to file.
+- [ ] The body ends with the 完了の定義 section — the eight Definition of Done items, verbatim,
+      as checkboxes (ADR-0024, ADR-0025). A PBI without it is not ready to file.
+- [ ] After filing or editing issues, open one of each kind in Chrome and read it as rendered
+      (`.claude/rules/definition-of-done.md`). Markdown that passes a script can still render wrong.
 - [ ] Assigned to a GitHub milestone (ADR-0019), and the acceptance criteria include
       "CI is green" and "coverage stays at 100%" (`.claude/rules/quality-gates.md`), with the
       tests to add named in the 検証 section.
@@ -121,12 +127,13 @@ from a symptom gets fixed at the symptom and comes back.
 <実行するテスト・コマンド>
 
 ## 完了の定義
-<`.claude/rules/definition-of-done.md` の 7 項目を、チェックボックスでそのまま書く。項目を減らさない・言い換えない>
+<`.claude/rules/definition-of-done.md` の 8 項目を、チェックボックスでそのまま書く。項目を減らさない・言い換えない>
 - [ ] 受け入れ条件を全部、書いてある方法で 1 つずつ確かめた
 - [ ] `pnpm verify` が 0 で終わった（7 つの確認。カバレッジ 100%。飛ばした・弱めた確認が無い）
 - [ ] 画面で観測できる受け入れ条件の全部に Playwright のテストがあり、CI で Chromium・Firefox・WebKit の 3 つで通った
-- [ ] `pnpm build && pnpm start` のアプリを本物のブラウザで開き、変更と失敗の経路を自分で操作した（1280 / 768 / 375px、関わるテーマ、コンソールのエラーと警告が 0、失敗した通信が 0）
+- [ ] `pnpm build && pnpm start` のアプリを本物の Chrome で開き、変更と失敗の経路を自分で操作して、画面の写真を残した（1280 / 768 / 375px、関わるテーマ、コンソールのエラーと警告が 0、失敗した通信が 0）
 - [ ] この変更の commit で CI が緑（最後まで見た）
 - [ ] 決定があれば ADR を同じ commit で足し、関係する文書とルールを直した（`node scripts/check-docs.mjs` が通る）
-- [ ] 閉じるコメントに、commit・CI の実行の URL・受け入れ条件ごとの確かめ方・「ブラウザでの確認」の記録を書いた
+- [ ] 試験レポートを `docs/test-reports/` に、画面の写真を `docs/test-reports/evidence/` に置いて push し、CI が緑
+- [ ] 全部にチェックを入れ、commit・CI の実行の URL・試験レポートへのリンクをコメントに書いて閉じた
 ```

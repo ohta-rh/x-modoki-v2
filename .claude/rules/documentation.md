@@ -23,7 +23,8 @@ Spec: `GoogleCloudPlatform/open-knowledge-format` `SPEC.md` (v0.2, verified 2026
   ```
 
 - **`type`**: reuse a value already listed in `docs/index.md` (`ADR`, `Template`,
-  `Reference`, `Architecture`, `Design`, `Research`, `Guide`) before inventing one. A new
+  `Reference`, `Architecture`, `Design`, `Research`, `Guide`, `Requirements`, `TestReport`)
+  before inventing one. A new
   type is added to that list in the same commit.
 - **One concept per file; the path is the concept's ID.** Do not put two subjects in one
   file, and do not move or rename a file without fixing every link to it in the same commit.
@@ -49,11 +50,13 @@ Spec: `GoogleCloudPlatform/open-knowledge-format` `SPEC.md` (v0.2, verified 2026
 | Current design (what it is now) | `Architecture` / `Design` | `docs/architecture/` |
 | Evidence gathered for a decision | `Research` | `docs/research/` |
 | How to run / operate | `Guide` | `docs/guides/`; root `README.md` only links to it |
+| What was tested and what was seen | `TestReport` | `docs/test-reports/`, evidence under `docs/test-reports/evidence/` (`.claude/rules/definition-of-done.md`) |
 | Work to do | — | GitHub EPIC / PBI issues, **never a document** |
 
 - Architecture documents describe the present state and link to the ADR that decided each
   point; they do not re-argue it. When a decision changes, add the ADR first, then update the
   architecture document in the same commit.
+- Test reports are a dated snapshot too: never rewrite one; a re-test appends a section.
 - Research documents are a dated snapshot. Do not edit their findings later; add a new
   research document and set the old one to `status: deprecated`.
 - No task lists or checklists in any document.

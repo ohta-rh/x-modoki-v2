@@ -121,6 +121,32 @@ for (const path of files) {
     }
     descriptions.set(path, frontmatter.description);
 
+    if (frontmatter.type === 'TestReport') {
+      // ADR-0025: a report without a browser screenshot is not a report.
+      const images = [...body.matchAll(/!\[[^\]]*\]\(([^)\s]+)\)/g)].map((m) => m[1]);
+      if (!images.some((src) => /^evidence\/.+\.(jpe?g|webp|png)$/i.test(src))) {
+        fail(path, 'a test report needs at least one screenshot under evidence/');
+      }
+      for (const src of images) {
+        const file = normalize(join(dirname(path), src));
+        if (existsSync(file) && statSync(file).size > 300 * 1024) {
+          fail(path, `evidence "${src}" is larger than 300KB`);
+        }
+      }
+      if (images.length > 12) fail(path, 'a test report may hold at most 12 screenshots');
+      for (const section of [
+        '## 対象',
+        '## 環境',
+        '## 判定',
+        '## 受け入れ条件ごとの結果',
+        '## 自動のテスト',
+        '## ブラウザでの確認',
+        '## 見つけた問題',
+      ]) {
+        if (!body.includes(`\n${section}\n`)) fail(path, `missing section "${section}"`);
+      }
+    }
+
     if (frontmatter.type === 'ADR') {
       const number = name.slice(0, 4);
       if (!/^\d{4}-[a-z0-9-]+\.md$/.test(name)) {

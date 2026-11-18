@@ -35,4 +35,5 @@ status: stable
 | [0021](0021-coverage-100-percent.md) | テストのカバレッジは 100% を必須とし、測れない非同期の Server Component だけを薄くして外す | 採用（外すファイルのパスを ADR-0022 で置き換え） | ユーザー／エージェント |
 | [0022](0022-feature-sliced-design.md) | コードは Feature-Sliced Design で分け、Next.js の `app/` はルートに置いてルーティングだけを持たせる | 採用 | ユーザー／エージェント |
 | [0023](0023-delivery-loop-one-pbi-at-a-time.md) | EPIC の子 issue は、決まった手順のループで 1 件ずつ、閉じるまで終わらせる | 採用 | ユーザー／エージェント |
-| [0024](0024-definition-of-done-requires-browser-testing.md) | 完了の定義に、本物のブラウザでのテストを必ず含める | 採用 | ユーザー／エージェント |
+| [0024](0024-definition-of-done-requires-browser-testing.md) | 完了の定義に、本物のブラウザでのテストを必ず含める | 採用（閉じるコメントに書く記録を ADR-0025 で試験レポートに置き換え） | ユーザー／エージェント |
+| [0025](0025-test-report-with-evidence.md) | PBI を閉じるたびに、エビデンスつきの試験レポートを `docs/test-reports/` に残す | 採用 | ユーザー／エージェント |

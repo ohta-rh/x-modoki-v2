@@ -53,14 +53,17 @@ Full rules: @.claude/rules/quality-gates.md
 
 ## Definition of Done
 
-- **One definition, no exceptions:** acceptance criteria checked one by one, `pnpm verify`
-  green, Playwright covering every browser-observable criterion on Chromium / Firefox / WebKit,
-  CI green, ADRs and documents updated, evidence on the issue.
-- **Always test in a real browser.** For every PBI — including server-only and
-  documentation-only ones — open the production build in a browser, exercise the change and a
-  failure path at 1280 / 768 / 375px, confirm a clean console, and record what you saw in the
-  closing comment. An unrecorded check counts as not done.
-- Every PBI body carries the seven items as a 完了の定義 checklist.
+- **One definition, eight items, no exceptions:** acceptance criteria checked one by one,
+  `pnpm verify` green, Playwright covering every browser-observable criterion on Chromium /
+  Firefox / WebKit, a hands-on look in Chrome, CI green, ADRs and documents updated, a test
+  report with evidence, then the closing comment.
+- **Always look at it in real Chrome.** For every PBI — including server-only,
+  documentation-only, and issue-filing work — open the result in Chrome, exercise the change
+  and a failure path at 1280 / 768 / 375px, confirm a clean console, and save screenshots.
+  A passing script is not a look.
+- **Always leave a test report with evidence** under `docs/test-reports/` (screenshots under
+  `docs/test-reports/evidence/`) before closing. No screenshot, no report; no report, not done.
+- Every PBI body carries the eight items as a 完了の定義 checklist.
 
 Full rules: @.claude/rules/definition-of-done.md
 
