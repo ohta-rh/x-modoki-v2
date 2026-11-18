@@ -1,7 +1,7 @@
 # Definition of Done
 
 The single definition of "done" for every PBI in this repository (ADR-0024, ADR-0025, ADR-0026,
-with ADR-0020, ADR-0021, ADR-0023). An issue is closed only when **every** item below holds. There
+ADR-0027, with ADR-0020, ADR-0021, ADR-0023). An issue is closed only when **every** item below holds. There
 is no partial done, and no item is waived because a change "is small" or "has no UI".
 
 ## The checklist
@@ -18,18 +18,22 @@ is no partial done, and no item is waived because a change "is small" or "has no
    a Playwright test, and the suite passes in CI on **Chromium, Firefox, and WebKit**.
 5. **Hands-on test in Chrome.** You opened the result in real Chrome and exercised the change
    yourself (details below), and saved screenshots of what you saw.
-6. **CI.** GitHub Actions is green on the commit that contains the change — watched to the end.
-7. **Decisions and documents.** Any architecture / technology / cross-cutting decision has an
+6. **Independent code review.** For any PBI that changes code: a fresh `code-reviewer` subagent
+   (opus, read-only, given only the issue number and the diff range) returned `APPROVE`
+   before the push. Every finding was verified by you, then fixed test-first or rejected with
+   evidence; the outcome is in the test report (`.claude/rules/code-review.md`).
+7. **CI.** GitHub Actions is green on the commit that contains the change — watched to the end.
+8. **Decisions and documents.** Any architecture / technology / cross-cutting decision has an
    ADR in the same commit; affected documents under `docs/` and rules under `.claude/rules/`
    are updated; `node scripts/check-docs.mjs` passes.
-8. **Test report with evidence.** A report for this PBI exists under `docs/test-reports/`,
+9. **Test report with evidence.** A report for this PBI exists under `docs/test-reports/`,
    with its screenshots under `docs/test-reports/evidence/`, and is pushed with green CI
    (format below).
-9. **Closing comment.** The issue is closed with a comment containing the commit SHA, the CI
+10. **Closing comment.** The issue is closed with a comment containing the commit SHA, the CI
    run URL, and a link to the test report — after every box in the issue's 完了の定義 section
    is ticked.
 
-Every PBI body carries these nine items, verbatim, as its 完了の定義 checklist
+Every PBI body carries these ten items, verbatim, as its 完了の定義 checklist
 (`.claude/rules/issue-authoring.md`). Changing this list means changing this file, the PBI
 template, and every open PBI in the same change.
 
@@ -44,7 +48,7 @@ mechanical check had passed.
 `<Suspense>` behave differently there.
 
 **How.** Real Chrome, through the Claude-in-Chrome tools or the Chrome DevTools MCP tools.
-Take screenshots (`save_to_disk`) as you go — they are the evidence for item 8. Only if
+Take screenshots (`save_to_disk`) as you go — they are the evidence for item 9. Only if
 neither tool is available: run Playwright headed in Chromium with a scripted walk-through that
 saves screenshots and the console log, and say so in the report.
 
@@ -84,7 +88,7 @@ with `--window-size=375,…` lays the page out at ~500px and crops it. So:
 | Tooling / CI / config | Open the app and confirm it still loads with a clean console; open the CI run page and confirm every job is green |
 | Investigation in a throwaway app | Run the throwaway app in Chrome; the observations and screenshots go into the research document and the report |
 
-## Test report (item 8) — ADR-0025
+## Test report (item 9) — ADR-0025
 
 - **Path:** `docs/test-reports/issue-NNNN-<kebab-summary>.md` (NNNN = zero-padded issue
   number). Work not tied to a PBI: `docs/test-reports/YYYY-MM-DD-<kebab-summary>.md`.
@@ -118,6 +122,11 @@ with `--window-size=375,…` lays the page out at ~500px and crops it. So:
   | # | 振る舞い | 先に書いたテスト | 赤（落ちた理由） | 緑にした実装 |
   <振る舞いごとに 1 行。コードの変更が無い PBI は「コードの変更なし」と書く（.claude/rules/tdd.md）>
 
+  ## コードレビュー
+  - 判定: APPROVE（N 回目）　範囲: <差分の範囲>　レビューした sub agent: code-reviewer（opus）
+  | # | 重さ | 指摘 | 確かめた結果 | 対応（直した commit とテスト / 退けた理由） |
+  <コードの変更が無い PBI は「コードの変更なし」と書く（.claude/rules/code-review.md）>
+
   ## ブラウザでの確認
   | URL | 幅 | テーマ | した操作 | 見えた結果 | 画面の写真 |
   - コンソール: エラー N、警告 N　通信: 失敗 N
@@ -136,7 +145,7 @@ with `--window-size=375,…` lays the page out at ~500px and crops it. So:
 
 - **Inside the PBI's scope:** fix it now, and add a check that reproduces it before the fix
   (a Playwright test for app behavior; a rule or script check for a document or issue defect).
-  Then redo items 2–6. Record it under 見つけた問題.
+  Then redo items 2–7. Record it under 見つけた問題.
 - **Outside the scope:** reproduce it, state its root cause, file a PBI
   (`.claude/rules/issue-authoring.md`), and reference it in the report. Do not fold the fix in.
 - **If it reveals a rule gap** — something a rule should have prevented — update the rule in

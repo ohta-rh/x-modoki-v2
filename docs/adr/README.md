@@ -38,3 +38,4 @@ status: stable
 | [0024](0024-definition-of-done-requires-browser-testing.md) | 完了の定義に、本物のブラウザでのテストを必ず含める | 採用（閉じるコメントに書く記録を ADR-0025 で試験レポートに置き換え） | ユーザー／エージェント |
 | [0025](0025-test-report-with-evidence.md) | PBI を閉じるたびに、エビデンスつきの試験レポートを `docs/test-reports/` に残す | 採用 | ユーザー／エージェント |
 | [0026](0026-implementation-is-always-test-driven.md) | 実装は必ずテスト駆動（TDD）で行い、失敗したテストの記録を残す | 採用 | ユーザー／エージェント |
+| [0027](0027-independent-code-review-in-the-loop.md) | PBI ごとに、push の前に、独立した sub agent（opus）のコードレビューを受ける | 採用 | ユーザー／エージェント |

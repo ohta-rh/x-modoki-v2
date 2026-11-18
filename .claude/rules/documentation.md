@@ -75,11 +75,33 @@ The global rule `~/.claude/rules/adr.md` applies; these are the local convention
 
 ## 4. Before committing a documentation change
 
-Run `node scripts/check-docs.mjs` (also `pnpm docs:check`, and the first CI gate). It must exit 0.
-It checks the list below mechanically; when a new documentation rule is added here, add the
-check to that script in the same commit.
+Run `node scripts/check-docs.mjs` (also `pnpm docs:check`, and the first CI gate). It must
+exit 0. Its own tests are `node --test scripts/`.
 
-- [ ] Every non-reserved `.md` under `docs/` has frontmatter with a non-empty `type`.
-- [ ] Every relative link resolves to an existing file.
-- [ ] The directory's `index.md` (or `docs/adr/README.md`) and `docs/log.md` are updated.
-- [ ] An ADR's frontmatter `status` matches its body.
+**Checked by the script** — do not re-check by hand, and do not weaken:
+
+- Every non-reserved `.md` under `docs/` has frontmatter in the accepted form, with `type`
+  (listed in `docs/index.md`), `title` equal to the H1, a one-sentence `description`, `tags`
+  as a list, and a valid `status`; none of the forbidden provenance keys.
+- `index.md` / `log.md` carry no frontmatter (only the root index has `okf_version`); log
+  headings are `YYYY-MM-DD`, newest first.
+- Every directory holding documents has an `index.md` (`docs/adr/` uses `README.md`) that
+  lists each document with that document's description, and each document-holding
+  subdirectory.
+- Every relative link and image resolves; no bundle-absolute `/` links.
+- ADRs: file name, `ADR-NNNN:` title, the four sections, no task list, body status mirrored
+  in frontmatter and in `docs/adr/README.md`, sequential numbers, linked from `docs/log.md`.
+- Test reports: file name, `status: stable`, title prefix, sections in order, at least one
+  JPEG/WebP screenshot under `evidence/<report name>/` (≤ 300KB, ≤ 12), linked from
+  `docs/log.md`; `issue-NNNN-*` reports also need `### TDD の記録` under `## 自動のテスト` and
+  a `## コードレビュー` section.
+
+**Not checked by the script — check by hand:**
+
+- A changed document has a line in `docs/log.md` (only ADRs and test reports are enforced).
+- An architecture document still matches the ADRs it cites.
+- What a screenshot actually shows.
+
+When a documentation rule is added to this file, add its check **and a failing test first**
+to `scripts/check-docs.test.mjs` in the same commit (`.claude/rules/tdd.md`), or list it
+under "not checked" with the reason.

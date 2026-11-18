@@ -61,10 +61,20 @@ Full rules: @.claude/rules/quality-gates.md
 
 Full rules: @.claude/rules/tdd.md
 
+## Code review
+
+- **Every code-changing PBI gets an independent review before push:** a fresh `code-reviewer`
+  subagent (opus, read-only), given only the issue number and the diff range — never your
+  summary or reasoning.
+- Verify each finding yourself; fix real ones test-first, reject wrong ones with evidence;
+  re-review with a new subagent until `APPROVE`. Record the outcome in the test report.
+
+Full rules: @.claude/rules/code-review.md — reviewer definition: `.claude/agents/code-reviewer.md`
+
 ## Definition of Done
 
-- **One definition, nine items, no exceptions:** acceptance criteria checked one by one,
-  implemented by TDD, `pnpm verify` green, Playwright covering every browser-observable criterion on Chromium /
+- **One definition, ten items, no exceptions:** acceptance criteria checked one by one,
+  implemented by TDD, independently reviewed, `pnpm verify` green, Playwright covering every browser-observable criterion on Chromium /
   Firefox / WebKit, a hands-on look in Chrome, CI green, ADRs and documents updated, a test
   report with evidence, then the closing comment.
 - **Always look at it in real Chrome.** For every PBI — including server-only,
@@ -73,7 +83,7 @@ Full rules: @.claude/rules/tdd.md
   A passing script is not a look.
 - **Always leave a test report with evidence** under `docs/test-reports/` (screenshots under
   `docs/test-reports/evidence/`) before closing. No screenshot, no report; no report, not done.
-- Every PBI body carries the nine items as a 完了の定義 checklist.
+- Every PBI body carries the ten items as a 完了の定義 checklist.
 
 Full rules: @.claude/rules/definition-of-done.md
 

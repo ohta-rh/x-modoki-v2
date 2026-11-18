@@ -24,15 +24,20 @@ its last without a human in between.
    **Then look at it in real Chrome** against `pnpm build && pnpm start`: the change itself, a
    failure path, three widths, the themes it touches, a clean console — saving screenshots
    (`.claude/rules/definition-of-done.md`). Fix what it finds before going on.
-7. **Record decisions.** Any architecture / technology / cross-cutting decision made on the
+7. **Independent code review — before pushing** (`.claude/rules/code-review.md`). Commit
+   locally, then spawn a fresh `code-reviewer` subagent with only the issue number and the diff
+   range. Verify each finding yourself; fix the real ones test-first, reject the wrong ones with
+   evidence; re-run step 6; get a new reviewer until the verdict is `APPROVE`. Skip only when
+   the PBI changes no code.
+8. **Record decisions.** Any architecture / technology / cross-cutting decision made on the
    way gets an ADR in the same commit (`.claude/rules/documentation.md`).
-8. **Commit and push to `main`.** Stage by explicit path; `git diff --check`; message
+9. **Commit and push to `main`.** Stage by explicit path; `git diff --check`; message
    references the issue (`Refs #N`); push.
-9. **Watch CI to the end.** Green → continue. Red → fix forward now; do not start the next PBI.
-10. **Write the test report.** `docs/test-reports/issue-NNNN-<summary>.md` with the screenshots
+10. **Watch CI to the end.** Green → continue. Red → fix forward now; do not start the next PBI.
+11. **Write the test report.** `docs/test-reports/issue-NNNN-<summary>.md` with the screenshots
     under `docs/test-reports/evidence/`: every acceptance criterion with its result and
-    evidence, the gate output, the Chrome record. Push it; its CI run must be green too.
-11. **Close — only when the Definition of Done holds.** Tick every item in the issue's
+    evidence, the gate output, the TDD record, the code review outcome, the Chrome record. Push it; its CI run must be green too.
+12. **Close — only when the Definition of Done holds.** Tick every item in the issue's
     完了の定義 section. Comment: commit SHA, CI run URL, link to the test report. Then close it and
     tick it in the EPIC's list.
 
@@ -41,6 +46,8 @@ its last without a human in between.
 - Close an issue with an unmet acceptance criterion, a skipped gate, red CI, no hands-on look
   in Chrome, or no test report with screenshots. The Definition of Done has no exceptions.
 - Write production code before a failing test, or back-fill tests after the code.
+- Push code that an independent reviewer has not approved, review its own work in place of
+  the `code-reviewer` subagent, or hand the reviewer its own summary or reasoning.
 - Weaken a gate, exclude a file from coverage, or disable a lint rule to finish.
 - Fold work outside the issue's scope into the commit. Found something adjacent → file a new
   PBI under the right EPIC (root cause stated, `.claude/rules/issue-authoring.md`) and move on.

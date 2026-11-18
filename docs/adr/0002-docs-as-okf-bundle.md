@@ -59,5 +59,5 @@ Open Knowledge Format（OKF）は Google Cloud が公開した仕様で、知識
 
 - frontmatter と `index.md` を読めば、開くべき文書が分かる
 - 文書の追加・廃止のたびに、`index.md`（ADR は `README.md`）と `log.md` を同じ commit で直す必要がある
-- ADR のステータスは本文と frontmatter の 2 か所にある。ずれは commit の前の確認（`.claude/rules/documentation.md` の 4 節）で防ぐ。機械的に確かめる仕組みはまだ無い
+- ADR のステータスは本文と frontmatter の 2 か所にある。ずれは commit の前の確認（`.claude/rules/documentation.md` の 4 節）で防ぐ。機械的に確かめる仕組みはまだ無い（2026-11-18 追記: `scripts/check-docs.mjs` が確かめるようになり、CI で動く）
 - 運用の細目は `.claude/rules/documentation.md` に置く。この ADR と食い違う変更をするときは、新しい ADR で置き換える

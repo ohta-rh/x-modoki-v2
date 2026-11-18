@@ -1,18 +1,40 @@
 #!/usr/bin/env node
 // Validates the docs/ OKF v0.2 bundle (ADR-0002) and the ADR conventions
-// (.claude/rules/documentation.md). No dependencies; run with `node scripts/check-docs.mjs`.
+// (.claude/rules/documentation.md, .claude/rules/definition-of-done.md, .claude/rules/tdd.md,
+// .claude/rules/code-review.md). No dependencies.
+//
+//   node scripts/check-docs.mjs [--root <dir>]     tests: node --test scripts/
+//
+// Frontmatter is read with a small parser, not a YAML library: one `key: value` per line,
+// values either quoted, a `[a, b]` list, or a plain scalar without ": ". Anything else is
+// reported as invalid rather than guessed at.
 // Exits 1 and prints every problem if anything is wrong.
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, join, normalize, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+// `--root <dir>` checks another tree (used by the tests); the default is this repository.
+const rootFlag = process.argv.indexOf('--root');
+const repoRoot =
+  rootFlag >= 0 ? process.argv[rootFlag + 1] : join(dirname(fileURLToPath(import.meta.url)), '..');
 const docsRoot = join(repoRoot, 'docs');
 
 const RESERVED = new Set(['index.md', 'log.md']);
 const STATUSES = new Set(['draft', 'stable', 'deprecated']);
 const REQUIRED_KEYS = ['type', 'title', 'description', 'status'];
+const FORBIDDEN_KEYS = ['generated', 'verified', 'sources', 'stale_after'];
+const REPORT_SECTIONS = [
+  '## 対象',
+  '## 環境',
+  '## 判定',
+  '## 受け入れ条件ごとの結果',
+  '## 自動のテスト',
+  '## コードレビュー',
+  '## ブラウザでの確認',
+  '## 見つけた問題',
+];
+const REPORT_NAME = /^(issue-\d{4}|\d{4}-\d{2}-\d{2})-[a-z0-9-]+\.md$/;
 const ADR_STATUS = {
   提案: 'draft',
   採用: 'stable',
@@ -35,19 +57,24 @@ function walk(dir) {
 
 /** Splits a file into its frontmatter map (or null) and its body. */
 function parse(source) {
-  if (!source.startsWith('---\n')) return { frontmatter: null, body: source };
+  if (!source.startsWith('---\n')) return { frontmatter: null, body: source, invalid: [] };
   const end = source.indexOf('\n---\n', 4);
-  if (end < 0) return { frontmatter: null, body: source };
+  if (end < 0) return { frontmatter: null, body: source, invalid: [] };
   const frontmatter = {};
+  const invalid = [];
   for (const line of source.slice(4, end).split('\n')) {
-    if (line.trim().startsWith('#') || !line.includes(':')) continue;
+    if (line.trim() === '' || line.trim().startsWith('#')) continue;
     const at = line.indexOf(':');
-    frontmatter[line.slice(0, at).trim()] = line
-      .slice(at + 1)
-      .trim()
-      .replace(/^"(.*)"$/, '$1');
+    if (at <= 0) {
+      invalid.push(line);
+      continue;
+    }
+    const raw = line.slice(at + 1).trim();
+    const quoted = /^".*"$/.test(raw);
+    if (!quoted && !raw.startsWith('[') && raw.includes(': ')) invalid.push(line);
+    frontmatter[line.slice(0, at).trim()] = quoted ? raw.slice(1, -1) : raw;
   }
-  return { frontmatter, body: source.slice(end + 5) };
+  return { frontmatter, body: source.slice(end + 5), invalid };
 }
 
 /** Markdown with fenced and inline code removed, so examples are not read as links. */
@@ -77,8 +104,9 @@ const knownTypes = new Set(
 
 for (const path of files) {
   const source = readFileSync(path, 'utf8');
-  const { frontmatter, body } = parse(source);
+  const { frontmatter, body, invalid } = parse(source);
   const name = basename(path);
+  for (const line of invalid) fail(path, `frontmatter line is not valid YAML: ${line.trim()}`);
 
   if (RESERVED.has(name)) {
     const isRootIndex = path === join(docsRoot, 'index.md');
@@ -91,10 +119,12 @@ for (const path of files) {
       fail(path, 'a reserved file (index.md / log.md) must not have frontmatter');
     }
     if (name === 'log.md') {
-      for (const heading of body.matchAll(/^## (.+)$/gm)) {
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(heading[1])) {
-          fail(path, `log heading "${heading[1]}" is not YYYY-MM-DD`);
-        }
+      const dates = [...body.matchAll(/^## (.+)$/gm)].map((heading) => heading[1]);
+      for (const date of dates) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) fail(path, `log heading "${date}" is not YYYY-MM-DD`);
+      }
+      if (dates.some((date, i) => i > 0 && date >= dates[i - 1])) {
+        fail(path, 'log headings must be newest first');
       }
     }
   } else if (!frontmatter) {
@@ -116,38 +146,65 @@ for (const path of files) {
     if (!heading || heading[1].trim() !== frontmatter.title) {
       fail(path, 'the first H1 must equal the frontmatter `title`');
     }
-    if (frontmatter.description && !/[。.]$/.test(frontmatter.description)) {
-      fail(path, '`description` must be one sentence ending with a full stop');
+    if (
+      frontmatter.description &&
+      (!/[。.]$/.test(frontmatter.description) || /。.|\. \S/.test(frontmatter.description))
+    ) {
+      fail(path, '`description` must be exactly one sentence ending with a full stop');
+    }
+    for (const key of FORBIDDEN_KEYS) {
+      if (key in frontmatter) fail(path, `\`${key}\` must not be written (ADR-0002)`);
     }
     descriptions.set(path, frontmatter.description);
 
     if (frontmatter.type === 'TestReport') {
-      // ADR-0025: a report without a browser screenshot is not a report.
-      const images = [...body.matchAll(/!\[[^\]]*\]\(([^)\s]+)\)/g)].map((m) => m[1]);
-      if (!images.some((src) => /^evidence\/.+\.(jpe?g|webp|png)$/i.test(src))) {
+      // ADR-0025, ADR-0026, ADR-0027. Images inside code are examples, not evidence.
+      const stem = name.replace(/\.md$/, '');
+      const prose = withoutCode(body);
+      const images = [...prose.matchAll(/!\[[^\]]*\]\(([^)\s]+)\)/g)].map((m) => m[1]);
+      if (!REPORT_NAME.test(name)) {
+        fail(path, 'a test report must be named issue-NNNN-<summary>.md or YYYY-MM-DD-<summary>.md');
+      }
+      if (frontmatter.status !== 'stable') fail(path, 'a test report must be `status: stable`');
+      if (!frontmatter.title?.startsWith('試験レポート: ')) {
+        fail(path, 'a test report title must start with "試験レポート: "');
+      }
+      if (images.length === 0) {
         fail(path, 'a test report needs at least one screenshot under evidence/');
       }
       for (const src of images) {
+        if (!src.startsWith(`evidence/${stem}/`)) {
+          fail(path, `evidence "${src}" must be under evidence/${stem}/`);
+        } else if (!/\.(jpe?g|webp)$/i.test(src)) {
+          fail(path, `evidence "${src}" must be JPEG or WebP`);
+        }
         const file = normalize(join(dirname(path), src));
         if (existsSync(file) && statSync(file).size > 300 * 1024) {
           fail(path, `evidence "${src}" is larger than 300KB`);
         }
       }
       if (images.length > 12) fail(path, 'a test report may hold at most 12 screenshots');
-      // ADR-0026: a PBI's report records each red, or states there was no code change.
-      if (/^issue-\d{4}-/.test(name) && !body.includes('\n### TDD の記録\n')) {
+
+      const isPbiReport = /^issue-\d{4}-/.test(name);
+      const at = (heading) => body.indexOf(`\n${heading}\n`);
+      const present = REPORT_SECTIONS.filter((section) => at(section) >= 0);
+      for (const section of REPORT_SECTIONS) {
+        const optional = section === '## コードレビュー' && !isPbiReport;
+        if (at(section) < 0 && !optional) fail(path, `missing section "${section}"`);
+      }
+      if (present.some((section, i) => i > 0 && at(section) < at(present[i - 1]))) {
+        fail(path, `sections must appear in order: ${REPORT_SECTIONS.join(' → ')}`);
+      }
+      const tdd = at('### TDD の記録');
+      if (isPbiReport && tdd < 0) {
         fail(path, 'a PBI test report needs a "### TDD の記録" subsection');
       }
-      for (const section of [
-        '## 対象',
-        '## 環境',
-        '## 判定',
-        '## 受け入れ条件ごとの結果',
-        '## 自動のテスト',
-        '## ブラウザでの確認',
-        '## 見つけた問題',
-      ]) {
-        if (!body.includes(`\n${section}\n`)) fail(path, `missing section "${section}"`);
+      if (tdd >= 0) {
+        const start = at('## 自動のテスト');
+        const next = body.indexOf('\n## ', start + 1);
+        if (start < 0 || tdd < start || (next >= 0 && tdd > next)) {
+          fail(path, '"### TDD の記録" must sit under "## 自動のテスト"');
+        }
       }
     }
 
@@ -174,7 +231,7 @@ for (const path of files) {
     }
   }
 
-  for (const match of withoutCode(source).matchAll(/\[[^\]]*\]\(([^)\s]+)\)/g)) {
+  for (const match of withoutCode(source).matchAll(/\[[^\]]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)) {
     const link = match[1];
     if (/^(https?:|mailto:|#)/.test(link)) continue;
     if (link.startsWith('/')) {
@@ -186,7 +243,16 @@ for (const path of files) {
   }
 }
 
-// Each directory's index.md lists every document in it, with the document's own description.
+// Every directory that holds documents has an index.md (docs/adr uses README.md instead),
+// and each index lists every document and every document-holding subdirectory beside it.
+const adrDir = join(docsRoot, 'adr');
+const holdsDocs = (dir) => files.some((file) => file.startsWith(`${dir}/`));
+const directories = [...new Set(files.map((file) => dirname(file)))];
+for (const dir of directories) {
+  if (dir !== adrDir && !existsSync(join(dir, 'index.md'))) {
+    fail(dir, 'holds documents but has no index.md');
+  }
+}
 for (const path of files.filter((file) => basename(file) === 'index.md')) {
   const dir = dirname(path);
   const entries = indexEntries(readFileSync(path, 'utf8'));
@@ -196,18 +262,31 @@ for (const path of files.filter((file) => basename(file) === 'index.md')) {
       fail(path, `description of "${link}" differs from that document's frontmatter`);
     }
   }
-  if (dir === docsRoot) continue;
-  const listed = new Set(entries.map(({ link }) => normalize(join(dir, link))));
+  const links = entries.map(({ link }) => link);
+  const listed = new Set(links.map((link) => normalize(join(dir, link))));
   for (const name of readdirSync(dir)) {
-    const file = join(dir, name);
-    if (name.endsWith('.md') && name !== 'index.md' && !listed.has(file)) {
+    const child = join(dir, name);
+    if (statSync(child).isDirectory()) {
+      if (holdsDocs(child) && !links.some((link) => link.startsWith(`${name}/`))) {
+        fail(path, `does not list ${name}/`);
+      }
+    } else if (name.endsWith('.md') && name !== 'index.md' && !listed.has(child)) {
       fail(path, `does not list ${name}`);
     }
   }
 }
 
+// Every ADR and every test report is linked from docs/log.md (documentation.md section 3).
+const log = readFileSync(join(docsRoot, 'log.md'), 'utf8');
+for (const path of files) {
+  const fromDocs = relative(docsRoot, path);
+  const logged = /^adr\/\d{4}-/.test(fromDocs) || /^test-reports\/[^/]+\.md$/.test(fromDocs);
+  if (logged && basename(path) !== 'index.md' && !log.includes(`(${fromDocs})`)) {
+    fail(path, 'is not linked from docs/log.md');
+  }
+}
+
 // docs/adr has README.md instead of index.md; it must list every ADR, numbered without gaps.
-const adrDir = join(docsRoot, 'adr');
 if (existsSync(adrDir)) {
   const readme = readFileSync(join(adrDir, 'README.md'), 'utf8');
   const adrs = readdirSync(adrDir)

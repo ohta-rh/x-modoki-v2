@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **Creation**: [ADR-0027](adr/0027-independent-code-review-in-the-loop.md)（push の前に、独立した sub agent のコードレビューを受ける）を記録した。完了の定義は 10 項目になった。
 * **Creation**: [ADR-0026](adr/0026-implementation-is-always-test-driven.md)（実装は必ず TDD で行い、赤の記録を試験レポートに残す）を記録した。完了の定義は 9 項目になった。
 * **Creation**: 最初の[試験レポート](test-reports/2026-11-18-harness-and-m1-issues.md)を置いた。Chrome で見て、issue のタスクの一覧のタイトルの重複を見つけて直した。
 * **Creation**: [ADR-0025](adr/0025-test-report-with-evidence.md)（PBI を閉じるたびに、エビデンスつきの試験レポートを残す）を記録した。完了の定義は 8 項目になった。
@@ -14,5 +15,5 @@
 * **Creation**: `docs/` を OKF v0.2 のバンドルとして作った（[ADR-0002](adr/0002-docs-as-okf-bundle.md)）。
 * **Creation**: 進め方の決定を記録した。[ADR-0001](adr/0001-record-architecture-decisions.md)（ADR を残す）、[ADR-0003](adr/0003-pbi-epic-issues-with-root-cause.md)（PBI 型の EPIC と根本原因）。
 * **Creation**: 調査の結果を置いた。[Next.js と周辺の道具](research/nextjs.md)、[バックエンドの技術選定](research/backend.md)、[X の Web UI/UX](research/x-uiux.md)。
-* **Creation**: 技術と構造の決定を記録した。[ADR-0004](adr/0004-nextjs-16-all-in-one-app.md) から [ADR-0016](adr/0016-time-ordered-64bit-post-ids.md) まで。
+* **Creation**: 技術と構造の決定を記録した。[ADR-0004](adr/0004-nextjs-16-all-in-one-app.md)、[ADR-0005](adr/0005-toolchain-node24-pnpm-ts6-eslint.md)、[ADR-0006](adr/0006-postgresql-drizzle.md)、[ADR-0007](adr/0007-better-auth-db-sessions.md)、[ADR-0008](adr/0008-s3-compatible-media-storage.md)、[ADR-0009](adr/0009-mimic-x-ui-with-own-brand.md)、[ADR-0010](adr/0010-dal-server-actions-route-handlers.md)、[ADR-0011](adr/0011-polling-and-after-no-queue.md)、[ADR-0012](adr/0012-single-container-docker-compose.md)、[ADR-0013](adr/0013-vitest-playwright-testing.md)、[ADR-0014](adr/0014-tailwind-shadcn-base-ui.md)、[ADR-0015](adr/0015-timeline-fan-out-on-read.md)、[ADR-0016](adr/0016-time-ordered-64bit-post-ids.md)。
 * **Creation**: 設計書を置いた。[全体像](architecture/overview.md)、[技術スタック](architecture/tech-stack.md)、[アプリケーションの構造](architecture/application-structure.md)、[ルーティング](architecture/routing.md)、[データモデル](architecture/data-model.md)、[UI/UX 仕様](architecture/ui-ux.md)、[機能の範囲](architecture/scope.md)、[環境と配備](architecture/environments.md)。
