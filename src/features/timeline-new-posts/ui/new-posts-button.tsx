@@ -34,7 +34,8 @@ export function NewPostsButton({ since, queryKey }: Props) {
   });
   if (count === 0) return null;
   return (
-    <div className="pointer-events-none sticky top-[106px] z-10 flex justify-center">
+    // No height of its own: the button floats over the list, which does not move (review 3).
+    <div className="pointer-events-none sticky top-[106px] z-10 flex h-0 justify-center overflow-visible">
       <button
         type="button"
         className="pointer-events-auto mt-2 rounded-full bg-brand px-4 py-2 text-body font-bold text-white shadow-lg"

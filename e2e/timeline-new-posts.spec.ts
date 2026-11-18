@@ -49,11 +49,14 @@ test('ホームを開いたまま、ほかの人の新しい投稿は 30 秒以�
   await expect(first).toContainText('前からある投稿');
 
   // One at a time: insertPosts dates a batch back from now, which could put it behind the top.
+  const before = (await first.boundingBox())!.y;
   await insertPosts(them.username, 1, '一つめの新しい投稿');
   await insertPosts(them.username, 1, '二つめの新しい投稿');
   await page.clock.runFor(30_000);
   const show = page.getByRole('button', { name: '2 件のポストを表示' });
   await expect(show).toBeVisible();
+  // The notice floats over the list: the list does not move when it appears (review 3).
+  expect((await first.boundingBox())!.y).toBe(before);
   // Not until it is pressed.
   await expect(first).toContainText('前からある投稿');
 
