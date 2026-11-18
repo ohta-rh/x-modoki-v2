@@ -47,7 +47,7 @@ status: stable
 
 ## 安全性（SEC）
 
-[アプリケーションの構造](../architecture/application-structure.md) の 6 節の 8 つの規則。脅威と対策の対応は #14 で作る。
+[アプリケーションの構造](../architecture/application-structure.md) の 6 節の 8 つの規則。脅威と対策と確かめるテストの対応は [脅威の洗い出し](../architecture/threat-model.md)。
 
 | ID | 基準 | 確かめ方 | 満たす PBI |
 |---|---|---|---|

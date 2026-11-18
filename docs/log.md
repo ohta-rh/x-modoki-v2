@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **Creation**: [脅威の洗い出し](architecture/threat-model.md)を置いた（#14）。
 * **Creation**: [テストの設計](architecture/test-strategy.md)と [ADR-0031](adr/0031-database-tests-per-worker-database-and-truncate.md)（データベースのテストの切り離し方）を置いた（#13、[試験レポート](test-reports/issue-0013-test-strategy.md)）。
 * **Creation**: [FSD の構成を Next.js 16.4 で動かした結果](research/fsd-on-next-16.md)を置き、[ADR-0030](adr/0030-fsd-lint-exceptions-and-own-layer-check.md) で [ADR-0022](adr/0022-feature-sliced-design.md) の守らせ方を置き換えた（#12、[試験レポート](test-reports/issue-0012-fsd-spike.md)）。
 * **Creation**: [Garage に署名つき URL で送った結果](research/garage-presigned-upload.md)を置いた（#11、[試験レポート](test-reports/issue-0011-garage-spike.md)）。
