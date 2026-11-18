@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **New**: [#17 の試験レポート](test-reports/issue-0017-app-shell.md)（3 カラムの骨格とテーマ）を足した。
 * **New**: [ADR-0035](adr/0035-vendor-shadcn-from-registry-and-base-ui-toast.md)（shadcn の部品の取り込み方とトースト）を記録し、[技術スタック](architecture/tech-stack.md)に UI の依存の版を書いた（#17）。
 * **New**: [#16 の試験レポート](test-reports/issue-0016-schema-and-seed.md)（データベースの表・マイグレーション・シード）を足した。
 * **Update**: [データモデル](architecture/data-model.md)のユーザーの検索の索引を、実装の式（`coalesce(username, '')`）に合わせた（#16 のレビュー）。
