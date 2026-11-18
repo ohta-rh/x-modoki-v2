@@ -49,12 +49,27 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         timeout-minutes: 10
         run: pnpm exec playwright install chromium firefox webkit
-      - name: Playwright system packages (retried)
+      # The .deb files of the browsers' system packages are cached too, so a run with a cache hit
+      # never talks to the apt mirror, which can be slow for longer than any retry (#45).
+      - name: Playwright system packages (cache)
+        id: debs-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/apt-debs
+          key: playwright-debs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Playwright system packages
         timeout-minutes: 15
         run: |
+          if [ "${{ steps.debs-cache.outputs.cache-hit }}" = "true" ] && sudo dpkg -i ~/apt-debs/*.deb; then
+            exit 0
+          fi
+          sudo dpkg --configure -a || true
           for attempt in 1 2 3; do
             # timeout runs as root so it can stop the root apt-get that Playwright starts (#44).
-            sudo --preserve-env=PATH timeout -k 15 200 "$(command -v pnpm)" exec playwright install-deps chromium firefox webkit && exit 0
+            if sudo --preserve-env=PATH timeout -k 15 200 "$(command -v pnpm)" exec playwright install-deps chromium firefox webkit; then
+              mkdir -p ~/apt-debs && cp /var/cache/apt/archives/*.deb ~/apt-debs/
+              exit 0
+            fi
             echo "attempt $attempt did not finish in 200 seconds; retrying"
             # A cap that fires mid-install leaves dpkg half done; finish it before the next attempt.
             sudo dpkg --configure -a || true
