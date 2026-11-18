@@ -99,4 +99,69 @@ describe('ProfileImagePicker（#25）', () => {
     expect(container.querySelector('img')).toHaveAttribute('alt', '新しいアバター');
     container.remove();
   });
+
+  it('送っている間に選び直したら、あとから選んだ画像だけを出し、その ID を渡す（先のが遅れて終わっても）', async () => {
+    const finish: Record<string, (id: string) => void> = {};
+    prepareImage.mockImplementation(async (file: File) => ({
+      blob: file,
+      width: 400,
+      height: 400,
+    }));
+    uploadImage.mockImplementation(
+      ({ blob }: { blob: File }) => new Promise((resolve) => (finish[blob.name] = resolve)),
+    );
+    vi.stubGlobal(
+      'URL',
+      Object.assign(URL, {
+        createObjectURL: (file: File) => `blob:${file.name}`,
+        revokeObjectURL: vi.fn(),
+      }),
+    );
+    const onChange = vi.fn();
+    render(<ProfileImagePicker kind="avatar" currentUrl={null} onChange={onChange} />);
+    const input = screen.getByLabelText('アバターの画像を選ぶ');
+    await userEvent.upload(input, new File(['a'], 'a.png', { type: 'image/png' }));
+    await userEvent.upload(input, new File(['b'], 'b.png', { type: 'image/png' }));
+    await waitFor(() => expect(Object.keys(finish).sort()).toEqual(['a.png', 'b.png']));
+    finish['b.png']('B');
+    await waitFor(() => expect(onChange).toHaveBeenLastCalledWith({ id: 'B', busy: false }));
+    finish['a.png']('A');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(onChange).toHaveBeenLastCalledWith({ id: 'B', busy: false });
+    expect(screen.getByRole('img', { name: '新しいアバター' })).toHaveAttribute(
+      'src',
+      'blob:b.png',
+    );
+  });
+
+  it('選び直したあとに、先の画像の変換が終わっても、失敗しても、何も出さない', async () => {
+    const prepared: Record<string, () => void> = {};
+    const failUpload: Record<string, () => void> = {};
+    prepareImage.mockImplementation(
+      (file: File) =>
+        new Promise((resolve) => {
+          prepared[file.name] = () => resolve({ blob: file, width: 400, height: 400 });
+        }),
+    );
+    uploadImage.mockImplementation(
+      ({ blob }: { blob: File }) =>
+        new Promise((_, reject) => (failUpload[blob.name] = () => reject(new Error('network')))),
+    );
+    const onChange = vi.fn();
+    render(<ProfileImagePicker kind="avatar" currentUrl={null} onChange={onChange} />);
+    const input = screen.getByLabelText('アバターの画像を選ぶ');
+    // a: chosen, then replaced while it is still being prepared.
+    await userEvent.upload(input, new File(['a'], 'a.png', { type: 'image/png' }));
+    // c: prepared and being sent, then replaced, then its sending fails.
+    await userEvent.upload(input, new File(['c'], 'c.png', { type: 'image/png' }));
+    prepared['c.png']();
+    await waitFor(() => expect(failUpload['c.png']).toBeDefined());
+    await userEvent.upload(input, new File(['b'], 'b.png', { type: 'image/png' }));
+    prepared['a.png']();
+    failUpload['c.png']();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(uploadImage).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(onChange).toHaveBeenLastCalledWith({ id: null, busy: true });
+  });
 });

@@ -29,18 +29,25 @@ export function ProfileImagePicker({ kind, currentUrl, onChange }: Props) {
   const [failed, setFailed] = useState(false);
   const text = TEXT[kind];
   const input = useRef<HTMLInputElement>(null);
+  // Only the latest choice may show or report: an earlier one that finishes later is dropped,
+  // or the profile would save an image other than the one on screen (#25 review 1).
+  const latest = useRef(0);
   const choose = async (file: File) => {
+    const turn = ++latest.current;
     setFailed(false);
     onChange({ id: null, busy: true });
     try {
       const image = await prepareImage(file, kind);
+      if (turn !== latest.current) return;
       setPreview({
         url: URL.createObjectURL(image.blob),
         width: image.width,
         height: image.height,
       });
-      onChange({ id: await uploadImage(image), busy: false });
+      const id = await uploadImage(image);
+      if (turn === latest.current) onChange({ id, busy: false });
     } catch {
+      if (turn !== latest.current) return;
       setFailed(true);
       onChange({ id: null, busy: false });
     }
