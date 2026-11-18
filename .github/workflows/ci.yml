@@ -38,7 +38,7 @@ jobs:
       - name: Database migrations
         run: pnpm db:migrate
       # Browsers are cached; their system packages come from apt, whose mirror sometimes stalls for
-      # many minutes (#43). Each apt attempt is capped and retried; downloaded .deb files are kept.
+      # many minutes (#43). Each apt attempt is capped at 200 seconds (by a root timeout) and retried; downloaded .deb files are kept.
       - name: Playwright browsers (cache)
         id: playwright-cache
         uses: actions/cache@v6
@@ -53,8 +53,9 @@ jobs:
         timeout-minutes: 15
         run: |
           for attempt in 1 2 3; do
-            timeout 240 pnpm exec playwright install-deps chromium firefox webkit && exit 0
-            echo "attempt $attempt did not finish in 4 minutes; retrying"
+            # timeout runs as root so it can stop the root apt-get that Playwright starts (#44).
+            sudo --preserve-env=PATH timeout -k 15 200 "$(command -v pnpm)" exec playwright install-deps chromium firefox webkit && exit 0
+            echo "attempt $attempt did not finish in 200 seconds; retrying"
             # A cap that fires mid-install leaves dpkg half done; finish it before the next attempt.
             sudo dpkg --configure -a || true
           done
