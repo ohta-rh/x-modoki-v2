@@ -41,7 +41,8 @@ export function AppShell({
         {children}
         <SiteFooter className="lg:hidden" />
       </main>
-      <aside className="sticky top-0 hidden h-screen w-[350px] shrink-0 pl-8 lg:block">
+      {/* Pinned to the top; what does not fit scrolls inside it (#58). */}
+      <aside className="sticky top-0 hidden h-screen w-[350px] shrink-0 overflow-y-auto pl-8 lg:block">
         {sidebar}
       </aside>
       <div className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-[var(--header-bg)] backdrop-blur-[12px] sm:hidden">
