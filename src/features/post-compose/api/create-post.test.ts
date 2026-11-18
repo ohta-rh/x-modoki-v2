@@ -137,4 +137,23 @@ describe('createPost の返信（#20）', () => {
     });
     expect(await testDb().select().from(posts)).toHaveLength(1);
   });
+
+  it('確かめたあと、書く前に親が消されたら、返信は書かず NOT_FOUND（#20 のレビュー）', async () => {
+    const me = await makeUser();
+    signInAs(me);
+    const parent = await makePost({ authorId: me.id });
+    const db = testDb();
+    const transaction = db.transaction.bind(db);
+    vi.spyOn(db, 'transaction').mockImplementationOnce(async (run) => {
+      await db.update(posts).set({ deletedAt: new Date() }).where(eq(posts.id, parent.id));
+      return transaction(run);
+    });
+    expect(await createPost('返信', { replyToId: parent.id })).toEqual({
+      ok: false,
+      error: 'NOT_FOUND',
+    });
+    const rows = await db.select().from(posts);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].replyCount).toBe(0);
+  });
 });

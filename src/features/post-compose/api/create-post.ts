@@ -46,7 +46,17 @@ export async function createPost(
   const names = unique(twitterText.extractMentions(body));
 
   const insert = async (id: bigint) =>
-    getDb().transaction(async (tx) => {
+    getDb().transaction(async (tx): Promise<bigint | null> => {
+      // The parent's count goes first and re-checks deleted_at: a parent deleted after the check
+      // above takes no reply (nothing has been written yet when this returns).
+      if (parent) {
+        const counted = await tx
+          .update(posts)
+          .set({ replyCount: sql`${posts.replyCount} + 1` })
+          .where(and(eq(posts.id, parent.id), isNull(posts.deletedAt)))
+          .returning({ id: posts.id });
+        if (counted.length === 0) return null;
+      }
       await tx.insert(posts).values({
         id,
         authorId: viewer.id,
@@ -54,12 +64,6 @@ export async function createPost(
         replyToId: parent?.id ?? null,
         rootId: parent ? (parent.rootId ?? parent.id) : null,
       });
-      if (parent) {
-        await tx
-          .update(posts)
-          .set({ replyCount: sql`${posts.replyCount} + 1` })
-          .where(eq(posts.id, parent.id));
-      }
       if (tags.length > 0) {
         await tx
           .insert(hashtags)
@@ -91,10 +95,12 @@ export async function createPost(
       return id;
     });
 
+  const created = (id: bigint | null): CreatePostResult =>
+    id === null ? { ok: false, error: 'NOT_FOUND' } : { ok: true, id: toIdString(id) };
   try {
-    return { ok: true, id: toIdString(await insert(newId())) };
+    return created(await insert(newId()));
   } catch (error) {
     if (!isIdCollision(error)) throw error;
-    return { ok: true, id: toIdString(await insert(newId())) };
+    return created(await insert(newId()));
   }
 }
