@@ -50,10 +50,9 @@ jobs:
         timeout-minutes: 10
         run: pnpm exec playwright install chromium firefox webkit
       # The .deb files of the browsers' system packages are cached too, so a run with a cache hit
-      # never talks to the apt mirror, which can be slow for longer than any retry (#45).
-      # Runners mix several image builds. The primary key is per image, so a new image saves its own
-      # set (a primary-key hit never saves); restore-keys still bring back the newest set from any
-      # image, and dpkg -i decides whether it fits.
+      # never talks to the apt mirror, which can be slow for longer than any retry (#45). The
+      # lockfile hash leads the key so a set from another Playwright version is never restored;
+      # the image follows because runners mix image builds and a primary-key hit never saves.
       - name: Runner image
         id: image
         run: echo "version=$ImageOS-$ImageVersion" >> "$GITHUB_OUTPUT"
@@ -62,19 +61,27 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ~/apt-debs
-          key: playwright-debs-${{ steps.image.outputs.version }}-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: playwright-debs-
+          key: playwright-debs-${{ hashFiles('pnpm-lock.yaml') }}-${{ steps.image.outputs.version }}
+          restore-keys: playwright-debs-${{ hashFiles('pnpm-lock.yaml') }}-
       - name: Playwright system packages
         timeout-minutes: 15
         run: |
-          if ls ~/apt-debs/*.deb > /dev/null 2>&1 && sudo dpkg -i ~/apt-debs/*.deb; then
+          # The exact set for this image and lockfile: install it without the mirror.
+          if [ "${{ steps.debs-cache.outputs.cache-hit }}" = "true" ] && sudo dpkg -i ~/apt-debs/*.deb; then
             exit 0
+          fi
+          # A set from another image build may lack a library: hand it to apt, which then downloads
+          # only what is missing.
+          if ls ~/apt-debs/*.deb > /dev/null 2>&1; then
+            sudo cp ~/apt-debs/*.deb /var/cache/apt/archives/
           fi
           sudo dpkg --configure -a || true
           for attempt in 1 2 3; do
             # timeout runs as root so it can stop the root apt-get that Playwright starts (#44).
             if sudo --preserve-env=PATH timeout -k 15 200 "$(command -v pnpm)" exec playwright install-deps chromium firefox webkit; then
+              # Save exactly this run's set: drop older .deb files first.
               mkdir -p ~/apt-debs
+              find ~/apt-debs -maxdepth 1 -name '*.deb' -delete
               find /var/cache/apt/archives -maxdepth 1 -name '*.deb' -exec cp {} ~/apt-debs/ \;
               exit 0
             fi
