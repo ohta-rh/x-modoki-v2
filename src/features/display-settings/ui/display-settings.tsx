@@ -30,8 +30,11 @@ export function DisplaySettings({
 }: Display & { action: (display: Display) => Promise<SetDisplayActionResult> }) {
   const [display, setDisplay] = useState<Display>({ theme, accent });
   const [failed, setFailed] = useState(false);
+  // The latest choice: an earlier save that fails no longer has a say (review 2).
+  const latest = useRef(0);
   const choose = async (next: Display) => {
     const before = display;
+    const mine = ++latest.current;
     setDisplay(next);
     setFailed(false);
     apply(next);
@@ -40,7 +43,7 @@ export function DisplaySettings({
       (result) => result.ok,
       () => false,
     );
-    if (saved) return;
+    if (saved || mine !== latest.current) return;
     setDisplay(before);
     apply(before);
     setFailed(true);

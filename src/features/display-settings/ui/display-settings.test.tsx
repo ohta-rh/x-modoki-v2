@@ -60,4 +60,24 @@ describe('DisplaySettings（#29）', () => {
     expect(html.dataset.theme).toBe('dim');
     container.remove();
   });
+
+  it('前の保存が失敗しても、あとの選択がまだ残っていれば戻さない（レビュー 2）', async () => {
+    let failFirst!: () => void;
+    const action = vi
+      .fn()
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            failFirst = () => resolve({ ok: false, error: 'UNAUTHORIZED' });
+          }),
+      )
+      .mockImplementationOnce(async () => ({ ok: true }));
+    render(<DisplaySettings theme="light" accent="blue" action={action} />);
+    await userEvent.click(screen.getByRole('radio', { name: 'ダークブルー' }));
+    await userEvent.click(screen.getByRole('radio', { name: 'ピンク' }));
+    await act(async () => failFirst());
+    expect(html.dataset.theme).toBe('dim');
+    expect(html.dataset.accent).toBe('pink');
+    expect(screen.getByRole('radio', { name: 'ピンク' })).toBeChecked();
+  });
 });

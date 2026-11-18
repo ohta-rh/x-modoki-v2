@@ -1,7 +1,10 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DisplaySync } from './display-sync';
+
+let pathname = '/home';
+vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
 
 const html = document.documentElement;
 afterEach(() => {
@@ -25,5 +28,14 @@ describe('DisplaySync（#29 レビュー 1）', () => {
     html.dataset.accent = 'green';
     render(<DisplaySync theme="dark" accent="green" />);
     expect(document.cookie).not.toContain('theme=');
+  });
+
+  it('/settings/display では戻さない（その画面が選んだばかりの見た目を持つ、レビュー 2）', () => {
+    pathname = '/settings/display';
+    html.dataset.theme = 'dim';
+    html.dataset.accent = 'pink';
+    render(<DisplaySync theme="dim" accent="blue" />);
+    expect(html.dataset.accent).toBe('pink');
+    pathname = '/home';
   });
 });
