@@ -1,5 +1,9 @@
 # ドキュメントの更新の履歴
 
+## 2026-11-19
+* **New**: [#56 の試験レポート](test-reports/issue-0056-photo-viewer-test-scroll.md)（画像のビューアの画面のテストの揺らぎ）。
+* **New**: [#27 の試験レポート](test-reports/issue-0027-search.md)（検索・トレンド・おすすめのユーザー）。
+
 ## 2026-11-18
 * **New**: [ADR-0048](adr/0048-read-trends-and-suggestions-per-request.md)（トレンドとおすすめのユーザーは要求ごとに読む）を足し、ADR-0010 のキャッシュの部分を置き換えた。[アプリの構成](architecture/application-structure.md)を直した（#27）。
 * **New**: [#26 の試験レポート](test-reports/issue-0026-notifications.md)（通知と未読の数）を足した。
