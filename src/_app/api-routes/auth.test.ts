@@ -41,17 +41,36 @@ describe('authHandler（app/api/auth/[...all]）', () => {
     },
   );
 
-  it.each([
-    ['/update-user', { name: 'あ'.repeat(51), image: 'media/someone-else.webp' }],
-    ['/change-email', { newEmail: 'other@example.test' }],
-    ['/change-password', { currentPassword: 'x', newPassword: 'correct-horse-battery' }],
-    ['/delete-user', {}],
-  ])(
-    'T-09（#51）: %s は外から呼べない（プロフィールは検証のある編集だけで変える）',
-    async (path, body) => {
-      const { authHandler } = await import('./auth');
-      const response = await authHandler(post(path, body));
-      expect(response.status).toBe(404);
-    },
-  );
+  it('T-21（#51）: 使わない書き込みの道は、ログインしていても 404 で、利用者の行は変わらない', async () => {
+    const { getAuth } = await import('@/shared/auth/index.server');
+    const signedUp = await getAuth().api.signUpEmail({
+      body: {
+        name: '本人',
+        email: 'owner_51@example.test',
+        password: 'correct-horse-battery',
+        username: 'owner_51',
+        displayUsername: 'owner_51',
+      },
+      asResponse: true,
+    });
+    const cookie = signedUp.headers.get('set-cookie')!.split(';')[0];
+    const { authHandler } = await import('./auth');
+    for (const [path, body] of [
+      ['/update-user', { name: 'あ'.repeat(51), image: 'media/someone-else.webp' }],
+      ['/change-email', { newEmail: 'other@example.test' }],
+      [
+        '/change-password',
+        { currentPassword: 'correct-horse-battery', newPassword: 'another-horse-battery' },
+      ],
+      ['/delete-user', {}],
+    ] as const) {
+      const request = post(path, body);
+      request.headers.set('cookie', cookie);
+      expect((await authHandler(request)).status, path).toBe(404);
+    }
+    const { rows } = await testDb().execute<{ name: string; image: string | null; email: string }>(
+      sql`SELECT name, image, email FROM users WHERE username = 'owner_51'`,
+    );
+    expect(rows).toEqual([{ name: '本人', image: null, email: 'owner_51@example.test' }]);
+  });
 });

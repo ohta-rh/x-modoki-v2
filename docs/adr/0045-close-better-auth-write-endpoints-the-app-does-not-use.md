@@ -11,7 +11,7 @@ status: stable
 - ステータス: 採用
 - 日付: 2026-11-18
 - 決定者: エージェント（委任された判断。ADR-0028 によりユーザーに聞かずに決めた）
-- 関連: [ADR-0007](0007-better-auth-db-sessions.md)（Better Auth）、[脅威の文書](../architecture/threat-model.md) の T-09・T-10・T-16、#51、#25
+- 関連: [ADR-0007](0007-better-auth-db-sessions.md)（Better Auth）、[脅威の文書](../architecture/threat-model.md) の T-09・T-10・T-21、#51、#25
 
 ## 背景
 
