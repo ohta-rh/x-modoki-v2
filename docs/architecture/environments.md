@@ -97,7 +97,7 @@ GitHub Actions が、`main` への push と全ての PR で動かす（[ADR-0020
 | 4 | 整形 | `pnpm format:check` | 整形されていないファイル |
 | 5 | テストとカバレッジ | `pnpm test --coverage` | テストの失敗、または行・分岐・関数・文のどれかが 100% 未満（[ADR-0021](../adr/0021-coverage-100-percent.md)） |
 | 6 | ビルド | `pnpm build` | ビルドのエラー（`<Suspense>` の包み忘れを含む） |
-| 7 | 画面を通したテスト | `pnpm test:e2e` | Chromium・Firefox・WebKit のどれかでのテストの失敗。最初の失敗で止める。失敗のときは、画面の写真と操作の記録を成果物に残す |
+| 7 | 画面を通したテスト | `pnpm test:e2e`（CI では公式の Playwright のイメージの中で、ランナーの Node.js で: [ADR-0046](../adr/0046-ci-browser-tests-in-the-official-playwright-image.md)） | Chromium・Firefox・WebKit のどれかでのテストの失敗。最初の失敗で止める。失敗のときは、画面の写真と操作の記録を成果物に残す |
 
 - PostgreSQL と S3 互換のストレージは、CI でも `scripts/setup-local.sh` の Docker Compose で動かす。GitHub Actions の `services:` は、リポジトリの Garage の設定をマウントする前に立ち上がるので使わない。手元と CI が同じ手順になる（[ADR-0033](../adr/0033-ci-services-via-docker-compose.md)）
 - Node.js と pnpm の版は、`.nvmrc` と `package.json` の `packageManager` から読む

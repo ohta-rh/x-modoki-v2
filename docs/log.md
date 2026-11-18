@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **New**: [ADR-0046](adr/0046-ci-browser-tests-in-the-official-playwright-image.md)（CI の画面のテストは公式の Playwright のイメージで）を足し、[環境と配備](architecture/environments.md)の CI の表を直した（#52）。
 * **New**: [#51 の試験レポート](test-reports/issue-0051-auth-write-endpoints.md)（使っていない Better Auth の書き込みの道）を足した。
 * **New**: [#25 の試験レポート](test-reports/issue-0025-media.md)（画像の添付・ビューア・アバターとバナー・片付け）を足した。
 * **New**: [ADR-0045](adr/0045-close-better-auth-write-endpoints-the-app-does-not-use.md)（使わない Better Auth の書き込みの道を閉じる）と[脅威モデル](architecture/threat-model.md)の T-21 を足した（#51）。

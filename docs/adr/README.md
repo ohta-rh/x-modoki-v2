@@ -57,3 +57,4 @@ status: stable
 | [0043](0043-jpeg-where-the-browser-cannot-write-webp.md) | ブラウザが WebP を書けないときは、同じ品質の JPEG で送り、サーバーは JPEG も受け付ける | 採用 | エージェント |
 | [0044](0044-client-inputs-take-in-what-was-entered-before-hydration.md) | 入力欄の値を状態に持つクライアントの部品は、マウントのときに DOM に入っている値を取り込む | 採用 | エージェント |
 | [0045](0045-close-better-auth-write-endpoints-the-app-does-not-use.md) | Better Auth の HTTP の道のうち、アプリが使わない利用者の書き込みは閉じる | 採用 | エージェント |
+| [0046](0046-ci-browser-tests-in-the-official-playwright-image.md) | CI の画面のテストは、公式の Playwright のイメージの中で、ランナーの Node.js で動かす | 採用 | ユーザー・エージェント |
