@@ -3,6 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import type { PostPage, TimelineKind } from '@/entities/post';
 import { ComposeBox, type CreatePostActionResult } from '@/features/post-compose';
+import type { DeletePostActionResult } from '@/features/post-delete';
 import { TimelineFeed, timelineKey } from './timeline-feed';
 
 type Props = {
@@ -10,10 +11,11 @@ type Props = {
   firstPage: PostPage;
   now: string;
   action: (text: string) => Promise<CreatePostActionResult>;
+  deleteAction?: (postId: string) => Promise<DeletePostActionResult>;
 };
 
 /** The composer above the timeline; a new post reloads the first page so it appears on top. */
-export function HomeTimeline({ kind, firstPage, now, action }: Props) {
+export function HomeTimeline({ kind, firstPage, now, action, deleteAction }: Props) {
   const queryClient = useQueryClient();
   return (
     <>
@@ -21,7 +23,7 @@ export function HomeTimeline({ kind, firstPage, now, action }: Props) {
         action={action}
         onPosted={() => void queryClient.resetQueries({ queryKey: timelineKey(kind) })}
       />
-      <TimelineFeed kind={kind} firstPage={firstPage} now={now} />
+      <TimelineFeed kind={kind} firstPage={firstPage} now={now} deleteAction={deleteAction} />
     </>
   );
 }

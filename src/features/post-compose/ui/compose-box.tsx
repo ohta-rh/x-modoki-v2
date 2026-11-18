@@ -8,6 +8,9 @@ import type { CreatePostActionResult } from '../model/types';
 type Props = {
   action: (text: string) => Promise<CreatePostActionResult>;
   onPosted?: () => void;
+  label?: string;
+  submitLabel?: string;
+  placeholder?: string;
 };
 
 const RADIUS = 9;
@@ -15,7 +18,13 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 const RING_COLOR = { normal: 'var(--accent)', warning: '#ffd400', over: 'var(--danger)' } as const;
 
 /** The inline composer at the top of /home (docs/architecture/ui-ux.md 7). */
-export function ComposeBox({ action, onPosted }: Props) {
+export function ComposeBox({
+  action,
+  onPosted,
+  label = '投稿の本文',
+  submitLabel = 'ポストする',
+  placeholder = 'いまの話題は？',
+}: Props) {
   const [text, setText] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -46,8 +55,8 @@ export function ComposeBox({ action, onPosted }: Props) {
     >
       <textarea
         ref={ref}
-        aria-label="投稿の本文"
-        placeholder="いまの話題は？"
+        aria-label={label}
+        placeholder={placeholder}
         rows={1}
         value={text}
         onChange={(event) => {
@@ -96,7 +105,7 @@ export function ComposeBox({ action, onPosted }: Props) {
           </span>
         ) : null}
         <Button type="submit" variant="brand" disabled={!postable || pending}>
-          ポストする
+          {submitLabel}
         </Button>
       </div>
     </form>

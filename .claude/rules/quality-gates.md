@@ -36,7 +36,7 @@ Decided in ADR-0017, ADR-0019, ADR-0020, ADR-0021; this file is the operating ru
 - Vitest (V8) thresholds are **100% for lines, branches, functions, and statements**, measured
   over all of `src/**`, `app/**/route.ts`, and `proxy.ts`, including files no test imports.
 - **Only these may be excluded**, and only in the single list in `vitest.config.ts`, each with
-  its reason: root `app/**/{page,layout,default}.tsx`, `src/shared/ui/kit/**`,
+  its reason: root `app/**/{page,layout,default,not-found}.tsx` (`not-found` per ADR-0039), `src/shared/ui/kit/**`,
   `src/shared/db/schema/**`, type-only files (paths per ADR-0022). Adding to the list or lowering a threshold
   requires a new ADR.
 - **Excluded files hold no decisions.** A `page.tsx` / `layout.tsx` / `default.tsx` may only

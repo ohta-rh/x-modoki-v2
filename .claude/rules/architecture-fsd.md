@@ -60,7 +60,7 @@ src/
 
 ## 4. Next.js route files are a thin shell (ADR-0021)
 
-- `app/**/page.tsx`, `layout.tsx`, `default.tsx` may only: read `params` / `searchParams`,
+- `app/**/page.tsx`, `layout.tsx`, `default.tsx`, `not-found.tsx` (ADR-0039) may only: read `params` / `searchParams`,
   call a loader from `_pages` (or `_app`), render the synchronous `_pages` component with the
   result, wrap in `<Suspense>`. No conditionals, no formatting, no data shaping.
 - **Async Server Components exist only in root `app/`.** Every component under `src/` is

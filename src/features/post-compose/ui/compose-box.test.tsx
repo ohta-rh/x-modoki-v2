@@ -57,4 +57,15 @@ describe('ComposeBox（ui-ux.md の 7 節）', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('投稿が多すぎます');
     expect(box()).toHaveValue('こんにちは');
   });
+
+  it('見出し・ボタン・仮の文を変えられる（返信の入力欄）', () => {
+    render(
+      <ComposeBox action={ok()} label="返信の本文" submitLabel="返信" placeholder="返信をポスト" />,
+    );
+    expect(screen.getByRole('textbox', { name: '返信の本文' })).toHaveAttribute(
+      'placeholder',
+      '返信をポスト',
+    );
+    expect(screen.getByRole('button', { name: '返信' })).toBeInTheDocument();
+  });
 });

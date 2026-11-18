@@ -46,7 +46,7 @@ several tests ahead.
 | Helpers under `e2e/` | `src/shared/db/schema/` (declarations) and type-only files |
 | | Throwaway investigation code outside the repository |
 
-`app/**/{page,layout,default}.tsx` cannot be unit-tested (ADR-0021): write the Playwright test
+`app/**/{page,layout,default,not-found}.tsx` cannot be unit-tested (ADR-0021, ADR-0039): write the Playwright test
 for the route first and watch it fail, then add the route file.
 
 Adding to the "not covered" column requires a new ADR.

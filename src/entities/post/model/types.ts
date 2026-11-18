@@ -8,7 +8,7 @@ export type Post = {
   createdAt: string;
   media: { url: string; width: number; height: number; alt: string }[];
   counts: { replies: number; reposts: number; likes: number; bookmarks: number; views: number };
-  viewer: { liked: boolean; reposted: boolean; bookmarked: boolean };
+  viewer: { liked: boolean; reposted: boolean; bookmarked: boolean; isAuthor: boolean };
   repostedBy: UserSummary | null;
   replyTo: { username: string } | null;
   quoted: Post | null;
@@ -17,3 +17,8 @@ export type Post = {
 export type PostPage = { items: Post[]; nextCursor: string | null };
 
 export type TimelineKind = 'following' | 'for-you';
+
+/** A post above the one being read: a post, or only a mark when it was deleted. */
+export type ThreadItem = Post | { id: string; deleted: true };
+
+export type PostDetail = { post: Post; ancestors: ThreadItem[]; replies: PostPage };

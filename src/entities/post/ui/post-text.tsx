@@ -5,9 +5,11 @@ import { tokenizePost } from '@/shared/lib/text';
 const linkClass = 'text-brand hover:underline';
 
 /** A post's body: plain text that React escapes, with http(s) URLs, #tags and @names as links. */
-export function PostText({ text }: { text: string }) {
+export function PostText({ text, size = 'md' }: { text: string; size?: 'md' | 'lg' }) {
   return (
-    <p className="text-body break-words whitespace-pre-wrap">
+    <p
+      className={`${size === 'lg' ? 'text-body-lg' : 'text-body'} break-words whitespace-pre-wrap`}
+    >
       {tokenizePost(text).map((token, index) => {
         if (token.type === 'text') return token.value;
         if (token.type === 'url') {

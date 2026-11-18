@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { render, screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { Post } from '../model/types';
 import { PostCard } from './post-card';
 import { PostText } from './post-text';
@@ -12,12 +12,14 @@ const post: Post = {
   createdAt: '2026-11-18T02:59:00.000Z',
   media: [],
   counts: { replies: 2, reposts: 1, likes: 12_345, bookmarks: 0, views: 9_999 },
-  viewer: { liked: false, reposted: false, bookmarked: false },
+  viewer: { liked: false, reposted: false, bookmarked: false, isAuthor: false },
   repostedBy: null,
   replyTo: null,
   quoted: null,
 };
 const now = new Date('2026-11-18T03:00:00.000Z');
+
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 describe('PostText（NFR-SEC-06）', () => {
   it('URL は外へのリンク、ハッシュタグとメンションはアプリの中のリンク', () => {

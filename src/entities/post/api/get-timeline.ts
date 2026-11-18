@@ -1,10 +1,9 @@
 import 'server-only';
-import { and, desc, eq, inArray, isNull, lt, or, sql, type SQL } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, lt, or, type SQL } from 'drizzle-orm';
 import { getSession } from '@/shared/auth/index.server';
 import { follows, getDb, posts, user } from '@/shared/db';
-import { toIdString } from '@/shared/lib/id';
-import { mediaUrl } from '@/shared/lib/media-url';
 import type { Post, PostPage, TimelineKind } from '../model/types';
+import { postColumns, toPost } from './post-rows';
 
 const PAGE_SIZE = 20;
 
@@ -31,39 +30,13 @@ export async function getTimeline(
   }
   if (cursor !== null) where.push(lt(posts.id, cursor));
   const rows = await db
-    .select({
-      post: posts,
-      author: { username: user.username, name: user.name, image: user.image },
-      liked: sql<boolean>`exists (select 1 from likes l where l.post_id = ${posts.id} and l.user_id = ${viewer.id})`,
-      bookmarked: sql<boolean>`exists (select 1 from bookmarks b where b.post_id = ${posts.id} and b.user_id = ${viewer.id})`,
-      reposted: sql<boolean>`exists (select 1 from posts r where r.repost_of_id = ${posts.id} and r.author_id = ${viewer.id})`,
-    })
+    .select(postColumns(viewer.id))
     .from(posts)
     .innerJoin(user, eq(user.id, posts.authorId))
     .where(and(...where))
     .orderBy(desc(posts.id))
     .limit(PAGE_SIZE + 1);
-
-  const items: Post[] = rows
-    .slice(0, PAGE_SIZE)
-    .map(({ post, author, liked, bookmarked, reposted }) => ({
-      id: toIdString(post.id),
-      author: { username: author.username!, name: author.name, avatarUrl: mediaUrl(author.image) },
-      text: post.text,
-      createdAt: post.createdAt.toISOString(),
-      media: [],
-      counts: {
-        replies: post.replyCount,
-        reposts: post.repostCount,
-        likes: post.likeCount,
-        bookmarks: post.bookmarkCount,
-        views: post.viewCount,
-      },
-      viewer: { liked, reposted, bookmarked },
-      repostedBy: null,
-      replyTo: null,
-      quoted: null,
-    }));
+  const items: Post[] = rows.slice(0, PAGE_SIZE).map((row) => toPost(row, viewer.id));
   const nextCursor = rows.length > PAGE_SIZE ? items[PAGE_SIZE - 1].id : null;
   return { ok: true, page: { items, nextCursor } };
 }

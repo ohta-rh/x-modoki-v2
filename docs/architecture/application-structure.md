@@ -89,7 +89,7 @@ app/ ──▶ _app, _pages ──▶ widgets ──▶ features ──▶ entit
 | ルートの `app/` が読めるのは `_pages` と `_app` だけ | ルーティングと中身を分ける |
 | `@/shared/db` を読めるのは、`api` セグメントと `shared/db`・`shared/auth` だけ | 認可を通らない読み書きを作らない |
 | `process.env` を読めるのは `src/shared/config/env.ts` だけ | 検証していない値を使わない |
-| 非同期の Server Component は、ルートの `app/` の `page.tsx`・`layout.tsx`・`default.tsx` だけに書く。`src/` のコンポーネントは全部、同期にする | Vitest で測れないファイルに判断を置かない（[ADR-0021](../adr/0021-coverage-100-percent.md)） |
+| 非同期の Server Component は、ルートの `app/` の `page.tsx`・`layout.tsx`・`default.tsx` だけに書く。`not-found.tsx` も同じ薄い殻で、`_pages` の画面を出すだけ（[ADR-0039](../adr/0039-not-found-route-file-is-a-thin-shell.md)）。`src/` のコンポーネントは全部、同期にする | Vitest で測れないファイルに判断を置かない（[ADR-0021](../adr/0021-coverage-100-percent.md)） |
 | `'use client'` は葉の部品に付ける。クライアントのファイルから `index.server` を読まない | クライアントへ送る量を小さくし、サーバーのコードを漏らさない |
 | モジュールの一番上で、接続・プール・リクエストをまたぐ値を作らない | Cloudflare Workers で動かない（[ADR-0017](../adr/0017-cloudflare-workers-opennext.md)） |
 
@@ -215,7 +215,7 @@ Server Action は例外を投げずに、上の形で返す。想定していな
       "createdAt": "2026-11-18T03:12:45.000Z",
       "media": [{ "url": "https://…", "width": 1200, "height": 675, "alt": "" }],
       "counts": { "replies": 2, "reposts": 1, "likes": 14, "bookmarks": 0, "views": 320 },
-      "viewer": { "liked": true, "reposted": false, "bookmarked": false },
+      "viewer": { "liked": true, "reposted": false, "bookmarked": false, "isAuthor": false },
       "repostedBy": null,
       "replyTo": null,
       "quoted": null
@@ -225,7 +225,7 @@ Server Action は例外を投げずに、上の形で返す。想定していな
 }
 ```
 
-`nextCursor` が `null` なら、続きは無い。
+`nextCursor` が `null` なら、続きは無い。`viewer.isAuthor` は見ている人がその投稿の作者かどうかで、削除のメニューを出すかを決める（#20）。返信の一覧（`/api/posts/{id}/replies`）は古い順で、`replyTo` に相手のユーザー名が入る。
 
 ## 6. 安全のための規則
 

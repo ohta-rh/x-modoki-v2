@@ -1,5 +1,6 @@
 import type { PostPage, TimelineKind } from '@/entities/post';
 import { createPostAction } from '@/features/post-compose/index.server';
+import { deletePostAction } from '@/features/post-delete/index.server';
 import { PageHeader } from '@/widgets/app-shell';
 import { HomeTimeline } from '@/widgets/timeline-feed';
 import { HomeTabs } from './home-tabs';
@@ -22,6 +23,7 @@ export function HomePage({ kind, firstPage, now }: Props) {
         firstPage={firstPage}
         now={now}
         action={createPostAction}
+        deleteAction={deletePostAction}
       />
     </>
   );

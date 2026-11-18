@@ -105,3 +105,36 @@ describe('createPost（FR-POST、NFR-SEC-01・02・05）', () => {
     vi.useRealTimers();
   });
 });
+
+describe('createPost の返信（#20）', () => {
+  it('返信は reply_to_id と root_id を持ち、相手の返信の数を同じトランザクションで 1 増やす', async () => {
+    const me = await makeUser();
+    signInAs(me);
+    const root = await makePost({ authorId: me.id, text: '最初' });
+    const first = await createPost('一つ目の返信', { replyToId: root.id });
+    if (!first.ok) throw new Error('expected ok');
+    const second = await createPost('返信への返信', { replyToId: BigInt(first.id) });
+    if (!second.ok) throw new Error('expected ok');
+    const rows = await testDb().select().from(posts);
+    const byId = new Map(rows.map((row) => [row.id.toString(), row]));
+    expect(byId.get(first.id)).toMatchObject({ replyToId: root.id, rootId: root.id });
+    expect(byId.get(second.id)).toMatchObject({ replyToId: BigInt(first.id), rootId: root.id });
+    expect(byId.get(root.id.toString())?.replyCount).toBe(1);
+    expect(byId.get(first.id)?.replyCount).toBe(1);
+  });
+
+  it('無い投稿と削除された投稿には返信できない（NOT_FOUND、何も書かない）', async () => {
+    const me = await makeUser();
+    signInAs(me);
+    const gone = await makePost({ authorId: me.id, deletedAt: new Date() });
+    expect(await createPost('返信', { replyToId: gone.id })).toEqual({
+      ok: false,
+      error: 'NOT_FOUND',
+    });
+    expect(await createPost('返信', { replyToId: newId() })).toEqual({
+      ok: false,
+      error: 'NOT_FOUND',
+    });
+    expect(await testDb().select().from(posts)).toHaveLength(1);
+  });
+});

@@ -1,9 +1,9 @@
-import { makeUser } from '@test/factories';
+import { makePost, makeUser } from '@test/factories';
 import { setupTestDb, testDb } from '@test/db';
 import { currentSession, signInAs, signOut } from '@test/session';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { posts } from '@/shared/db';
-import { createPostAction } from './actions';
+import { createPostAction, createReplyAction } from './actions';
 
 vi.mock('@/shared/auth/index.server', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/shared/auth/index.server')>()),
@@ -47,5 +47,30 @@ describe('createPostAction', () => {
       message: '投稿が多すぎます。しばらく待ってから、もう一度お試しください',
     });
     vi.useRealTimers();
+  });
+});
+
+describe('createReplyAction', () => {
+  it('返信して ok を返す', async () => {
+    const me = await makeUser();
+    const parent = await makePost({ authorId: me.id });
+    signInAs(me);
+    expect(await createReplyAction('返信', parent.id.toString())).toEqual({ ok: true });
+  });
+
+  it.each(['abc', '999999999999999'])('ID %s の投稿が無ければ、見つからないと言う', async (id) => {
+    signInAs(await makeUser());
+    expect(await createReplyAction('返信', id)).toEqual({
+      ok: false,
+      message: 'この投稿は見つかりません',
+    });
+  });
+
+  it('文字列でない本文は、本文を確かめるよう言う', async () => {
+    signInAs(await makeUser());
+    expect(await createReplyAction(42 as unknown as string, '1')).toEqual({
+      ok: false,
+      message: '本文を確かめてください',
+    });
   });
 });

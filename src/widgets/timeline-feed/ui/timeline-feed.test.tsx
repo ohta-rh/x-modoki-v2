@@ -8,6 +8,8 @@ import type { Post, PostPage } from '@/entities/post';
 import { HomeTimeline } from './home-timeline';
 import { TimelineFeed } from './timeline-feed';
 
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
+
 const post = (id: number): Post => ({
   id: String(id),
   author: { username: 'taro', name: '太郎', avatarUrl: null },
@@ -15,7 +17,7 @@ const post = (id: number): Post => ({
   createdAt: '2026-11-18T03:00:00.000Z',
   media: [],
   counts: { replies: 0, reposts: 0, likes: 0, bookmarks: 0, views: 0 },
-  viewer: { liked: false, reposted: false, bookmarked: false },
+  viewer: { liked: false, reposted: false, bookmarked: false, isAuthor: false },
   repostedBy: null,
   replyTo: null,
   quoted: null,

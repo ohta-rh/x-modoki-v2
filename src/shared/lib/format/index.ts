@@ -1,1 +1,1 @@
-export { compactCount, relativeTime } from './format';
+export { absoluteTime, compactCount, relativeTime } from './format';

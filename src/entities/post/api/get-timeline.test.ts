@@ -87,7 +87,7 @@ describe('getTimeline（data-model.md の 4 節、ADR-0015）', () => {
       createdAt: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
       media: [],
       counts: { replies: 0, reposts: 0, likes: 1, bookmarks: 0, views: 0 },
-      viewer: { liked: true, reposted: false, bookmarked: false },
+      viewer: { liked: true, reposted: false, bookmarked: false, isAuthor: true },
       repostedBy: null,
       replyTo: null,
       quoted: null,

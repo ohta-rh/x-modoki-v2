@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compactCount, relativeTime } from './format';
+import { absoluteTime, compactCount, relativeTime } from './format';
 
 const now = new Date('2026-11-18T12:00:00+09:00');
 const ago = (ms: number) => new Date(now.getTime() - ms);
@@ -42,5 +42,16 @@ describe('compactCount（ui-ux.md の 5 節）', () => {
     [340_000_000, '3.4億'],
   ])('%d は %s', (n, expected) => {
     expect(compactCount(n)).toBe(expected);
+  });
+});
+
+describe('absoluteTime（詳細の画面の時刻、日本時間）', () => {
+  it.each([
+    ['2026-11-18T06:04:00Z', '午後3:04 · 2026年11月18日'],
+    ['2026-11-17T15:30:00Z', '午前0:30 · 2026年11月18日'],
+    ['2026-11-18T03:00:00Z', '午後0:00 · 2026年11月18日'],
+    ['2026-01-01T02:09:00Z', '午前11:09 · 2026年1月1日'],
+  ])('%s は %s', (iso, expected) => {
+    expect(absoluteTime(new Date(iso))).toBe(expected);
   });
 });

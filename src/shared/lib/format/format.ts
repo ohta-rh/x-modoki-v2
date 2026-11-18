@@ -34,3 +34,23 @@ export function compactCount(n: number): string {
   if (n < 100_000_000) return `${oneDecimal(n / 10_000)}万`;
   return `${oneDecimal(n / 100_000_000)}億`;
 }
+
+/** The detail page's time, `午後3:04 · 2026年11月18日` (Asia/Tokyo). */
+export function absoluteTime(date: Date): string {
+  const values = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: TIME_ZONE,
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    })
+      .formatToParts(date)
+      .map((part) => [part.type, part.value]),
+  );
+  const hour = Number(values.hour);
+  const clock = `${hour < 12 ? '午前' : '午後'}${hour % 12}:${values.minute}`;
+  return `${clock} · ${values.year}年${values.month}月${values.day}日`;
+}

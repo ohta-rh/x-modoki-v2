@@ -7,6 +7,10 @@ import { HomePage } from './home-page';
 vi.mock('@/features/post-compose/index.server', () => ({
   createPostAction: async () => ({ ok: true }),
 }));
+vi.mock('@/features/post-delete/index.server', () => ({
+  deletePostAction: async () => ({ ok: true }),
+}));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 const empty = { items: [], nextCursor: null };
 const renderHome = (kind: 'following' | 'for-you') =>
@@ -36,5 +40,36 @@ describe('HomePage（ui-ux.md の 6 節）', () => {
     expect(screen.getByRole('textbox', { name: '投稿の本文' })).toBeInTheDocument();
     expect(screen.getByText('まだポストがありません')).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'おすすめ' })).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('自分の投稿には、削除のメニューを付ける（#20）', () => {
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <HomePage
+          kind="following"
+          now="2026-11-18T03:00:00.000Z"
+          firstPage={{
+            nextCursor: null,
+            items: [
+              {
+                id: '1',
+                author: { username: 'taro', name: '太郎', avatarUrl: null },
+                text: '自分の投稿',
+                createdAt: '2026-11-18T03:00:00.000Z',
+                media: [],
+                counts: { replies: 0, reposts: 0, likes: 0, bookmarks: 0, views: 0 },
+                viewer: { liked: false, reposted: false, bookmarked: false, isAuthor: true },
+                repostedBy: null,
+                replyTo: null,
+                quoted: null,
+              },
+            ],
+          }}
+        />
+      </QueryClientProvider>,
+    );
+    expect(
+      within(screen.getByRole('article')).getByRole('button', { name: 'もっと見る' }),
+    ).toBeInTheDocument();
   });
 });
