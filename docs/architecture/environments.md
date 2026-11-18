@@ -98,7 +98,7 @@ GitHub Actions が、`main` への push と全ての PR で動かす（[ADR-0020
 | 6 | ビルド | `pnpm build` | ビルドのエラー（`<Suspense>` の包み忘れを含む） |
 | 7 | 画面を通したテスト | `pnpm test:e2e` | Chromium・Firefox・WebKit のどれかでのテストの失敗。最初の失敗で止める。失敗のときは、画面の写真と操作の記録を成果物に残す |
 
-- PostgreSQL と S3 互換のストレージは、CI でも `scripts/setup-local.sh` の Docker Compose で動かす。GitHub Actions の `services:` は、リポジトリの Garage の設定をマウントする前に立ち上がるので使わない。手元と CI が同じ手順になる
+- PostgreSQL と S3 互換のストレージは、CI でも `scripts/setup-local.sh` の Docker Compose で動かす。GitHub Actions の `services:` は、リポジトリの Garage の設定をマウントする前に立ち上がるので使わない。手元と CI が同じ手順になる（[ADR-0033](../adr/0033-ci-services-via-docker-compose.md)）
 - Node.js と pnpm の版は、`.nvmrc` と `package.json` の `packageManager` から読む
 - 手元では `pnpm verify` が同じ 7 つを動かす。通してから push し、push のあと CI の結果を最後まで見る
 - CI が緑でも、完了ではない。`pnpm build && pnpm start` のアプリを本物の Chrome で操作して確かめ、エビデンスつきの試験レポートを `docs/test-reports/` に残すまでが完了（[ADR-0024](../adr/0024-definition-of-done-requires-browser-testing.md)、[ADR-0025](../adr/0025-test-report-with-evidence.md)）
