@@ -17,6 +17,13 @@ describe('LeftNav（ui-ux.md の 3 節）', () => {
     expect(link('通知').querySelector('svg')).toHaveAttribute('data-active', 'false');
   });
 
+  it('アイコンは 24px（ui-ux.md の 3 節）', () => {
+    render(<LeftNav currentPath="/home" />);
+    for (const icon of nav().querySelectorAll('a svg:not([viewBox="0 0 64 64"]), button svg')) {
+      expect(icon).toHaveClass('size-6');
+    }
+  });
+
   it('下の階層の画面でも、その項目を今いる画面にする', () => {
     render(<LeftNav currentPath="/notifications/mentions" />);
     expect(link('通知')).toHaveAttribute('aria-current', 'page');

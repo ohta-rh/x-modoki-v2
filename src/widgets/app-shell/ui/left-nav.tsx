@@ -46,7 +46,7 @@ export function LeftNav({ currentPath, username }: { currentPath: string; userna
             <Icon
               aria-hidden="true"
               data-active={active}
-              className="size-7"
+              className="size-6"
               fill={active && item.key !== 'explore' ? 'currentColor' : 'none'}
               strokeWidth={active ? 2.5 : 2}
             />
@@ -56,7 +56,7 @@ export function LeftNav({ currentPath, username }: { currentPath: string; userna
       })}
       <DropdownMenu>
         <DropdownMenuTrigger aria-label="もっと見る" className={itemClass}>
-          <Ellipsis aria-hidden="true" className="size-7" />
+          <Ellipsis aria-hidden="true" className="size-6" />
           <span className="hidden pr-4 xl:inline">もっと見る</span>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
@@ -68,7 +68,7 @@ export function LeftNav({ currentPath, username }: { currentPath: string; userna
       <Link
         href={COMPOSE_PATH}
         aria-label="投稿する"
-        className="mt-4 flex size-14 items-center justify-center rounded-full bg-brand text-[17px] font-bold text-white transition-opacity hover:opacity-90 xl:h-[52px] xl:w-[233px]"
+        className="mt-4 flex size-14 items-center justify-center rounded-full bg-brand text-body-lg font-bold text-white transition-opacity hover:opacity-90 xl:h-[52px] xl:w-[233px]"
       >
         <Feather aria-hidden="true" className="size-6 xl:hidden" />
         <span className="hidden xl:inline">ポストする</span>

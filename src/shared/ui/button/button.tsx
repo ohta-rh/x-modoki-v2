@@ -15,7 +15,7 @@ export function Button({ variant = 'solid', type = 'button', className, ...props
     <button
       type={type}
       className={cn(
-        'inline-flex h-9 items-center justify-center rounded-full px-4 text-[15px] font-bold transition disabled:pointer-events-none disabled:opacity-50',
+        'inline-flex h-9 items-center justify-center rounded-full px-4 text-body font-bold transition disabled:pointer-events-none disabled:opacity-50',
         VARIANTS[variant],
         className,
       )}

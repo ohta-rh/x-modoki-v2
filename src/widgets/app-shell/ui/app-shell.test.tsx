@@ -77,7 +77,7 @@ describe('PageHeader', () => {
     render(<PageHeader title="ホーム" />);
     const header = screen.getByRole('banner');
     expect(within(header).getByRole('heading', { level: 1, name: 'ホーム' })).toHaveClass(
-      'text-xl',
+      'text-title',
       'font-extrabold',
     );
     expect(header).toHaveClass('sticky', 'top-0', 'h-[53px]', 'backdrop-blur-[12px]');

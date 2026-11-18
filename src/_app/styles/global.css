@@ -62,6 +62,12 @@
   --color-repost: var(--repost);
   --color-danger: var(--danger);
   --radius-card: var(--radius-card);
+  --text-body: 15px;
+  --text-body--line-height: 20px;
+  --text-body-lg: 17px;
+  --text-body-lg--line-height: 24px;
+  --text-title: 20px;
+  --text-title--line-height: 24px;
   --color-background: var(--bg);
   --color-foreground: var(--text);
   --color-border: var(--border);

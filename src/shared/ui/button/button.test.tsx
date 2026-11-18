@@ -9,7 +9,7 @@ describe('Button（ui-ux.md の 4 節: 15px / 700、角は丸）', () => {
     render(<Button>フォローする</Button>);
     const button = screen.getByRole('button', { name: 'フォローする' });
     expect(button).toHaveAttribute('type', 'button');
-    expect(button).toHaveClass('rounded-full', 'font-bold', 'text-[15px]');
+    expect(button).toHaveClass('rounded-full', 'font-bold', 'text-body');
   });
 
   it.each([

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import css from './global.css?raw';
+import raw from './global.css?raw';
+
+const css = raw.replace(/\/\*[\s\S]*?\*\//g, '');
 
 // docs/architecture/ui-ux.md 4: the token table, written here from the document.
 const THEMES = {
@@ -58,6 +60,15 @@ describe('デザイントークン（ui-ux.md の 4 節）', () => {
 
   it('テーマに関わらない色・角・幅', () => {
     expect(declarations(/^\s*:root\s*$/)).toMatchObject(SHARED);
+  });
+
+  it('文字の大きさ（本文 15px / 20px、詳細の本文 17px、見出し 20px）', () => {
+    expect(declarations(/^\s*@theme inline\s*$/)).toMatchObject({
+      '--text-body': '15px',
+      '--text-body--line-height': '20px',
+      '--text-body-lg': '17px',
+      '--text-title': '20px',
+    });
   });
 
   it('フォントは自前の並びで、X のフォントを使わない', () => {
