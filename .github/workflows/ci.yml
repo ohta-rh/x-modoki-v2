@@ -61,7 +61,9 @@ jobs:
       - name: 7. Browser tests (Chromium, Firefox, WebKit)
         run: |
           # The runner's home holds the workspace and pnpm (pnpm/action-setup), the tool cache Node.js.
-          docker run --rm --network host --ipc=host \
+          # As the runner's user: Firefox refuses to start as root with a $HOME owned by someone
+          # else, and the files it writes stay the runner's (#52 review 1).
+          docker run --rm --network host --ipc=host --user "$(id -u):$(id -g)" \
             -v "$HOME:$HOME" -w "$GITHUB_WORKSPACE" \
             -v "$RUNNER_TOOL_CACHE:$RUNNER_TOOL_CACHE:ro" \
             -e PATH="$PATH" -e HOME -e CI -e PORT \
