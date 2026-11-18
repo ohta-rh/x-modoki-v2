@@ -1,4 +1,5 @@
 export { authHandler } from './auth';
+export { postCleanupMedia } from './cron';
 export { getBookmarkList } from './bookmarks';
 export { postView } from './post-view';
 export { getPostReplies } from './replies';
