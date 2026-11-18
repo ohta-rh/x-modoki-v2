@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **Creation**: [機能の要件](requirements/functional.md)を置いた（#8）。
 * **Creation**: [ADR-0029](adr/0029-milestone-on-a-branch-when-a-pr-is-requested.md)（PR を求められたマイルストーンはブランチで進める）を記録した。
 * **Creation**: [試験レポート](test-reports/2026-11-18-bug-handling-rule.md)を置いた（バグのルールと、issue の本文への反映の確認）。
 * **Creation**: [ADR-0028](adr/0028-bugs-are-fixed-to-completion-without-asking.md)（バグは止めず・聞かずに最後まで直す）を記録した。[ADR-0023](adr/0023-delivery-loop-one-pbi-at-a-time.md) と [ADR-0027](adr/0027-independent-code-review-in-the-loop.md) の `blocked` の決まりを置き換えた。
