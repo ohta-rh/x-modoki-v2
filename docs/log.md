@@ -1,6 +1,8 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **New**: [#51 の試験レポート](test-reports/issue-0051-auth-write-endpoints.md)（使っていない Better Auth の書き込みの道）を足した。
+* **New**: [#25 の試験レポート](test-reports/issue-0025-media.md)（画像の添付・ビューア・アバターとバナー・片付け）を足した。
 * **New**: [ADR-0045](adr/0045-close-better-auth-write-endpoints-the-app-does-not-use.md)（使わない Better Auth の書き込みの道を閉じる）と[脅威モデル](architecture/threat-model.md)の T-21 を足した（#51）。
 * **New**: [ADR-0044](adr/0044-client-inputs-take-in-what-was-entered-before-hydration.md)（入力欄の値を状態に持つ部品は、マウントのときに DOM の値を取り込む）を足した。
 * **Update**: [脅威モデル](architecture/threat-model.md)の T-07 に、結びつけるときに写してから確かめることを書いた（#25 レビュー 2）。
