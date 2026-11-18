@@ -154,6 +154,9 @@ with `--window-size=375,…` lays the page out at ~500px and crops it. So:
   (`.claude/rules/bug-handling.md`). It gets its own commit and its own test report; reference
   it in this one.
 - Do not stop, do not defer by severity, do not ask the user.
+- **Never dismiss a symptom as "only at automation speed".** What is on screen differing from what the app
+  acts on (text shown but not posted, a count that does not move) is a bug at any speed: a slow
+  network gives a person the same timing (found in #47 after it was waved off in #20).
 - **If it reveals a rule gap** — something a rule should have prevented — update the rule in
   the same change (`CLAUDE.md`, "Keeping the harness current").
 - Never close the issue with a known problem in scope left open.
