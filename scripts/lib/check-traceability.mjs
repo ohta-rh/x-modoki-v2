@@ -17,6 +17,15 @@ const TEST_CELL = /`([^`]+)` › (.+?)\s*$/;
 
 const read = (root, path) => readFileSync(join(root, path), 'utf8');
 
+/**
+ * A test's title: the first argument of test / it / describe (with .describe / .each / .only…), or
+ * of the call an `.each([...])` returns. Not any string — a fill() argument is not a test (review 2).
+ */
+const titled = (name) =>
+  new RegExp(
+    `(?:\\b(?:test|it|describe)(?:\\.\\w+)*|\\))\\(\\s*(['\`])${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\1`,
+  );
+
 /** ID → the PBIs that own it, from both requirement tables. */
 function requirements(root) {
   return ['functional.md', 'non-functional.md'].flatMap((name) =>
@@ -62,7 +71,7 @@ function checkTest(root, key, cell, { mention, e2e }) {
   const source = read(root, path);
   const errors = [];
   if (e2e && !path.startsWith('e2e/')) errors.push(`${key}: ${path} is not a Playwright test`);
-  if (!source.includes(`'${name}'`) && !source.includes(`\`${name}\``)) {
+  if (!titled(name).test(source)) {
     errors.push(`${key}: ${path} has no test named "${name}"`);
   }
   if (mention && !source.includes(key)) errors.push(`${key}: ${path} does not mention ${key}`);

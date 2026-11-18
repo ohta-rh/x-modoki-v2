@@ -102,6 +102,22 @@ test('無いファイル・無いテストの名前・ID を持たないテス�
   expect(run().errors).toMatch(/FR-POST-01: e2e\/post\.spec\.ts does not mention FR-POST-01/);
 });
 
+test('テストの名前は、test・it・describe（each を含む）の題としてだけ数える（#30 review 2）', () => {
+  // The same string as another call's argument is not a test.
+  repo({
+    spec: "// FR-POST-01\ntest('ほかの題', async () => { await fill('FR-POST-01 投稿できる'); });\ntest('いいねの一覧', () => {});\n",
+  });
+  expect(run().errors).toMatch(
+    /FR-POST-01: e2e\/post\.spec\.ts has no test named "FR-POST-01 投稿できる"/,
+  );
+  rmSync(root, { recursive: true, force: true });
+  // A title on its own line, a describe, and an it.each table's title all count.
+  repo({
+    spec: "// FR-POST-01\ntest.describe('いいねの一覧', () => {\n  it.each([[1]])(\n    `FR-POST-01 投稿できる`,\n    () => {},\n  );\n});\n",
+  });
+  expect(run()).toEqual({ code: 0, errors: '' });
+});
+
 test('画面のテストの無い URL を指摘する。画面のテストは e2e/ の中', () => {
   repo({
     trace:
