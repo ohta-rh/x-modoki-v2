@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **New**: [#46 の試験レポート](test-reports/issue-0046-rate-limit-test-clock.md)（回数の制限のテストの時計）を足し、[#45 の試験レポート](test-reports/issue-0045-ci-deb-cache.md)に再試験を足した。
 * **New**: [ADR-0039](adr/0039-not-found-route-file-is-a-thin-shell.md)（404 の画面と not-found.tsx）を記録し、[アプリケーションの構造](architecture/application-structure.md)の 2 節と 5 節を直した（#20）。
 * **New**: [#45 の試験レポート](test-reports/issue-0045-ci-deb-cache.md)（CI の .deb のキャッシュ）を足した。
 * **New**: [#19 の試験レポート](test-reports/issue-0019-home-timeline.md)（投稿とホームのタイムライン）を足した。
