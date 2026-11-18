@@ -8,6 +8,9 @@ services:
       POSTGRES_PASSWORD: xmodoki
       POSTGRES_DB: xmodoki
     ports: ['127.0.0.1:54320:5432'] # localhost only: the password is a fixed dev value
+    # The e2e run three browsers in parallel and every request opens its own small pool (ADR-0037);
+    # the default 100 ran out (#49). Production pools through Hyperdrive.
+    command: ['postgres', '-c', 'max_connections=300']
     volumes: ['db-data:/var/lib/postgresql']
     healthcheck:
       test: ['CMD', 'pg_isready', '-U', 'xmodoki']

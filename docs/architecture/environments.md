@@ -25,7 +25,7 @@ status: stable
 | 部分 | ローカル | CI | プレビュー（マイルストーン 2） | 本番（マイルストーン 2） |
 |---|---|---|---|---|
 | Next.js | `pnpm dev` | `pnpm build` して `pnpm start` | `opennextjs-cloudflare preview`（手元の Workers の実行環境） | Cloudflare Workers（`@opennextjs/cloudflare`） |
-| PostgreSQL | Docker Compose（`xmodoki`） | 同じ Docker Compose（`scripts/setup-local.sh` で立ち上げる） | ローカルの PostgreSQL を Hyperdrive の `localConnectionString` で指す | Neon を Hyperdrive でつなぐ |
+| PostgreSQL | Docker Compose（`xmodoki`、`max_connections` 300: 画面のテストの並列のため、#49） | 同じ Docker Compose（`scripts/setup-local.sh` で立ち上げる） | ローカルの PostgreSQL を Hyperdrive の `localConnectionString` で指す | Neon を Hyperdrive でつなぐ |
 | 画像の置き場所 | Docker Compose の Garage | 同じ Docker Compose | ローカルの Garage | Cloudflare R2 |
 | 定期的な処理 | 手で呼ぶ | 無し | 手で呼ぶ | Cron Triggers が 1 日に 1 回呼ぶ |
 | HTTPS | 無し（`http://localhost:3000`） | 無し | 無し | Cloudflare |
@@ -56,7 +56,7 @@ status: stable
 
 | コマンド | すること |
 |---|---|
-| `sh scripts/setup-local.sh` | 初めての準備と、毎回の立ち上げ。Garage の設定を作り、PostgreSQL と Garage を立ち上げ、バケットとキーを作り、`.env.local` の空の値を埋める。何度流してもよい（`docker compose up -d` だけでは、Garage の設定が無くて立ち上がらない） |
+| `sh scripts/setup-local.sh` | 初めての準備と、毎回の立ち上げ。Garage の設定を作り、PostgreSQL と Garage を立ち上げ、バケットとキーを作り、`.env.local` の空の値を埋め、バケットの CORS で `http://localhost:3000` と `http://localhost:3300` からの PUT を許す（`scripts/storage-cors.mjs`。ブラウザが署名つき URL へ直接送るため、#25）。何度流してもよい（`docker compose up -d` だけでは、Garage の設定が無くて立ち上がらない） |
 | `pnpm install` | 依存を入れる |
 | `pnpm db:generate` | スキーマの差分からマイグレーションの SQL を作る |
 | `pnpm db:migrate` | マイグレーションを流す |
