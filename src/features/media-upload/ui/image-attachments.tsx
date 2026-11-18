@@ -21,6 +21,9 @@ export function useImageAttachments() {
       current.map((item) => (item.key === key ? { ...item, ...change } : item)),
     );
   const add = (files: File[]) => {
+    // A choice with no file (cancelled, or a late change after the input was emptied) changes
+    // nothing, the limit message included (#54).
+    if (files.length === 0) return;
     const room = MAX - items.length;
     setError(files.length > room ? `画像は ${MAX} 枚までです` : null);
     for (const file of files.slice(0, room)) {

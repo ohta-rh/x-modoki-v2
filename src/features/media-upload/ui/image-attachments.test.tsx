@@ -54,6 +54,18 @@ describe('ImageAttachments（#25）', () => {
     expect(latest!.count).toBe(1);
   });
 
+  it('ファイルの無い選択（取り消し・遅れて届いた change）は何も変えず、「4 枚まで」の知らせも残す（#54）', async () => {
+    const { act } = await import('@testing-library/react');
+    render(<Harness />);
+    await userEvent.upload(screen.getByLabelText('画像を追加'), [1, 2, 3, 4, 5].map(png));
+    expect(screen.getByText('画像は 4 枚までです')).toBeInTheDocument();
+    act(() => latest!.add([]));
+    expect(screen.getByText('画像は 4 枚までです')).toBeInTheDocument();
+    expect(
+      screen.getByRole('group', { name: '添付した画像' }).querySelectorAll('img'),
+    ).toHaveLength(4);
+  });
+
   it('5 枚目は選べない（4 枚までにして知らせ、入力欄を止める）。clear で空にする', async () => {
     render(<Harness />);
     await userEvent.upload(screen.getByLabelText('画像を追加'), [1, 2, 3, 4, 5].map(png));
