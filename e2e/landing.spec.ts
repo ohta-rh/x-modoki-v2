@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 test('/ を開くと x-modoki と出る', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1, name: 'x-modoki' })).toBeVisible();
-  await expect(page.locator('html')).toHaveAttribute('lang', 'ja');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'deliberately-wrong');
 });
 
 test('アイコンを持ち、ブラウザが /favicon.ico を探して 404 にならない', async ({
