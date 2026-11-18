@@ -1,7 +1,7 @@
 'use client';
 
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { useWindowVirtualizer } from '@tanstack/react-virtual';
+import { observeWindowOffset, useWindowVirtualizer } from '@tanstack/react-virtual';
 import { useRouter } from 'next/navigation';
 import { type ReactNode, useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -93,6 +93,16 @@ export function PostFeed({
     getItemKey: (index) => rowKey(posts[index]),
     estimateSize: () => 120,
     overscan: 5,
+    // Before the window is measured — on the server, and in the browser's first render alike — draw
+    // the rows a tall screen would show, so the posts are in the HTML before any script runs (#60).
+    initialRect: { width: 600, height: 1200 },
+    // The page may have been scrolled before this script ran (the posts are already in the HTML,
+    // #60). On attaching, the virtualizer writes the window to the offset it holds — 0 from the
+    // first render, which must match the server's — so it takes the real one first.
+    observeElementOffset: (instance, onOffset) => {
+      instance.scrollOffset = window.scrollY;
+      return observeWindowOffset(instance, onOffset);
+    },
   });
   const rows = virtualizer.getVirtualItems();
   const lastShown = rows.at(-1)?.index ?? -1;
@@ -115,14 +125,19 @@ export function PostFeed({
   return (
     <div>
       {above}
-      <div className="relative" style={{ height: virtualizer.getTotalSize() }}>
+      {/* Rows stack in flow, padded by the space of the rows not drawn: a row not yet measured (no
+          script has run, #60) pushes the next one and what follows the list down, never covers it. */}
+      <div
+        style={{
+          paddingTop: rows[0].start,
+          paddingBottom: virtualizer.getTotalSize() - rows.at(-1)!.end,
+        }}
+      >
         {rows.map((row) => (
           <div
             key={rowKey(posts[row.index])}
             data-index={row.index}
             ref={virtualizer.measureElement}
-            className="absolute inset-x-0 top-0"
-            style={{ transform: `translateY(${row.start}px)` }}
           >
             <PostCard
               post={posts[row.index]}

@@ -2,6 +2,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { renderToString } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import type { Post } from '@/entities/post';
 import { toast } from '@/shared/ui/kit';
@@ -291,5 +292,44 @@ describe('PostFeed の行の高さ（#48）', () => {
     );
     const options = vi.mocked(useWindowVirtualizer).mock.calls.at(-1)![0];
     expect([0, 1].map((index) => options.getItemKey?.(index))).toEqual(['1:jiro', '1:']);
+  });
+});
+
+describe('PostFeed のサーバーでの描画（#60）', () => {
+  // NFR-COMPAT-03: JavaScript を読み込み終える前でも、最初の描画で投稿の本文が読める
+  it('サーバーで描いた HTML に、最初の投稿の本文が入る（画面を測る前も、見込みの高さぶんの行を描く）', () => {
+    const html = renderToString(
+      <QueryClientProvider client={new QueryClient()}>
+        <PostFeed
+          queryKey={['ssr']}
+          endpoint="/api/ssr"
+          firstPage={{ items: [post(1, false), post(2, false), post(3, false)], nextCursor: null }}
+          now="2026-11-18T03:00:00.000Z"
+        />
+      </QueryClientProvider>,
+    );
+    expect(html.match(/<article/g)).toHaveLength(3);
+    expect(html).toContain('投稿 1');
+    expect(html).toContain('投稿 3');
+  });
+});
+
+describe('PostFeed を取り付けたとき（#60）', () => {
+  it('スクリプトが動く前にスクロールしてあった位置を、一番上へ戻さない', () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    vi.spyOn(window, 'scrollY', 'get').mockReturnValue(400);
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <PostFeed
+          queryKey={['early-scroll']}
+          endpoint="/api/early-scroll"
+          firstPage={{ items: [post(1, false), post(2, false)], nextCursor: null }}
+          now="2026-11-18T03:00:00.000Z"
+        />
+      </QueryClientProvider>,
+    );
+    // Writing the position it is already at is harmless; any other value moves the page.
+    for (const [options] of scrollTo.mock.calls) expect(options).toMatchObject({ top: 400 });
+    vi.restoreAllMocks();
   });
 });
