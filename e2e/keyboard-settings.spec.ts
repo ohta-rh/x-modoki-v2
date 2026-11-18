@@ -43,6 +43,17 @@ test('j / k で次 / 前の投稿を選び、フォーカスの輪が出て、�
     return box.top >= 0 && box.bottom <= window.innerHeight;
   });
   expect(inView).toBe(true);
+  // Back up past the top of the screen: the post comes out from under the sticky header (review 2).
+  for (let i = 0; i < 6; i += 1) await page.keyboard.press('k');
+  await expect.poll(() => focusedText(page)).toContain('キーの試し 24');
+  const visible = await page.evaluate(() => {
+    const post = document.activeElement!;
+    const box = post.getBoundingClientRect();
+    const header = document.querySelector('main [class*="sticky"]')!.getBoundingClientRect();
+    const top = document.elementFromPoint(box.left + box.width / 2, box.top + 4);
+    return box.top >= header.bottom && post.contains(top);
+  });
+  expect(visible).toBe(true);
 });
 
 test('l で選んだ投稿にいいね、t でリポストのメニュー、r で返信の欄', async ({ page }) => {

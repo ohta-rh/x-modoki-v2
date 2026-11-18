@@ -94,6 +94,12 @@ html {
   color: var(--text);
 }
 
+/* A post brought into view (j / k, #29) stops below the sticky header of the column: 53px, plus the
+   tabs on /home. */
+main article {
+  scroll-margin-top: 120px;
+}
+
 /* Below 640px the home timeline has its own pull to refresh (#28): the browser's would reload the
    whole page and lose a draft. */
 @media (max-width: 639px) {
