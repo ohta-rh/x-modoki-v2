@@ -40,3 +40,4 @@ status: stable
 | [0026](0026-implementation-is-always-test-driven.md) | 実装は必ずテスト駆動（TDD）で行い、失敗したテストの記録を残す | 採用 | ユーザー／エージェント |
 | [0027](0027-independent-code-review-in-the-loop.md) | PBI ごとに、push の前に、独立した sub agent（opus）のコードレビューを受ける | 採用（3 回で `blocked` にする決まりを ADR-0028 で置き換え） | ユーザー／エージェント |
 | [0028](0028-bugs-are-fixed-to-completion-without-asking.md) | 見つけたバグは、ループを止めず、ユーザーに確認を求めずに、その場で最後まで直し切る | 採用 | ユーザー／エージェント |
+| [0029](0029-milestone-on-a-branch-when-a-pr-is-requested.md) | ユーザーが PR を求めたマイルストーンは、1 本のブランチで進め、issue はマージで閉じる | 採用 | ユーザー／エージェント |
