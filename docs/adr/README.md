@@ -42,3 +42,4 @@ status: stable
 | [0028](0028-bugs-are-fixed-to-completion-without-asking.md) | 見つけたバグは、ループを止めず、ユーザーに確認を求めずに、その場で最後まで直し切る | 採用 | ユーザー／エージェント |
 | [0029](0029-milestone-on-a-branch-when-a-pr-is-requested.md) | ユーザーが PR を求めたマイルストーンは、1 本のブランチで進め、issue はマージで閉じる | 採用 | ユーザー／エージェント |
 | [0030](0030-fsd-lint-exceptions-and-own-layer-check.md) | Steiger の 2 つの決まりを範囲を絞って止め、`src/` の直下の層と、クライアントからのサーバーの読み込みは自前の確認で守る | 採用 | エージェント |
+| [0031](0031-database-tests-per-worker-database-and-truncate.md) | データベースのテストは、ワーカーごとのデータベースを使い、テストごとに表を空にし、補助はリポジトリのルートの `test/` に置く | 採用 | エージェント |
