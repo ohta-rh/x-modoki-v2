@@ -16,7 +16,7 @@ function Page() {
     <main>
       <input aria-label="入力" />
       {[1, 2, 3].map((n) => (
-        <article key={n} onClick={() => open(n)}>
+        <article key={n} data-post="card" onClick={() => open(n)}>
           投稿 {n}
           <button
             type="button"
@@ -172,7 +172,7 @@ describe('KeyboardShortcuts（#29、ui-ux.md の 10 節）', () => {
       <>
         <KeyboardShortcuts username="me" />
         <main>
-          <article onClick={() => open('A')}>
+          <article data-post="card" onClick={() => open('A')}>
             投稿 A
             <button
               type="button"
@@ -224,6 +224,45 @@ describe('KeyboardShortcuts（#29、ui-ux.md の 10 節）', () => {
     expect(screen.getByRole('textbox', { name: '返信の本文' })).toHaveFocus();
     act(() => (document.activeElement as HTMLElement).blur());
     pathname = '/other/status/9';
+    rerender(shell(<textarea aria-label="返信の本文" />));
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+    expect(screen.getByRole('textbox', { name: '返信の本文' })).not.toHaveFocus();
+  });
+
+  it('ダイアログが開いている間は、キーは何もしない（レビュー 3）', () => {
+    render(
+      <>
+        <KeyboardShortcuts username="me" />
+        <div role="dialog" aria-label="開いているモーダル">
+          <button type="button">中のボタン</button>
+        </div>
+      </>,
+    );
+    press('n', screen.getByRole('button', { name: '中のボタン' }));
+    press('g');
+    press('h');
+    expect(router.push).not.toHaveBeenCalled();
+  });
+
+  it('開く投稿でない article（通知の行など）で r を押しても、あとの移動でフォーカスを奪わない（レビュー 3）', async () => {
+    const shell = (children: React.ReactNode) => (
+      <>
+        <KeyboardShortcuts username="me" />
+        {children}
+      </>
+    );
+    const { rerender } = render(
+      shell(
+        <main>
+          <article>通知の行</article>
+        </main>,
+      ),
+    );
+    press('j');
+    press('r');
+    pathname = '/someone/status/3';
     rerender(shell(<textarea aria-label="返信の本文" />));
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 50));

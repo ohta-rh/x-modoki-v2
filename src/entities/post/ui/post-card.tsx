@@ -76,6 +76,7 @@ export function PostCard({
   return (
     <article
       aria-label={label}
+      data-post="card"
       onClick={(event) => {
         // React bubbles events from portals (a dialog's backdrop) through the card: only a click
         // on the card's own DOM opens the detail.

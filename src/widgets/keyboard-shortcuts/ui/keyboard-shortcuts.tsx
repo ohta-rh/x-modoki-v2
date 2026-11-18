@@ -26,6 +26,11 @@ function selectedPost() {
     article = article.parentElement!.closest<HTMLElement>('article');
   return article;
 }
+/** A dialog on screen keeps the keys (ui-ux.md 10). One Next.js keeps hidden (Activity) does not. */
+const dialogOpen = () =>
+  [...document.querySelectorAll<HTMLElement>('[role="dialog"], [role="alertdialog"]')].some(
+    (dialog) => dialog.checkVisibility?.() ?? true,
+  );
 const replyBox = () => document.querySelector<HTMLElement>('textarea[aria-label="返信の本文"]');
 
 /** Focuses a post: the focus ring shows it, and it is scrolled into the screen. */
@@ -68,6 +73,8 @@ export function KeyboardShortcuts({ username }: { username: string }) {
           if (!current) return;
           // The page's own post: its reply box is right here (review 1).
           if (current.dataset.post === 'main') return replyBox()?.focus();
+          // Only a post card opens its post; another article (a notification) goes nowhere (review 3).
+          if (current.dataset.post !== 'card') return;
           replyNext.current = true;
           return current.click();
         case 'go-home':
@@ -81,7 +88,7 @@ export function KeyboardShortcuts({ username }: { username: string }) {
       }
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (typing(event.target)) return;
+      if (typing(event.target) || dialogOpen()) return;
       const result = resolveShortcut(event, pending.current);
       pending.current = result.pending;
       if (result.action) {
