@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **Creation**: 最初の[試験レポート](test-reports/2026-11-18-harness-and-m1-issues.md)を置いた。Chrome で見て、issue のタスクの一覧のタイトルの重複を見つけて直した。
 * **Creation**: [ADR-0025](adr/0025-test-report-with-evidence.md)（PBI を閉じるたびに、エビデンスつきの試験レポートを残す）を記録した。完了の定義は 8 項目になった。
 * **Creation**: [ADR-0024](adr/0024-definition-of-done-requires-browser-testing.md)（完了の定義に、本物のブラウザでのテストを必ず含め、全ての PBI の本文に書く）を記録した。
 * **Update**: コードの分け方を Feature-Sliced Design に変えた。[ADR-0022](adr/0022-feature-sliced-design.md) が [ADR-0010](adr/0010-dal-server-actions-route-handlers.md) の置き場所と [ADR-0021](adr/0021-coverage-100-percent.md) の外すパスを置き換えた。[アプリケーションの構造](architecture/application-structure.md) を書き直した。

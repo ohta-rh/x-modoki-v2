@@ -1,3 +1,3 @@
 # 試験レポート
 
-新しい順に並べる。書き方は ADR-0025 と `.claude/rules/definition-of-done.md`。
+* [試験レポート: ハーネスの整備と、マイルストーン 1 の EPIC・PBI の起票](2026-11-18-harness-and-m1-issues.md) - ルール・ADR・ドキュメントの確認の仕組みと、起票した 39 件の issue を、機械の確認と Chrome での表示で確かめた記録。

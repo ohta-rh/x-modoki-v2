@@ -45,6 +45,18 @@ Take screenshots (`save_to_disk`) as you go — they are the evidence for item 7
 neither tool is available: run Playwright headed in Chromium with a scripted walk-through that
 saves screenshots and the console log, and say so in the report.
 
+**Widths — verify the viewport actually changed.** Two traps found on 2026-11-18:
+`resize_window` can report success while the window stays the same size, and headless Chrome
+with `--window-size=375,…` lays the page out at ~500px and crops it. So:
+
+- After any resize, read `window.innerWidth` and confirm it equals the width you asked for.
+- For the per-width screenshots use `node scripts/chrome-evidence.mjs --out <evidence dir>
+  <name>=<url> …`. It sets the viewport through the DevTools protocol, saves
+  `<name>-<width>.jpg` for 1280 / 768 / 375, prints the real `innerWidth`, sideways scroll,
+  console errors, and failed requests, and exits 1 if any of them is wrong.
+- **Then open the saved images and read them.** A screenshot nobody looked at is not evidence.
+- Save a screenshot the moment you find a problem, before fixing it — the "before" is evidence too.
+
 **What to check, every time:**
 
 - The change itself: perform each user-visible behavior the PBI adds or alters, including one
