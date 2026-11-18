@@ -1,6 +1,8 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-19
+* **New**: [#60 の試験レポート](test-reports/issue-0060-server-rendered-feed.md)（投稿の一覧をサーバーの HTML に入れる）。
+* **New**: [#61 の試験レポート](test-reports/issue-0061-local-webkit-in-image.md)（macOS の手元の WebKit を CI と同じイメージで）。
 * **New**: [ADR-0052](adr/0052-local-webkit-in-the-playwright-image.md)（macOS の手元では、画面のテストの WebKit を CI と同じ Playwright のイメージで動かす）（#61）。
 * **New**: [#29 の試験レポート](test-reports/issue-0029-keyboard-settings.md)（キーボード・表示の設定・設定の 2 ペイン）。
 * **New**: [#59 の試験レポート](test-reports/issue-0059-db-connections.md)（データベースの接続の上限）。
