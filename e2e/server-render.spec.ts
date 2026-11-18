@@ -45,12 +45,6 @@ test.describe('JavaScript を読み込み終える前', () => {
     const me = await signUp(page);
     await insertPosts(me.username, 20, '先に読む投稿');
     await page.setViewportSize({ width: 1280, height: 600 });
-    // A hydration that does not match the server's HTML is reported as an error (review 1).
-    const errors: string[] = [];
-    page.on('pageerror', (error) => errors.push(error.message));
-    page.on('console', (message) => {
-      if (message.type() === 'error') errors.push(message.text());
-    });
     // The app's bundles are held back until the page has been scrolled while it is still only HTML.
     let release!: () => void;
     const scrolled = new Promise<void>((resolve) => (release = resolve));
@@ -62,13 +56,25 @@ test.describe('JavaScript を読み込み終える前', () => {
     await expect(page.getByRole('article').first()).toBeVisible();
     await page.evaluate(() => window.scrollTo({ top: 400, behavior: 'instant' }));
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(400);
+    const hydrated = () =>
+      page.evaluate(() =>
+        Object.keys(document.querySelector('[data-index]')!).some((key) =>
+          key.startsWith('__reactFiber'),
+        ),
+      );
+    // Still only HTML: React has not taken the list over yet.
+    expect(await hydrated()).toBe(false);
+    // From here on, a hydration that does not match the server's HTML is reported as an error
+    // (review 1). Not earlier: leaving the previous page cancels its prefetches, which WebKit
+    // reports as console errors of its own.
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (message) => {
+      if (message.type() === 'error') errors.push(message.text());
+    });
     release();
     // React has taken over the list (its fiber is on the row), and the rows have been measured.
-    await page.waitForFunction(() =>
-      Object.keys(document.querySelector('[data-index]')!).some((key) =>
-        key.startsWith('__reactFiber'),
-      ),
-    );
+    await expect.poll(hydrated).toBe(true);
     await page.evaluate(
       () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
     );
