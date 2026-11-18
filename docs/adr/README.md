@@ -21,7 +21,7 @@ status: stable
 | [0007](0007-better-auth-db-sessions.md) | 認証は Better Auth を使い、セッションはデータベースに持つ | 採用 | エージェント |
 | [0008](0008-s3-compatible-media-storage.md) | 画像は S3 互換のストレージに、署名つき URL でブラウザから直接送る | 採用（サーバーでの画像の変換を ADR-0018 で置き換え） | エージェント |
 | [0009](0009-mimic-x-ui-with-own-brand.md) | UI と操作は X の Web 版に合わせ、名前・ロゴ・アイコン・フォント・データは自前のものにする | 採用 | ユーザー／エージェント |
-| [0010](0010-dal-server-actions-route-handlers.md) | 読み書きはデータアクセス層に集め、変更は Server Action、続きの読み込みは Route Handler で行う | 採用（ファイルの置き場所を ADR-0022 で置き換え） | エージェント |
+| [0010](0010-dal-server-actions-route-handlers.md) | 読み書きはデータアクセス層に集め、変更は Server Action、続きの読み込みは Route Handler で行う | 採用（ファイルの置き場所を ADR-0022 で、誰が見ても同じ読み取りのキャッシュを ADR-0048 で置き換え） | エージェント |
 | [0011](0011-polling-and-after-no-queue.md) | 新着と未読は定期的な確認で知らせ、あとの処理は同じトランザクションと `after()` で行い、キューを持たない | 採用（定期的な処理の呼び方を ADR-0017 で置き換え） | エージェント |
 | [0012](0012-single-container-docker-compose.md) | `output: 'standalone'` のコンテナ 1 つで動かし、ローカルも本番も Docker Compose で同じ構成にする | 置き換え: ADR-0017 | エージェント |
 | [0013](0013-vitest-playwright-testing.md) | 単体のテストは Vitest、画面を通したテストは Playwright で行い、データアクセス層は本物の PostgreSQL で試す | 採用 | エージェント |
@@ -59,3 +59,4 @@ status: stable
 | [0045](0045-close-better-auth-write-endpoints-the-app-does-not-use.md) | Better Auth の HTTP の道のうち、アプリが使わない利用者の書き込みは閉じる | 採用 | エージェント |
 | [0046](0046-ci-browser-tests-in-the-official-playwright-image.md) | CI の画面のテストは、公式の Playwright のイメージの中で、ランナーの Node.js で動かす | 採用（「7 番目だけ」を ADR-0047 で置き換え） | ユーザー・エージェント |
 | [0047](0047-ci-steps-that-launch-a-browser-run-in-the-playwright-image.md) | CI でブラウザを立ち上げる確認は、どれも公式の Playwright のイメージの中で動かす | 採用 | エージェント |
+| [0048](0048-read-trends-and-suggestions-per-request.md) | トレンドとおすすめのユーザーは 'use cache' で持たず、要求ごとに読む | 採用 | エージェント |

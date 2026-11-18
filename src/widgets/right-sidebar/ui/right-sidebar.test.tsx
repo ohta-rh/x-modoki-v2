@@ -12,4 +12,15 @@ describe('RightSidebar', () => {
     // Built from parts so that `grep -ri` over src finds the word nowhere (FR-SHELL-09).
     expect(container.textContent).not.toMatch(new RegExp(['twit', 'ter'].join(''), 'i'));
   });
+
+  it('渡された中身（検索の欄・トレンド・おすすめ、#27）を、フッターの上に並べる', () => {
+    render(
+      <RightSidebar>
+        <p>中身</p>
+      </RightSidebar>,
+    );
+    const content = screen.getByText('中身');
+    const footer = screen.getByText('X Corp. とは関係の無い学習用のアプリ').closest('footer')!;
+    expect(content.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
 });

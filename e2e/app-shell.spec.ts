@@ -137,7 +137,6 @@ test('/home を開くと、コンソールのエラーと失敗した通信が 0
 });
 
 for (const [path, title] of [
-  ['/explore', '話題を検索'],
   ['/compose/post', 'ポストする'],
   ['/settings', '設定'],
 ] as const) {

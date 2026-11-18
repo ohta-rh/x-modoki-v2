@@ -144,7 +144,7 @@ export { getFollowingTimeline as GET } from '@/_app/api-routes';
 | 一覧の続き | Route Handler（GET）を `useInfiniteQuery` から呼ぶ。最初のページは `initialData` で渡す |
 | 新着と未読の確認 | Route Handler（GET）を `useQuery` の `refetchInterval`（30 秒）で呼ぶ（[ADR-0011](../adr/0011-polling-and-after-no-queue.md)） |
 | 変更 | Server Action（`features/*/api/actions.ts`）。Zod で確かめ、変更の関数を呼び、結果の DTO を返す |
-| 誰が見ても同じ読み取り | `'use cache'`・`cacheLife('minutes')`・`cacheTag(…)`。対象はトレンドとおすすめのユーザーだけ |
+| 誰が見ても同じ読み取り | M1 では要求ごとに読む（トレンドとおすすめのユーザー。`'use cache'` は Chromium で通信が途切れなくなったので使わない: [ADR-0048](../adr/0048-read-trends-and-suggestions-per-request.md)） |
 | ユーザーごとに違う読み取り | キャッシュしない |
 | 変更のあとの描き直し | サーバーが描いた部分は `updateTag()` か `refresh()`。一覧は TanStack Query のキャッシュを書き換える |
 

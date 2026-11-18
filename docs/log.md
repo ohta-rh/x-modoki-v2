@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **New**: [ADR-0048](adr/0048-read-trends-and-suggestions-per-request.md)（トレンドとおすすめのユーザーは要求ごとに読む）を足し、ADR-0010 のキャッシュの部分を置き換えた。[アプリの構成](architecture/application-structure.md)を直した（#27）。
 * **New**: [#26 の試験レポート](test-reports/issue-0026-notifications.md)（通知と未読の数）を足した。
 * **New**: [#54 の試験レポート](test-reports/issue-0054-four-image-message.md)（「4 枚まで」の知らせ）を足した。
 * **New**: [#53 の試験レポート](test-reports/issue-0053-follow-list-pages.md)（フォローの一覧の続き）を足した。

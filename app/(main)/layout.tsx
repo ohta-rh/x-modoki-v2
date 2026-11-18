@@ -1,13 +1,13 @@
 import { type ReactNode, Suspense } from 'react';
 import { MainLayout } from '@/_pages/main-layout';
-import { loadViewer } from '@/_pages/main-layout/index.server';
+import { loadSidebar, loadViewer } from '@/_pages/main-layout/index.server';
 
 type Props = { children: ReactNode; modal: ReactNode };
 
 async function SignedIn({ children, modal }: Props) {
-  const viewer = await loadViewer();
+  const [viewer, sidebar] = await Promise.all([loadViewer(), loadSidebar()]);
   return (
-    <MainLayout viewer={viewer} modal={modal}>
+    <MainLayout viewer={viewer} sidebar={sidebar} modal={modal}>
       {children}
     </MainLayout>
   );

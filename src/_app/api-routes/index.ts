@@ -9,3 +9,4 @@ export { getUserProfile } from './user-profile';
 export { getUserFollows } from './user-follows';
 export { postUploadPresign } from './uploads';
 export { getNotificationList, getUnreadCount } from './notifications';
+export { getSearch } from './search';

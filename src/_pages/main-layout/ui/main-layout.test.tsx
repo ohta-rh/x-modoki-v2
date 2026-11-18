@@ -6,11 +6,26 @@ import { MainLayout } from './main-layout';
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/home' }));
 vi.mock('@/features/account-access/index.server', () => ({ signOutAction: async () => undefined }));
+vi.mock('@/features/user-follow/index.server', () => ({
+  setFollowAction: async () => ({ ok: true }),
+}));
+vi.mock('next/form', () => ({
+  default: ({ action, children }: { action: string; children: React.ReactNode }) => (
+    <form action={action}>{children}</form>
+  ),
+}));
+
+const sidebar = {
+  trends: [{ tag: '猫', count: 2 }],
+  suggestions: [
+    { username: 'hana', name: '花子', avatarUrl: null, bio: '', isFollowing: false, isSelf: false },
+  ],
+};
 
 describe('MainLayout', () => {
   it('入っていない人には、アカウントのメニューを出さない', () => {
     render(
-      <MainLayout viewer={null} modal={null}>
+      <MainLayout viewer={null} modal={null} sidebar={sidebar}>
         ページ
       </MainLayout>,
     );
@@ -23,6 +38,7 @@ describe('MainLayout', () => {
       <QueryClientProvider client={new QueryClient()}>
         <MainLayout
           viewer={{ name: 'サンプル', username: 'taro', image: null, unread: 3 }}
+          sidebar={sidebar}
           modal={<div role="dialog">モーダル</div>}
         >
           ページ
@@ -39,5 +55,21 @@ describe('MainLayout', () => {
     expect(within(screen.getByRole('main')).getByText('ページ')).toBeInTheDocument();
     expect(screen.getByRole('dialog')).toHaveTextContent('モーダル');
     expect(within(screen.getByRole('complementary')).getByRole('contentinfo')).toBeInTheDocument();
+  });
+
+  it('右サイドバーに、検索の欄・トレンド・おすすめユーザーを出す。入っていなければフォローはログインへ（#27）', () => {
+    render(
+      <MainLayout viewer={null} modal={null} sidebar={sidebar}>
+        ページ
+      </MainLayout>,
+    );
+    const aside = within(screen.getByRole('complementary'));
+    expect(aside.getByRole('searchbox', { name: '検索' })).toBeInTheDocument();
+    expect(aside.getByRole('region', { name: 'いまどうしてる？' })).toHaveTextContent('#猫');
+    expect(
+      within(aside.getByRole('region', { name: 'おすすめユーザー' })).getByRole('link', {
+        name: 'フォロー',
+      }),
+    ).toHaveAttribute('href', expect.stringContaining('/i/flow/login'));
   });
 });
