@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { checkSrcLayers, main } from './lib/check-src-layers.mjs';
 
 const LAYERS = ['_app', '_pages', 'widgets', 'features', 'entities', 'shared'];
+const ALL = LAYERS.map((l) => `${l}/`);
 const roots = [];
 
 function makeRoot(entries) {
@@ -26,25 +27,36 @@ afterEach(() => {
 
 describe('checkSrcLayers (ADR-0030)', () => {
   it('6 つの層だけなら問題なし', () => {
-    expect(checkSrcLayers(makeRoot(LAYERS.map((l) => `${l}/`)))).toEqual([]);
+    expect(checkSrcLayers(makeRoot(ALL))).toEqual([]);
   });
 
-  it('層の一部だけでも問題なし', () => {
-    expect(checkSrcLayers(makeRoot(['shared/', '_app/']))).toEqual([]);
+  it('欠けた層を指摘する（6 つ全部がそろう）', () => {
+    expect(checkSrcLayers(makeRoot(['shared/', '_app/', '_pages/']))).toEqual([
+      'src/widgets: missing FSD layer',
+      'src/features: missing FSD layer',
+      'src/entities: missing FSD layer',
+    ]);
+  });
+
+  it('層の名前のファイルは、層の代わりにならない', () => {
+    expect(checkSrcLayers(makeRoot([...ALL.filter((l) => l !== 'widgets/'), 'widgets']))).toEqual([
+      'src/widgets: only the six FSD layers may sit directly under src/ (_app, _pages, widgets, features, entities, shared)',
+      'src/widgets: missing FSD layer',
+    ]);
   });
 
   it('層でないフォルダを指摘する', () => {
-    expect(checkSrcLayers(makeRoot(['shared/', 'components/']))).toEqual([
+    expect(checkSrcLayers(makeRoot([...ALL, 'components/']))).toEqual([
       'src/components: only the six FSD layers may sit directly under src/ (_app, _pages, widgets, features, entities, shared)',
     ]);
   });
 
   it('層の打ち間違いを指摘する', () => {
-    expect(checkSrcLayers(makeRoot(['entites/']))).toHaveLength(1);
+    expect(checkSrcLayers(makeRoot([...ALL, 'entites/']))).toHaveLength(1);
   });
 
   it('src/ の直下のファイルを指摘する', () => {
-    expect(checkSrcLayers(makeRoot(['shared/', 'index.ts']))).toEqual([
+    expect(checkSrcLayers(makeRoot([...ALL, 'index.ts']))).toEqual([
       'src/index.ts: only the six FSD layers may sit directly under src/ (_app, _pages, widgets, features, entities, shared)',
     ]);
   });
@@ -59,13 +71,13 @@ describe('checkSrcLayers (ADR-0030)', () => {
 describe('main', () => {
   it('問題が無ければ 0 を返し、通ったと書く', () => {
     const log = { log: vi.fn(), error: vi.fn() };
-    expect(main(['--root', makeRoot(['shared/'])], log)).toBe(0);
+    expect(main(['--root', makeRoot(ALL)], log)).toBe(0);
     expect(log.log).toHaveBeenCalledWith('src layers check passed');
   });
 
   it('問題があれば 1 を返し、全部を書く', () => {
     const log = { log: vi.fn(), error: vi.fn() };
-    expect(main(['--root', makeRoot(['components/', 'utils/'])], log)).toBe(1);
+    expect(main(['--root', makeRoot([...ALL, 'components/', 'utils/'])], log)).toBe(1);
     expect(log.error).toHaveBeenCalledTimes(3);
   });
 

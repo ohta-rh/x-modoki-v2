@@ -44,7 +44,7 @@ status: stable
 | `S3_BUCKET` | `xmodoki-media` | |
 | `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | | |
 | `S3_FORCE_PATH_STYLE` | `true`（本番は `false`） | |
-| `NEXT_PUBLIC_MEDIA_BASE_URL` | `http://localhost:3902` | 画像を読むときの公開の URL。アプリとは別のドメインにする |
+| `NEXT_PUBLIC_MEDIA_BASE_URL` | `http://xmodoki-media.web.garage.localhost:3902`（Garage はホスト名でバケットを選ぶ） | 画像を読むときの公開の URL。アプリとは別のドメインにする |
 | `CRON_SECRET` | 乱数 | 定期的な処理の Route Handler を守る |
 
 - `.env.example` をリポジトリに入れる。`.env` と `.env.local` は入れない

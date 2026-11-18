@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: xmodoki
       POSTGRES_PASSWORD: xmodoki
       POSTGRES_DB: xmodoki
-    ports: ['54320:5432']
+    ports: ['127.0.0.1:54320:5432'] # localhost only: the password is a fixed dev value
     volumes: ['db-data:/var/lib/postgresql']
     healthcheck:
       test: ['CMD', 'pg_isready', '-U', 'xmodoki']
@@ -20,7 +20,7 @@ services:
       - ./docker/garage/garage.toml:/etc/garage.toml:ro
       - storage-meta:/var/lib/garage/meta
       - storage-data:/var/lib/garage/data
-    ports: ['3900:3900', '3902:3902']
+    ports: ['127.0.0.1:3900:3900', '127.0.0.1:3902:3902']
 volumes:
   db-data:
   storage-meta:
