@@ -125,7 +125,7 @@ export function PostCard({
           </p>
         ) : null}
         <PostText text={post.text} />
-        <PostMedia media={post.media} />
+        <PostMedia media={post.media} photos={`/${post.author.username}/status/${post.id}`} />
         {post.quoted ? <QuotedCard quoted={post.quoted} now={now} /> : null}
         <div
           role="group"

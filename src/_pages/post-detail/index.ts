@@ -1,1 +1,1 @@
-export { PostDetailPage } from './ui/post-detail-page';
+export { PostDetailPage, PostPhotoModal } from './ui/post-detail-page';

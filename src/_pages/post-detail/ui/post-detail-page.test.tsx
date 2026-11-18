@@ -5,10 +5,14 @@ import userEvent from '@testing-library/user-event';
 import type { Post } from '@/entities/post';
 import { toast } from '@/shared/ui/kit';
 import { describe, expect, it, vi } from 'vitest';
-import { PostDetailPage } from './post-detail-page';
+import { PostDetailPage, PostPhotoModal } from './post-detail-page';
 
 const refresh = vi.fn();
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh }) }));
+const replace = vi.fn();
+const back = vi.fn();
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), refresh, replace, back }),
+}));
 const setLikeAction = vi.fn();
 const setBookmarkAction = vi.fn();
 vi.mock('@/features/post-like/index.server', () => ({
@@ -273,5 +277,64 @@ describe('PostDetailPage のいいね・ブックマーク（#21）', () => {
       client.getQueryData<{ pages: { items: Post[] }[] }>(['bookmarks'])!.pages[0].items[0];
     await waitFor(() => expect(cached().counts.bookmarks).toBe(4));
     expect(cached().viewer.bookmarked).toBe(true);
+  });
+});
+
+describe('画像のビューア（#25）', () => {
+  const image = (n: number) => ({
+    url: `https://media.test/${n}.webp`,
+    width: 100 * n,
+    height: 100,
+    alt: '',
+  });
+  const detail = {
+    ancestors: [],
+    replies: { items: [], nextCursor: null },
+    post: {
+      id: '1',
+      author: { username: 'taro', name: '太郎', avatarUrl: null },
+      text: '写真の投稿',
+      createdAt: '2026-11-18T03:00:00.000Z',
+      media: [image(1), image(2)],
+      counts: { replies: 0, reposts: 0, likes: 0, bookmarks: 0, views: 0 },
+      viewer: { liked: false, reposted: false, bookmarked: false, isAuthor: false },
+      repostedBy: null,
+      replyTo: null,
+      quoted: null,
+    },
+  } satisfies Parameters<typeof PostDetailPage>[0]['detail'];
+
+  it('直接開いたとき（/photo/{n}）は、詳細の上にビューアを出し、閉じると詳細へ移る', async () => {
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <PostDetailPage now="2026-11-18T03:00:00.000Z" signedIn={false} detail={detail} photo={2} />
+      </QueryClientProvider>,
+    );
+    const viewer = screen.getByRole('dialog', { name: '画像' });
+    expect(viewer.querySelector('img')).toHaveAttribute('src', 'https://media.test/2.webp');
+    await userEvent.click(within(viewer).getByRole('button', { name: '閉じる' }));
+    expect(replace).toHaveBeenCalledWith('/taro/status/1', { scroll: false });
+  });
+
+  it('詳細だけのとき（photo が null）は、ビューアを出さない', () => {
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <PostDetailPage
+          now="2026-11-18T03:00:00.000Z"
+          signedIn={false}
+          detail={detail}
+          photo={null}
+        />
+      </QueryClientProvider>,
+    );
+    expect(screen.queryByRole('dialog', { name: '画像' })).toBeNull();
+  });
+
+  it('ほかの画面から開いたとき（モーダル）は、閉じると前の画面へ戻る', async () => {
+    render(<PostPhotoModal detail={detail} photo={1} />);
+    const viewer = screen.getByRole('dialog', { name: '画像' });
+    expect(viewer.querySelector('img')).toHaveAttribute('src', 'https://media.test/1.webp');
+    await userEvent.keyboard('{Escape}');
+    expect(back).toHaveBeenCalledTimes(1);
   });
 });

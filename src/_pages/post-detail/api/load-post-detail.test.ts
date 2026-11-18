@@ -1,7 +1,9 @@
 import { makePost, makeUser } from '@test/factories';
-import { setupTestDb } from '@test/db';
+import { setupTestDb, testDb } from '@test/db';
+import { makeUpload } from '@test/uploads';
 import { currentSession, signInAs, signOut } from '@test/session';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { media, postMedia } from '@/shared/db';
 import { newId } from '@/shared/lib/id';
 import { loadPostDetail } from './load-post-detail';
 
@@ -47,5 +49,37 @@ describe('loadPostDetail（routing.md の 3 節）', () => {
 
   it.each(['abc', '0', newId().toString()])('ID %s は 404', async (id) => {
     await expect(loadPostDetail('taro', id)).rejects.toThrow('NEXT_NOT_FOUND');
+  });
+});
+
+describe('loadPostDetail の画像のビューア（#25、/{username}/status/{id}/photo/{n}）', () => {
+  /** A post by taro with `count` ready images. */
+  const postWithImages = async (count: number) => {
+    const taro = await makeUser({ username: 'taro' });
+    const post = await makePost({ authorId: taro.id });
+    for (let position = 0; position < count; position += 1) {
+      const upload = await makeUpload(taro.id, { put: false });
+      await testDb().update(media).set({ status: 'ready' });
+      await testDb().insert(postMedia).values({ postId: post.id, mediaId: upload.id, position });
+    }
+    return post;
+  };
+
+  it('n 枚目を返す。番号が無ければ null', async () => {
+    const post = await postWithImages(2);
+    expect((await loadPostDetail('taro', post.id.toString(), '2')).photo).toBe(2);
+    expect((await loadPostDetail('taro', post.id.toString())).photo).toBeNull();
+  });
+
+  it.each(['0', '3', 'x', '1.5'])('画像の番号 %s は 404', async (n) => {
+    const post = await postWithImages(2);
+    await expect(loadPostDetail('taro', post.id.toString(), n)).rejects.toThrow('NEXT_NOT_FOUND');
+  });
+
+  it('ユーザー名が作者と違えば、同じ画像の正しい URL へ送る', async () => {
+    const post = await postWithImages(2);
+    await expect(loadPostDetail('hana', post.id.toString(), '2')).rejects.toThrow(
+      `NEXT_REDIRECT /taro/status/${post.id}/photo/2`,
+    );
   });
 });

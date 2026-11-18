@@ -75,4 +75,23 @@ describe('カードと詳細の画像（#25）', () => {
     render(<MainPost post={post} now={new Date('2026-11-18T03:00:00.000Z')} />);
     expect(screen.getByRole('img', { name: '一枚目' })).toBeInTheDocument();
   });
+
+  it('PostCard と MainPost の画像は、ビューアの URL（/{username}/status/{id}/photo/{n}）へのリンク', () => {
+    const two = { ...post, media: [image(1), image(2)] };
+    const { unmount } = render(<PostCard post={two} now={new Date('2026-11-18T03:00:00.000Z')} />);
+    expect(screen.getByRole('link', { name: '1 枚目の画像' })).toHaveAttribute(
+      'href',
+      '/taro/status/1/photo/1',
+    );
+    expect(screen.getByRole('link', { name: '2 枚目の画像' })).toHaveAttribute(
+      'href',
+      '/taro/status/1/photo/2',
+    );
+    unmount();
+    render(<MainPost post={two} now={new Date('2026-11-18T03:00:00.000Z')} />);
+    expect(screen.getByRole('link', { name: '2 枚目の画像' })).toHaveAttribute(
+      'href',
+      '/taro/status/1/photo/2',
+    );
+  });
 });

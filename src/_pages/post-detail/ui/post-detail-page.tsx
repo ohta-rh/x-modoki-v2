@@ -9,16 +9,18 @@ import { PageHeader } from '@/widgets/app-shell';
 import { PostThread } from '@/widgets/post-thread';
 import { PostFeed } from '@/widgets/timeline-feed';
 import { MainPostReactions } from './main-post-reactions';
+import { PhotoModal, PhotoOverDetail } from './post-photo';
 
-type Props = { detail: PostDetail; now: string; signedIn: boolean };
+type Props = { detail: PostDetail; now: string; signedIn: boolean; photo?: number | null };
 
-/** /{username}/status/{id}: the post and its thread (#20). */
-export function PostDetailPage({ detail, now, signedIn }: Props) {
+/** /{username}/status/{id}: the post and its thread (#20); /photo/{n} adds the viewer on top (#25). */
+export function PostDetailPage({ detail, now, signedIn, photo = null }: Props) {
   const repliesKey = ['replies', detail.post.id];
   return (
     <>
       <PageHeader title="ポスト" />
       <ViewCounter postId={detail.post.id} />
+      {photo === null ? null : <PhotoOverDetail post={detail.post} photo={photo} />}
       <PostThread
         key={detail.post.id}
         detail={detail}
@@ -53,4 +55,9 @@ export function PostDetailPage({ detail, now, signedIn }: Props) {
       />
     </>
   );
+}
+
+/** /{username}/status/{id}/photo/{n} opened from another screen: only the viewer, over it (#25). */
+export function PostPhotoModal({ detail, photo }: { detail: PostDetail; photo: number }) {
+  return <PhotoModal post={detail.post} photo={photo} />;
 }
