@@ -15,12 +15,13 @@ export async function setBookmark(postId: bigint, bookmarked: boolean): Promise<
   const viewer = await getSession();
   if (!viewer) return { ok: false, error: 'UNAUTHORIZED' };
   return getDb().transaction(async (tx): Promise<SetBookmarkResult> => {
-    // A share lock keeps the post from being deleted until this commits.
+    // Lock the row for the count update up front: presses on one post queue instead of
+    // deadlocking (a share lock then an update deadlocks), and a delete waits until this commits.
     const [post] = await tx
       .select({ count: posts.bookmarkCount })
       .from(posts)
       .where(and(eq(posts.id, postId), isNull(posts.deletedAt)))
-      .for('share');
+      .for('no key update');
     if (!post) return { ok: false, error: 'NOT_FOUND' };
     const changed = bookmarked
       ? await tx

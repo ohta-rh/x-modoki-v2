@@ -62,3 +62,20 @@ describe('setLike（data-model.md の 4 節、#21）', () => {
     expect(await testDb().select().from(likes)).toHaveLength(0);
   });
 });
+
+describe('setLike の同時の操作（#21 のレビュー）', () => {
+  it('別の人が同じ投稿に同時に押しても、行き詰まらず、全員の分が数えられる', async () => {
+    const author = await makeUser();
+    const post = await makePost({ authorId: author.id });
+    const calls = [];
+    for (let i = 0; i < 8; i++) {
+      signInAs(await makeUser());
+      // getSession is read when the call starts, so each call is its own user.
+      calls.push(setLike(post.id, true));
+    }
+    const results = await Promise.all(calls);
+    expect(results.every((result) => result.ok)).toBe(true);
+    const [row] = await testDb().select().from(posts).where(eq(posts.id, post.id));
+    expect(row.likeCount).toBe(8);
+  });
+});

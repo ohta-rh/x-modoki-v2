@@ -66,3 +66,20 @@ describe('clearBookmarks（#21: 全て削除）', () => {
     expect(await clearBookmarks()).toEqual({ ok: true });
   });
 });
+
+describe('setBookmark の同時の操作（#21 のレビュー）', () => {
+  it('別の人が同じ投稿に同時に押しても、行き詰まらず、全員の分が数えられる', async () => {
+    const author = await makeUser();
+    const post = await makePost({ authorId: author.id });
+    const calls = [];
+    for (let i = 0; i < 8; i++) {
+      signInAs(await makeUser());
+      // getSession is read when the call starts, so each call is its own user.
+      calls.push(setBookmark(post.id, true));
+    }
+    const results = await Promise.all(calls);
+    expect(results.every((result) => result.ok)).toBe(true);
+    const [row] = await testDb().select().from(posts).where(eq(posts.id, post.id));
+    expect(row.bookmarkCount).toBe(8);
+  });
+});

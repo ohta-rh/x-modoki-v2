@@ -205,4 +205,67 @@ describe('PostDetailPage のいいね・ブックマーク（#21）', () => {
     expect(like).toHaveTextContent('1');
     expect(setLikeAction).toHaveBeenLastCalledWith('1', false);
   });
+
+  it('本体をいいねすると、ホームの一覧にある同じ投稿もサーバーの数で変わる', async () => {
+    setLikeAction.mockResolvedValueOnce({ ok: true, count: 9 });
+    const client = new QueryClient();
+    client.setQueryData(['timeline', 'following'], {
+      pages: [{ items: [make('1', '本文')], nextCursor: null }],
+      pageParams: [''],
+    });
+    render(
+      <QueryClientProvider client={client}>
+        <PostDetailPage
+          now="2026-11-18T03:00:00.000Z"
+          signedIn
+          detail={{
+            ancestors: [],
+            replies: { items: [], nextCursor: null },
+            post: make('1', '本文'),
+          }}
+        />
+      </QueryClientProvider>,
+    );
+    await userEvent.click(
+      within(screen.getByRole('article', { name: '投稿の本体' })).getByRole('button', {
+        name: 'いいね',
+      }),
+    );
+    const cached = () =>
+      client.getQueryData<{ pages: { items: Post[] }[] }>(['timeline', 'following'])!.pages[0]
+        .items[0];
+    await waitFor(() => expect(cached().counts.likes).toBe(9));
+    expect(cached().viewer.liked).toBe(true);
+  });
+
+  it('本体をブックマークすると、一覧にある同じ投稿のブックマークもサーバーの数で変わる', async () => {
+    setBookmarkAction.mockResolvedValueOnce({ ok: true, count: 4 });
+    const client = new QueryClient();
+    client.setQueryData(['bookmarks'], {
+      pages: [{ items: [make('1', '本文')], nextCursor: null }],
+      pageParams: [''],
+    });
+    render(
+      <QueryClientProvider client={client}>
+        <PostDetailPage
+          now="2026-11-18T03:00:00.000Z"
+          signedIn
+          detail={{
+            ancestors: [],
+            replies: { items: [], nextCursor: null },
+            post: make('1', '本文'),
+          }}
+        />
+      </QueryClientProvider>,
+    );
+    await userEvent.click(
+      within(screen.getByRole('article', { name: '投稿の本体' })).getByRole('button', {
+        name: 'ブックマーク',
+      }),
+    );
+    const cached = () =>
+      client.getQueryData<{ pages: { items: Post[] }[] }>(['bookmarks'])!.pages[0].items[0];
+    await waitFor(() => expect(cached().counts.bookmarks).toBe(4));
+    expect(cached().viewer.bookmarked).toBe(true);
+  });
 });
