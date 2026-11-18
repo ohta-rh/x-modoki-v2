@@ -1,1 +1,1 @@
-export { cleanupMedia } from './api/cleanup-media';
+export { cleanupMedia, type CleanupMediaResult } from './api/cleanup-media';

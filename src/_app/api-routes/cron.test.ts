@@ -1,14 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { env } from '@/shared/config';
 import { postCleanupMedia } from './cron';
 
-// The cleanup itself runs against PostgreSQL and Garage in its own test (features/media-cleanup).
-const cleanupMedia = vi.fn(async () => ({ removed: 3 }));
+// The secret check and the cleanup run against PostgreSQL and Garage in the feature's own test.
+const cleanupMedia = vi.fn();
 vi.mock('@/features/media-cleanup/index.server', () => ({
-  cleanupMedia: (...args: unknown[]) => cleanupMedia(...(args as [])),
+  cleanupMedia: (...args: unknown[]) => cleanupMedia(...args),
 }));
 
-beforeEach(() => cleanupMedia.mockClear());
+beforeEach(() => cleanupMedia.mockReset());
 
 const call = (authorization?: string) =>
   postCleanupMedia(
@@ -19,19 +18,19 @@ const call = (authorization?: string) =>
   );
 
 describe('POST /api/cron/cleanup-media（#25、T-15）', () => {
-  it('秘密の値が合えば片付けて、消した数を返す', async () => {
-    const response = await call(`Bearer ${env.CRON_SECRET}`);
+  it('Authorization をそのまま渡し、片付けたら消した数を返す', async () => {
+    cleanupMedia.mockResolvedValue({ ok: true, removed: 3 });
+    const response = await call('Bearer s');
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ removed: 3 });
-    expect(cleanupMedia).toHaveBeenCalledTimes(1);
+    expect(cleanupMedia).toHaveBeenCalledWith({ authorization: 'Bearer s' });
   });
 
-  it.each([undefined, '', 'Bearer wrong', env.CRON_SECRET, `Bearer ${env.CRON_SECRET}x`])(
-    '秘密の値が違えば（%s）401 で、何も消さない',
-    async (authorization) => {
-      const response = await call(authorization);
-      expect(response.status).toBe(401);
-      expect(cleanupMedia).not.toHaveBeenCalled();
-    },
-  );
+  it('秘密の値が違えば 401（Authorization が無ければ null を渡す）', async () => {
+    cleanupMedia.mockResolvedValue({ ok: false, error: 'UNAUTHORIZED' });
+    const response = await call();
+    expect(response.status).toBe(401);
+    expect(await response.json()).toEqual({ error: 'UNAUTHORIZED' });
+    expect(cleanupMedia).toHaveBeenCalledWith({ authorization: null });
+  });
 });
