@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **New**: [#15 の試験レポート](test-reports/issue-0015-scaffold-and-ci.md)（アプリの骨組みと CI の 7 つの確認）を足した。
 * **New**: [ADR-0033](adr/0033-ci-services-via-docker-compose.md)（CI の PostgreSQL と Garage は手元と同じ Docker Compose で動かす。ADR-0020 の一部を置き換え）を記録した（#15）。
 * **Update**: 骨組みに合わせて[環境と配備](architecture/environments.md)と[技術スタック](architecture/tech-stack.md)を直し、[ADR-0032](adr/0032-pin-dependencies-published-at-least-seven-days-ago.md)（依存は公開から 7 日以上たった版に固定）を記録した（#15）。
 * **Creation**: [脅威の洗い出し](architecture/threat-model.md)を置いた（#14、[試験レポート](test-reports/issue-0014-threat-model.md)）。
