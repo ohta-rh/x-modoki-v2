@@ -3,7 +3,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { type Post, PostCard, type PostPage } from '@/entities/post';
 import { BookmarkButton } from '@/features/post-bookmark';
@@ -34,6 +34,8 @@ export type PostFeedProps = {
   /** Pins one of the viewer's posts to their profile (#23); without it the menu has no pin item. */
   pinAction?: (postId: string, pinned: boolean) => Promise<SetPinActionResult>;
   emptyText?: string;
+  /** Shown above a list that has posts, given them (the timeline's 「N 件のポストを表示」, #28). */
+  top?: (posts: Post[]) => ReactNode;
 };
 
 async function fetchPage(url: string): Promise<PostPage> {
@@ -59,6 +61,7 @@ export function PostFeed({
   quoteAction,
   pinAction,
   emptyText = 'まだポストがありません',
+  top,
 }: PostFeedProps) {
   const queryClient = useQueryClient();
   const toggleLike = useReaction('like', likeAction);
@@ -101,6 +104,7 @@ export function PostFeed({
   const date = new Date(now);
   return (
     <div>
+      {top?.(posts)}
       <div className="relative" style={{ height: virtualizer.getTotalSize() }}>
         {rows.map((row) => (
           <div

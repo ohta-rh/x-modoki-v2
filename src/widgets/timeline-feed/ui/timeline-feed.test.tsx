@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { focusManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -80,6 +80,53 @@ describe('HomeTimeline', () => {
     );
     await userEvent.type(screen.getByRole('textbox', { name: '投稿の本文' }), '投稿 4');
     await userEvent.click(screen.getByRole('button', { name: 'ポストする' }));
+    await waitFor(() => expect(screen.getAllByRole('article')[0]).toHaveTextContent('投稿 4'));
+    expect(fetchSpy).toHaveBeenCalledWith('/api/timeline/following?cursor=');
+  });
+});
+
+describe('新しい投稿（#28）', () => {
+  it('フォロー中では 30 秒ごとに先頭より新しい数を聞いて「N 件のポストを表示」を出す。おすすめでは聞かない', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    focusManager.setFocused(true);
+    try {
+      const fetchSpy = vi.fn(async () => Response.json({ count: 2 }));
+      vi.stubGlobal('fetch', fetchSpy);
+      const { unmount } = render(
+        wrap(<TimelineFeed kind="following" firstPage={page([3, 2], null)} now={now} />),
+      );
+      await act(() => vi.advanceTimersByTimeAsync(30_000));
+      expect(fetchSpy).toHaveBeenCalledWith('/api/timeline/following/new-count?since=3');
+      expect(await screen.findByRole('button', { name: '2 件のポストを表示' })).toBeTruthy();
+      unmount();
+      fetchSpy.mockClear();
+      render(wrap(<TimelineFeed kind="for-you" firstPage={page([3, 2], null)} now={now} />));
+      await act(() => vi.advanceTimersByTimeAsync(60_000));
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+      focusManager.setFocused(undefined);
+    }
+  });
+
+  it('640px 未満で引っ張ると、ホームのタイムラインを読み直す', async () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({ matches: true, media: query }));
+    const fetchSpy = vi.fn(async () => Response.json(page([4, 3], null)));
+    vi.stubGlobal('fetch', fetchSpy);
+    render(
+      wrap(
+        <HomeTimeline
+          kind="following"
+          firstPage={page([3], null)}
+          now={now}
+          action={vi.fn(async () => ({ ok: true as const, id: '1' }))}
+        />,
+      ),
+    );
+    const card = screen.getAllByRole('article')[0];
+    fireEvent.touchStart(card, { touches: [{ clientY: 100 }] });
+    fireEvent.touchMove(card, { touches: [{ clientY: 250 }] });
+    fireEvent.touchEnd(card, { touches: [] });
     await waitFor(() => expect(screen.getAllByRole('article')[0]).toHaveTextContent('投稿 4'));
     expect(fetchSpy).toHaveBeenCalledWith('/api/timeline/following?cursor=');
   });

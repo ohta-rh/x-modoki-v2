@@ -1,9 +1,9 @@
-import { makePost, makeUser } from '@test/factories';
+import { makeFollow, makePost, makeUser } from '@test/factories';
 import { setupTestDb } from '@test/db';
 import { currentSession, signInAs, signOut } from '@test/session';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { newId } from '@/shared/lib/id';
-import { getFollowingTimeline, getForYouTimeline } from './timeline';
+import { getFollowingNewCount, getFollowingTimeline, getForYouTimeline } from './timeline';
 
 vi.mock('@/shared/auth/index.server', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/shared/auth/index.server')>()),
@@ -63,5 +63,37 @@ describe('GET /api/timeline/following と /for-you（application-structure.md �
     const response = await get(getForYouTimeline, `?cursor=${cursor}`);
     expect(response.status).toBe(400);
     expect(await response.json()).toEqual({ error: 'VALIDATION' });
+  });
+});
+
+describe('GET /api/timeline/following/new-count?since=（#28）', () => {
+  const count = (query: string) =>
+    getFollowingNewCount(
+      new Request(`http://localhost:3000/api/timeline/following/new-count${query}`),
+    );
+
+  it('since より新しい、フォローしている人の投稿の数を返す', async () => {
+    const me = await makeUser();
+    const friend = await makeUser();
+    await makeFollow(me.id, friend.id);
+    const since = newId({ now: Date.UTC(2026, 10, 19), random: 0 });
+    await makePost({
+      id: newId({ now: Date.UTC(2026, 10, 19, 1), random: 0 }),
+      authorId: friend.id,
+    });
+    signInAs(me);
+    const response = await count(`?since=${since}`);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ count: 1 });
+  });
+
+  it('since が無いか ID でなければ 400、ログインが無ければ 401', async () => {
+    signInAs(await makeUser());
+    expect((await count('')).status).toBe(400);
+    expect((await count('?since=abc')).status).toBe(400);
+    signOut();
+    const response = await count('?since=1');
+    expect(response.status).toBe(401);
+    expect(await response.json()).toEqual({ error: 'UNAUTHORIZED' });
   });
 });

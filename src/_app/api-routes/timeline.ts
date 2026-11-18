@@ -1,4 +1,4 @@
-import { getTimeline } from '@/entities/post/index.server';
+import { countNewPosts, getTimeline } from '@/entities/post/index.server';
 import type { TimelineKind } from '@/entities/post';
 import { parseId } from '@/shared/lib/id';
 
@@ -17,3 +17,11 @@ const timeline = (kind: TimelineKind) => async (request: Request) => {
 export const getFollowingTimeline = timeline('following');
 /** GET /api/timeline/for-you?cursor= */
 export const getForYouTimeline = timeline('for-you');
+
+/** GET /api/timeline/following/new-count?since= (#28): posts above the newest shown, polled. */
+export async function getFollowingNewCount(request: Request) {
+  const since = parseId(new URL(request.url).searchParams.get('since') ?? '');
+  if (since === null) return json({ error: 'VALIDATION' }, 400);
+  const result = await countNewPosts(since);
+  return result.ok ? json({ count: result.count }) : json({ error: result.error }, 401);
+}
