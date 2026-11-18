@@ -69,8 +69,8 @@ from a symptom gets fixed at the symptom and comes back.
 - [ ] The implementer can start from the issue alone, without the conversation that
       produced it.
 - [ ] Small enough to land as one PR; otherwise split.
-- [ ] The body ends with the 完了の定義 section — the eight Definition of Done items, verbatim,
-      as checkboxes (ADR-0024, ADR-0025). A PBI without it is not ready to file.
+- [ ] The body ends with the 完了の定義 section — the nine Definition of Done items, verbatim,
+      as checkboxes (ADR-0024, ADR-0025, ADR-0026). A PBI without it is not ready to file.
 - [ ] After filing or editing issues, open one of each kind in Chrome and read it as rendered
       (`.claude/rules/definition-of-done.md`). Markdown that passes a script can still render wrong.
 - [ ] Assigned to a GitHub milestone (ADR-0019), and the acceptance criteria include
@@ -124,11 +124,12 @@ from a symptom gets fixed at the symptom and comes back.
 <blocked by #N / なし>
 
 ## 検証
-<実行するテスト・コマンド>
+<実行するテスト・コマンド。コードを変える PBI は、最初に書いて落とすテスト（Playwright の受け入れのテスト）を名前で書く>
 
 ## 完了の定義
-<`.claude/rules/definition-of-done.md` の 8 項目を、チェックボックスでそのまま書く。項目を減らさない・言い換えない>
+<`.claude/rules/definition-of-done.md` の 9 項目を、チェックボックスでそのまま書く。項目を減らさない・言い換えない>
 - [ ] 受け入れ条件を全部、書いてある方法で 1 つずつ確かめた
+- [ ] TDD で実装した（振る舞いごとに、テストを先に書き、期待した理由で落ちるのを見てから実装した。落ちた出力を試験レポートの「TDD の記録」に残した）
 - [ ] `pnpm verify` が 0 で終わった（7 つの確認。カバレッジ 100%。飛ばした・弱めた確認が無い）
 - [ ] 画面で観測できる受け入れ条件の全部に Playwright のテストがあり、CI で Chromium・Firefox・WebKit の 3 つで通った
 - [ ] `pnpm build && pnpm start` のアプリを本物の Chrome で開き、変更と失敗の経路を自分で操作して、画面の写真を残した（1280 / 768 / 375px、関わるテーマ、コンソールのエラーと警告が 0、失敗した通信が 0）

@@ -51,10 +51,20 @@ Full rules: @.claude/rules/architecture-fsd.md
 
 Full rules: @.claude/rules/quality-gates.md
 
+## Test-driven development
+
+- **Implementation is always TDD.** Red → green → refactor, one behavior at a time. No
+  production code without a failing test that demands it; never trust a test you have not
+  seen fail; a bug fix starts with a failing test that reproduces it.
+- Work outside-in: the failing Playwright test for the acceptance criterion comes first.
+- **Record every red** in the test report's `TDD の記録` table as it happens. No record, no TDD.
+
+Full rules: @.claude/rules/tdd.md
+
 ## Definition of Done
 
-- **One definition, eight items, no exceptions:** acceptance criteria checked one by one,
-  `pnpm verify` green, Playwright covering every browser-observable criterion on Chromium /
+- **One definition, nine items, no exceptions:** acceptance criteria checked one by one,
+  implemented by TDD, `pnpm verify` green, Playwright covering every browser-observable criterion on Chromium /
   Firefox / WebKit, a hands-on look in Chrome, CI green, ADRs and documents updated, a test
   report with evidence, then the closing comment.
 - **Always look at it in real Chrome.** For every PBI — including server-only,
@@ -63,7 +73,7 @@ Full rules: @.claude/rules/quality-gates.md
   A passing script is not a look.
 - **Always leave a test report with evidence** under `docs/test-reports/` (screenshots under
   `docs/test-reports/evidence/`) before closing. No screenshot, no report; no report, not done.
-- Every PBI body carries the eight items as a 完了の定義 checklist.
+- Every PBI body carries the nine items as a 完了の定義 checklist.
 
 Full rules: @.claude/rules/definition-of-done.md
 

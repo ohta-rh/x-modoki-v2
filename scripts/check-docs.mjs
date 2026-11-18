@@ -134,6 +134,10 @@ for (const path of files) {
         }
       }
       if (images.length > 12) fail(path, 'a test report may hold at most 12 screenshots');
+      // ADR-0026: a PBI's report records each red, or states there was no code change.
+      if (/^issue-\d{4}-/.test(name) && !body.includes('\n### TDD の記録\n')) {
+        fail(path, 'a PBI test report needs a "### TDD の記録" subsection');
+      }
       for (const section of [
         '## 対象',
         '## 環境',

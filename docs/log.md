@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **Creation**: [ADR-0026](adr/0026-implementation-is-always-test-driven.md)（実装は必ず TDD で行い、赤の記録を試験レポートに残す）を記録した。完了の定義は 9 項目になった。
 * **Creation**: 最初の[試験レポート](test-reports/2026-11-18-harness-and-m1-issues.md)を置いた。Chrome で見て、issue のタスクの一覧のタイトルの重複を見つけて直した。
 * **Creation**: [ADR-0025](adr/0025-test-report-with-evidence.md)（PBI を閉じるたびに、エビデンスつきの試験レポートを残す）を記録した。完了の定義は 8 項目になった。
 * **Creation**: [ADR-0024](adr/0024-definition-of-done-requires-browser-testing.md)（完了の定義に、本物のブラウザでのテストを必ず含め、全ての PBI の本文に書く）を記録した。

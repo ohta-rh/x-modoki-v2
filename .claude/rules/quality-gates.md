@@ -45,7 +45,8 @@ Decided in ADR-0017, ADR-0019, ADR-0020, ADR-0021; this file is the operating ru
   trace of a failure as an artifact (ADR-0024).
 - No coverage-ignore comments (`/* v8 ignore */`, `/* istanbul ignore */`, `/* c8 ignore */`).
   A branch that cannot be reached by a test is deleted, not ignored.
-- Write the test with the code, in the same commit. Data access layer, Server Actions, and
+- **Write the test first** (`.claude/rules/tdd.md`): 100% coverage reached by back-filled
+  tests does not satisfy this rule. Test and code land in the same commit. Data access layer, Server Actions, and
   Route Handlers are tested against the real PostgreSQL from Docker Compose — never a mocked
   Drizzle (ADR-0013).
 - A test must assert behavior. A test that only executes lines to move the number is a defect.

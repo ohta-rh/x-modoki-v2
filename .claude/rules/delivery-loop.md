@@ -14,8 +14,11 @@ its last without a human in between.
    Do not re-decide anything an ADR already answers.
 4. **Baseline.** Run `pnpm verify` before changing anything and note the result. (Before the
    scaffold exists: `node scripts/check-docs.mjs`.)
-5. **Implement test-first**, inside the slices the issue names
-   (`.claude/rules/architecture-fsd.md`). Tests land in the same commit as the code.
+5. **Implement by TDD — always** (`.claude/rules/tdd.md`), inside the slices the issue names
+   (`.claude/rules/architecture-fsd.md`). Start with the failing Playwright test for the
+   acceptance criterion; then one behavior at a time: write the test, watch it fail for the
+   expected reason, write the least code to pass, refactor. Note each red in the TDD record as
+   it happens. Tests land in the same commit as the code.
 6. **Verify.** `pnpm verify` exits 0 — all seven gates, coverage 100%. Then check every
    acceptance criterion in the issue by the method the issue states, one by one.
    **Then look at it in real Chrome** against `pnpm build && pnpm start`: the change itself, a
@@ -37,6 +40,7 @@ its last without a human in between.
 
 - Close an issue with an unmet acceptance criterion, a skipped gate, red CI, no hands-on look
   in Chrome, or no test report with screenshots. The Definition of Done has no exceptions.
+- Write production code before a failing test, or back-fill tests after the code.
 - Weaken a gate, exclude a file from coverage, or disable a lint rule to finish.
 - Fold work outside the issue's scope into the commit. Found something adjacent → file a new
   PBI under the right EPIC (root cause stated, `.claude/rules/issue-authoring.md`) and move on.
