@@ -56,7 +56,7 @@ status: stable
 
 | コマンド | すること |
 |---|---|
-| `sh scripts/setup-local.sh` | 初めての準備と、毎回の立ち上げ。Garage の設定を作り、PostgreSQL と Garage を立ち上げ、バケットとキーを作り、`.env.local` の空の値を埋め。何度流してもよい（`docker compose up -d` だけでは、Garage の設定が無くて立ち上がらない） |
+| `sh scripts/setup-local.sh` | 初めての準備と、毎回の立ち上げ。Garage の設定を作り、PostgreSQL と Garage を立ち上げ、バケットとキーを作り、`.env.local` の空の値を埋める。何度流してもよい（`docker compose up -d` だけでは、Garage の設定が無くて立ち上がらない） |
 | `pnpm install` | 依存を入れる |
 | `pnpm db:generate` | スキーマの差分からマイグレーションの SQL を作る |
 | `pnpm db:migrate` | マイグレーションを流す |
