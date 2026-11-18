@@ -1,6 +1,9 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **New**: [#26 の試験レポート](test-reports/issue-0026-notifications.md)（通知と未読の数）を足した。
+* **New**: [#54 の試験レポート](test-reports/issue-0054-four-image-message.md)（「4 枚まで」の知らせ）を足した。
+* **New**: [#53 の試験レポート](test-reports/issue-0053-follow-list-pages.md)（フォローの一覧の続き）を足した。
 * **New**: [#52 の試験レポート](test-reports/issue-0052-ci-playwright-image.md)（CI の画面のテストを公式の Playwright のイメージで）を足した。
 * **New**: [ADR-0047](adr/0047-ci-steps-that-launch-a-browser-run-in-the-playwright-image.md)（ブラウザを立ち上げる確認はどれもイメージの中で）を足し、ADR-0046 の「7 番目だけ」を置き換えた（#52）。
 * **New**: [ADR-0046](adr/0046-ci-browser-tests-in-the-official-playwright-image.md)（CI の画面のテストは公式の Playwright のイメージで）を足し、[環境と配備](architecture/environments.md)の CI の表を直した（#52）。
