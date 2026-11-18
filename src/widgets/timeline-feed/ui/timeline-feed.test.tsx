@@ -1,5 +1,10 @@
 // @vitest-environment jsdom
-import { focusManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  focusManager,
+  onlineManager,
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
@@ -110,6 +115,37 @@ describe('新しい投稿（#28）', () => {
       render(wrap(<TimelineFeed kind="for-you" firstPage={page([3, 2], null)} now={now} />));
       await act(() => vi.advanceTimersByTimeAsync(60_000));
       expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+      focusManager.setFocused(undefined);
+    }
+  });
+
+  it('タブに戻っても、つながり直しても、一覧は勝手に読み直さない（押すまで動かない、#28 レビュー 2）', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    focusManager.setFocused(true);
+    try {
+      const fetchSpy = vi.fn(async (url: string) =>
+        Response.json(url.includes('new-count') ? { count: 0 } : page([9, 3, 2], null)),
+      );
+      vi.stubGlobal('fetch', fetchSpy);
+      render(
+        wrap(
+          <TimelineFeed
+            kind="following"
+            firstPage={{ ...page([3, 2], null), newestId: '3' }}
+            now={now}
+          />,
+        ),
+      );
+      // Long enough for the list to be stale.
+      await act(() => vi.advanceTimersByTimeAsync(31_000));
+      act(() => focusManager.setFocused(false));
+      act(() => focusManager.setFocused(true));
+      act(() => onlineManager.setOnline(false));
+      act(() => onlineManager.setOnline(true));
+      await act(() => vi.advanceTimersByTimeAsync(10));
+      expect(fetchSpy).not.toHaveBeenCalledWith('/api/timeline/following?cursor=');
     } finally {
       vi.useRealTimers();
       focusManager.setFocused(undefined);

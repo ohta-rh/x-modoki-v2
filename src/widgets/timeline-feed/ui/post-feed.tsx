@@ -79,6 +79,10 @@ export function PostFeed({
     initialData: { pages: [firstPage], pageParams: [''] },
     // The server just rendered this page; do not fetch it again on mount.
     staleTime: 30_000,
+    // A list moves only when asked to (#28 review 2): coming back to the tab or the network does
+    // not read it again; 「N 件のポストを表示」 and pulling do.
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
   const posts = query.data.pages.flatMap((page) => page.items);
   // A row's identity: a repost and its original share the post id, the reposter tells them apart.

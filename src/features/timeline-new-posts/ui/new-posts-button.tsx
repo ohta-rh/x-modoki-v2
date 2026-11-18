@@ -39,6 +39,10 @@ export function NewPostsButton({ since, queryKey }: Props) {
         type="button"
         className="pointer-events-auto mt-2 rounded-full bg-brand px-4 py-2 text-body font-bold text-white shadow-lg"
         onClick={() => {
+          // Every count kept so far is now shown, this one included: the button goes at once, and
+          // reading again, which goes back to the first page's top for a moment, shows no old count
+          // (review 2).
+          queryClient.setQueriesData({ queryKey: ['new-posts'] }, 0);
           void queryClient.resetQueries({ queryKey });
           window.scrollTo({ top: 0 });
         }}

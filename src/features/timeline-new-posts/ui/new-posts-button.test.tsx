@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { focusManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, render, screen } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NewPostsButton } from './new-posts-button';
@@ -60,6 +61,8 @@ describe('NewPostsButton（#28、ui-ux.md の 6 節、ADR-0011）', () => {
     await act(() => vi.advanceTimersByTimeAsync(30_000));
     await userEvent.click(await screen.findByRole('button', { name: '2 件のポストを表示' }));
     expect(reset).toHaveBeenCalledWith({ queryKey: ['timeline', 'following'] });
+    // Gone at once: no old number while the list is read again (review 2).
+    expect(screen.queryByRole('button')).toBeNull();
     expect(scrollTo).toHaveBeenCalledWith({ top: 0 });
   });
 
@@ -68,5 +71,31 @@ describe('NewPostsButton（#28、ui-ux.md の 6 節、ADR-0011）', () => {
     setup(fetchMock, null);
     await act(() => vi.advanceTimersByTimeAsync(30_000));
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('2 回目に押したときも、読み直しの間に前の数を見せない（読み直しの間は先頭が初めのページに戻る、レビュー 2）', async () => {
+    let answer = 2;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ count: answer }))),
+    );
+    vi.stubGlobal('scrollTo', vi.fn());
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const at = (since: string): ReactNode => (
+      <QueryClientProvider client={client}>
+        <NewPostsButton since={since} queryKey={['timeline', 'following']} />
+      </QueryClientProvider>
+    );
+    const { rerender } = render(at('100'));
+    await act(() => vi.advanceTimersByTimeAsync(30_000));
+    await userEvent.click(await screen.findByRole('button', { name: '2 件のポストを表示' }));
+    // The list was read again: a new top.
+    rerender(at('200'));
+    answer = 1;
+    await act(() => vi.advanceTimersByTimeAsync(30_000));
+    await userEvent.click(await screen.findByRole('button', { name: '1 件のポストを表示' }));
+    // Reading again starts from the first page, whose top is the old one.
+    rerender(at('100'));
+    expect(screen.queryByRole('button')).toBeNull();
   });
 });
