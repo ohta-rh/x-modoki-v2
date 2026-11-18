@@ -29,7 +29,7 @@ describe('ClearBookmarksMenu（#21）', () => {
     const onCleared = vi.fn();
     render(
       <ClearBookmarksMenu
-        action={async () => ({ ok: false, message: 'ログインしてください' })}
+        action={async () => ({ ok: false, code: 'UNAUTHORIZED', message: 'ログインしてください' })}
         onCleared={onCleared}
       />,
     );

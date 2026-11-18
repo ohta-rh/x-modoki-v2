@@ -63,5 +63,8 @@ describe('getBookmarks（#21）', () => {
     expect(await getBookmarks(null)).toEqual({ ok: false, error: 'UNAUTHORIZED' });
     signInAs(await makeUser());
     expect(await getBookmarks('abc')).toEqual({ ok: false, error: 'BAD_CURSOR' });
+    // 19 digits pass the shape but not bigint (#21 review 2).
+    expect(await getBookmarks('9999999999999999999_1')).toEqual({ ok: false, error: 'BAD_CURSOR' });
+    expect(await getBookmarks('1_9999999999999999999')).toEqual({ ok: false, error: 'BAD_CURSOR' });
   });
 });

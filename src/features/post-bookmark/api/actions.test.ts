@@ -26,13 +26,19 @@ describe('setBookmarkAction・clearBookmarksAction（#21）', () => {
   it('ログイン無しはログインするよう、無い・数字でない投稿は見つからないと言う', async () => {
     expect(await setBookmarkAction('1', true)).toEqual({
       ok: false,
+      code: 'UNAUTHORIZED',
       message: 'ログインしてください',
     });
-    expect(await clearBookmarksAction()).toEqual({ ok: false, message: 'ログインしてください' });
+    expect(await clearBookmarksAction()).toEqual({
+      ok: false,
+      code: 'UNAUTHORIZED',
+      message: 'ログインしてください',
+    });
     signInAs(await makeUser());
     for (const id of ['999999999999999', 'abc']) {
       expect(await setBookmarkAction(id, true)).toEqual({
         ok: false,
+        code: 'NOT_FOUND',
         message: 'この投稿は見つかりません',
       });
     }

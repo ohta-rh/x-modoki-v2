@@ -18,11 +18,13 @@ export async function setBookmarkAction(
       : await setBookmark(id, bookmarked === true);
   return result.ok
     ? { ok: true, count: result.count }
-    : { ok: false, message: MESSAGES[result.error] };
+    : { ok: false, code: result.error, message: MESSAGES[result.error] };
 }
 
 /** Removes all of the viewer's bookmarks (#21, 全て削除). */
 export async function clearBookmarksAction(): Promise<ClearBookmarksActionResult> {
   const result = await clearBookmarks();
-  return result.ok ? { ok: true } : { ok: false, message: MESSAGES.UNAUTHORIZED };
+  return result.ok
+    ? { ok: true }
+    : { ok: false, code: 'UNAUTHORIZED', message: MESSAGES.UNAUTHORIZED };
 }

@@ -26,12 +26,14 @@ describe('setLikeAction（#21）', () => {
     const gone = await makePost({ authorId: me.id, deletedAt: new Date() });
     expect(await setLikeAction(gone.id.toString(), true)).toEqual({
       ok: false,
+      code: 'UNAUTHORIZED',
       message: 'ログインしてください',
     });
     signInAs(me);
     for (const id of [gone.id.toString(), 'abc']) {
       expect(await setLikeAction(id, true)).toEqual({
         ok: false,
+        code: 'NOT_FOUND',
         message: 'この投稿は見つかりません',
       });
     }

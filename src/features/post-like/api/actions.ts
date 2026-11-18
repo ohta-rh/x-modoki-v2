@@ -13,5 +13,5 @@ export async function setLikeAction(postId: string, liked: boolean): Promise<Rea
     id === null ? ({ ok: false, error: 'NOT_FOUND' } as const) : await setLike(id, liked === true);
   return result.ok
     ? { ok: true, count: result.count }
-    : { ok: false, message: MESSAGES[result.error] };
+    : { ok: false, code: result.error, message: MESSAGES[result.error] };
 }
