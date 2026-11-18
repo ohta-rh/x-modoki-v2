@@ -1,4 +1,4 @@
-import { makeUser } from '@test/factories';
+import { makeFollow, makeUser } from '@test/factories';
 import { setupTestDb } from '@test/db';
 import { currentSession, signInAs, signOut } from '@test/session';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -41,6 +41,7 @@ describe('getProfile（#23、ui-ux.md の 8 節）', () => {
         followingCount: 2,
         postsCount: 5,
         isSelf: false,
+        isFollowing: false,
       },
     });
   });
@@ -51,5 +52,16 @@ describe('getProfile（#23、ui-ux.md の 8 節）', () => {
     const result = await getProfile('TARO');
     expect(result.ok && result.profile.isSelf).toBe(true);
     expect(await getProfile('nobody')).toEqual({ ok: false, error: 'NOT_FOUND' });
+  });
+
+  it('見ている人がフォローしていれば isFollowing（#24）', async () => {
+    const me = await makeUser();
+    const them = await makeUser({ username: 'them' });
+    signInAs(me);
+    expect((await getProfile('them')).ok && (await getProfile('them'))).toMatchObject({
+      profile: { isFollowing: false },
+    });
+    await makeFollow(me.id, them.id);
+    expect(await getProfile('them')).toMatchObject({ profile: { isFollowing: true } });
   });
 });

@@ -18,6 +18,7 @@ const profile: Profile = {
   followingCount: 5,
   postsCount: 9,
   isSelf: false,
+  isFollowing: false,
 };
 
 describe('ProfileHeader（#23、ui-ux.md の 8 節）', () => {
@@ -40,7 +41,21 @@ describe('ProfileHeader（#23、ui-ux.md の 8 節）', () => {
     expect(region).toHaveTextContent('2025年4月から利用しています');
     expect(region).toHaveTextContent('5 フォロー中');
     expect(region).toHaveTextContent('1,234 フォロワー');
+    // The counts open the lists (#24).
+    expect(within(region).getByRole('link', { name: '5 フォロー中' })).toHaveAttribute(
+      'href',
+      '/hanako/following',
+    );
+    expect(within(region).getByRole('link', { name: '1,234 フォロワー' })).toHaveAttribute(
+      'href',
+      '/hanako/followers',
+    );
     expect(within(region).queryByRole('link', { name: 'プロフィールを編集' })).toBeNull();
+  });
+
+  it('action を渡すと、編集のボタンの場所に出す（他人のフォロー、#24）', () => {
+    render(<ProfileHeader profile={profile} action={<button type="button">フォロー</button>} />);
+    expect(screen.getByRole('button', { name: 'フォロー' })).toBeInTheDocument();
   });
 
   it('バナーの画像があれば、3:1 の枠いっぱいに出す', () => {

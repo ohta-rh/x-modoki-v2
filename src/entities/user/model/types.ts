@@ -13,4 +13,19 @@ export type Profile = UserSummary & {
   postsCount: number;
   /** The viewer is this user. */
   isSelf: boolean;
+  /** The viewer follows this user (#24). */
+  isFollowing: boolean;
 };
+
+/** One row of a following / followers list (#24). */
+export type FollowUser = UserSummary & {
+  bio: string;
+  /** The viewer follows this user. */
+  isFollowing: boolean;
+  /** This row is the viewer. */
+  isSelf: boolean;
+};
+
+export type FollowPage = { items: FollowUser[]; nextCursor: string | null };
+
+export type FollowListType = 'following' | 'followers';

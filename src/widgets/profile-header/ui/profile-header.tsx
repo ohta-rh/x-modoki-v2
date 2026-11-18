@@ -1,12 +1,20 @@
 import { CalendarDays, Link2, MapPin } from 'lucide-react';
 import type { Route } from 'next';
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 import type { Profile } from '@/entities/user';
 import { joinedMonth } from '@/shared/lib/format';
 import { Avatar } from '@/shared/ui/avatar';
 
 /** The top of a profile (#23, ui-ux.md 8): banner, overlapping avatar, who they are, counts. */
-export function ProfileHeader({ profile }: { profile: Profile }) {
+export function ProfileHeader({
+  profile,
+  action,
+}: {
+  profile: Profile;
+  /** For someone else's profile: the follow button, composed by the page (#24). */
+  action?: ReactNode;
+}) {
   const link = profile.website.replace(/^https?:\/\//, '').replace(/\/$/, '');
   return (
     <section aria-label="プロフィール" className="border-b border-line">
@@ -28,7 +36,9 @@ export function ProfileHeader({ profile }: { profile: Profile }) {
             >
               プロフィールを編集
             </Link>
-          ) : null}
+          ) : (
+            <div className="mt-3">{action}</div>
+          )}
         </div>
         <h2 className="mt-3 text-title font-extrabold">{profile.name}</h2>
         <p className="text-body text-text-muted">@{profile.username}</p>
@@ -59,18 +69,18 @@ export function ProfileHeader({ profile }: { profile: Profile }) {
           </span>
         </p>
         <p className="mt-3 flex gap-5 text-body text-text-muted">
-          <span>
+          <Link href={`/${profile.username}/following` as Route} className="hover:underline">
             <span className="font-bold text-text">
               {profile.followingCount.toLocaleString('ja-JP')}
             </span>{' '}
             フォロー中
-          </span>
-          <span>
+          </Link>
+          <Link href={`/${profile.username}/followers` as Route} className="hover:underline">
             <span className="font-bold text-text">
               {profile.followersCount.toLocaleString('ja-JP')}
             </span>{' '}
             フォロワー
-          </span>
+          </Link>
         </p>
       </div>
     </section>

@@ -1,13 +1,16 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { toast } from '@/shared/ui/kit';
 import { describe, expect, it, vi } from 'vitest';
 import type { Post } from '@/entities/post';
 import type { Profile } from '@/entities/user';
 import { ProfileNotFound } from './profile-not-found';
 import { ProfilePage } from './profile-page';
 
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
+const refresh = vi.fn();
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh }) }));
 vi.mock('@/features/post-like/index.server', () => ({
   setLikeAction: async () => ({ ok: true, count: 1 }),
 }));
@@ -24,6 +27,10 @@ vi.mock('@/features/post-delete/index.server', () => ({
   deletePostAction: async () => ({ ok: true }),
 }));
 vi.mock('@/features/post-pin/index.server', () => ({ setPinAction: async () => ({ ok: true }) }));
+const setFollowAction = vi.fn();
+vi.mock('@/features/user-follow/index.server', () => ({
+  setFollowAction: (...args: unknown[]) => setFollowAction(...args),
+}));
 
 const profile: Profile = {
   username: 'hanako',
@@ -38,6 +45,7 @@ const profile: Profile = {
   followingCount: 0,
   postsCount: 12,
   isSelf: true,
+  isFollowing: false,
 };
 const post: Post = {
   id: '1',
@@ -109,5 +117,43 @@ describe('ProfilePage（#23）', () => {
     expect(
       screen.getByRole('heading', { name: 'このアカウントは存在しません' }),
     ).toBeInTheDocument();
+  });
+});
+
+describe('ProfilePage のフォロー（#24）', () => {
+  it('他人には「フォロー」。押すとすぐ「フォロー中」とフォロワー +1、終わったら読み直す', async () => {
+    let resolve: (value: unknown) => void = () => undefined;
+    setFollowAction.mockImplementationOnce(() => new Promise((done) => (resolve = done)));
+    page({ profile: { ...profile, isSelf: false, followersCount: 4 } });
+    const header = within(screen.getByRole('region', { name: 'プロフィール' }));
+    await userEvent.click(header.getByRole('button', { name: 'フォロー' }));
+    expect(header.getByRole('button', { name: /フォロー中|フォロー解除/ })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'プロフィール' })).toHaveTextContent('5 フォロワー');
+    expect(setFollowAction).toHaveBeenCalledWith('hanako', true);
+    resolve({ ok: true, followersCount: 5 });
+    await waitFor(() => expect(refresh).toHaveBeenCalled());
+  });
+
+  it('フォロー中を押すと解除。失敗したら戻してトースト', async () => {
+    const add = vi.spyOn(toast, 'add');
+    setFollowAction.mockResolvedValueOnce({
+      ok: false,
+      code: 'RATE_LIMITED',
+      message: 'フォローが多すぎます',
+    });
+    page({ profile: { ...profile, isSelf: false, isFollowing: true, followersCount: 4 } });
+    const header = within(screen.getByRole('region', { name: 'プロフィール' }));
+    await userEvent.click(header.getByRole('button', { name: /フォロー中|フォロー解除/ }));
+    expect(setFollowAction).toHaveBeenLastCalledWith('hanako', false);
+    await waitFor(() => expect(add).toHaveBeenCalledWith({ title: 'フォローが多すぎます' }));
+    expect(screen.getByRole('region', { name: 'プロフィール' })).toHaveTextContent('4 フォロワー');
+  });
+
+  it('ログインしていなければ、ログインへのリンク', () => {
+    page({ signedIn: false, profile: { ...profile, isSelf: false } });
+    expect(screen.getByRole('link', { name: 'フォロー' })).toHaveAttribute(
+      'href',
+      '/i/flow/login?next=%2Fhanako',
+    );
   });
 });

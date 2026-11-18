@@ -75,9 +75,9 @@ app/                                   リポジトリのルート。各ファ�
 │       │   ├── with_replies/page.tsx
 │       │   ├── media/page.tsx
 │       │   ├── likes/page.tsx
+│       │   ├── following/page.tsx
+│       │   ├── followers/page.tsx
 │       │   └── not-found.tsx          「このアカウントは存在しません」
-│       ├── following/page.tsx
-│       ├── followers/page.tsx
 │       └── status/[postId]/
 │           ├── page.tsx
 │           └── photo/[index]/page.tsx 直接開いたとき（詳細の上にビューア）

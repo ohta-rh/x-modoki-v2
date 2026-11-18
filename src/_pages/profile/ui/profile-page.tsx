@@ -6,9 +6,11 @@ import { deletePostAction } from '@/features/post-delete/index.server';
 import { setLikeAction } from '@/features/post-like/index.server';
 import { setPinAction } from '@/features/post-pin/index.server';
 import { setRepostAction } from '@/features/post-repost/index.server';
+import { setFollowAction } from '@/features/user-follow/index.server';
 import { PageHeader } from '@/widgets/app-shell';
 import { ProfileHeader, ProfileTabs } from '@/widgets/profile-header';
 import { PostFeed } from '@/widgets/timeline-feed';
+import { ProfileFollowHeader } from './profile-follow-header';
 
 type Props = {
   profile: Profile;
@@ -34,7 +36,11 @@ export function ProfilePage({ profile, tab, firstPage, now, signedIn }: Props) {
           {profile.postsCount.toLocaleString('ja-JP')} 件のポスト
         </span>
       </PageHeader>
-      <ProfileHeader profile={profile} />
+      {profile.isSelf ? (
+        <ProfileHeader profile={profile} />
+      ) : (
+        <ProfileFollowHeader profile={profile} signedIn={signedIn} action={setFollowAction} />
+      )}
       <ProfileTabs username={profile.username} tab={tab} isSelf={profile.isSelf} />
       <PostFeed
         key={tab}

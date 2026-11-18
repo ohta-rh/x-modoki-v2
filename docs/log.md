@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **Update**: [ルーティング](architecture/routing.md)の 2 節と[アプリケーションの構造](architecture/application-structure.md)の 5 節に、フォローの一覧を書いた（#24）。
 * **New**: [#23 の試験レポート](test-reports/issue-0023-profile.md)（プロフィール）を足した。
 * **New**: [ADR-0042](adr/0042-profile-routes-in-a-group-with-their-own-not-found.md)（プロフィールのルートと 404）を記録し、[ルーティング](architecture/routing.md)の 2 節と[アプリケーションの構造](architecture/application-structure.md)の 5 節を直した（#23）。
 * **New**: [#22 の試験レポート](test-reports/issue-0022-repost-quote.md)（リポストと引用）を足した。

@@ -20,6 +20,7 @@ describe('UserHoverCard（#23）', () => {
         followingCount: 2,
         postsCount: 1,
         isSelf: false,
+        isFollowing: false,
       }),
     );
     vi.stubGlobal('fetch', fetchSpy);
