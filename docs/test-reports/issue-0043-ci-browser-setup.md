@@ -67,3 +67,13 @@ conclusion: success（7 つの確認の全部を含む）
 ## 見つけた問題
 
 1. **#42 の誤り。** 同じ止まり方を前に一度見たとき、「ジョブに時間の上限が無い」と行を確かめずに起票した（ジョブには 30 分の上限があった）。今回は 2 つの実行のログで、apt の段で止まることを確かめてから起票した
+
+## 再試験 2026-11-18
+
+- 受け入れ条件 1: このレポートの commit `b439a49` の CI（[実行 44241032149](https://github.com/ohta-rh/x-modoki-v2/actions/runs/44241032149)、成功）で、`Playwright browsers (cache)` が当たり、`Playwright browsers` の段が `skipped` になった。apt の段は 29 秒。合格
+
+```
+Playwright browsers (cache): success 04:59:39 → 04:59:45
+Playwright browsers: skipped
+Playwright system packages (retried): success 04:59:45 → 05:00:14
+```
