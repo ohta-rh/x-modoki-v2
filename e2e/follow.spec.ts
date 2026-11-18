@@ -22,6 +22,15 @@ test('フォローすると、相手の投稿が「フォロー中」に出る',
   const header = page.getByRole('region', { name: 'プロフィール' });
   const follow = header.getByRole('button', { name: 'フォロー', exact: true });
   const done = actionDone(page);
+  // After the follow the profile reloads itself (router.refresh): an RSC request for this page
+  // that is not the Server Action. Leaving before it is answered makes WebKit report the next
+  // navigation as interrupted (#50).
+  const refreshed = page.waitForResponse(
+    (response) =>
+      response.request().headers()['rsc'] === '1' &&
+      response.request().headers()['next-action'] === undefined &&
+      new URL(response.url()).pathname === `/${them.username}`,
+  );
   await follow.click();
   const following = header.getByRole('button', { name: 'フォロー中' });
   await expect(following).toBeVisible();
@@ -35,9 +44,7 @@ test('フォローすると、相手の投稿が「フォロー中」に出る',
     'rgb(244, 33, 46)',
   );
 
-  // The profile reloads itself after the follow (router.refresh); let that finish before leaving,
-  // or WebKit reports the navigation as interrupted (#50).
-  await page.waitForLoadState('networkidle');
+  await refreshed;
   await page.goto('/home?tab=following');
   await expect(page.getByRole('article').first()).toContainText('フォローされる人の投稿');
 
