@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **Update**: [環境と配備](architecture/environments.md)に、ローカルと CI の PostgreSQL の `max_connections` を書いた（#49）。
 * **New**: [#24 の試験レポート](test-reports/issue-0024-follow.md)（フォロー）を足した。
 * **Update**: [ルーティング](architecture/routing.md)の 2 節と[アプリケーションの構造](architecture/application-structure.md)の 5 節に、フォローの一覧を書いた（#24）。
 * **New**: [#23 の試験レポート](test-reports/issue-0023-profile.md)（プロフィール）を足した。
