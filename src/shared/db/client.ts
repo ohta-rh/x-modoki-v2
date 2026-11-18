@@ -7,12 +7,12 @@ import * as schema from './schema';
 
 /**
  * One connection pool per request (ADR-0017): nothing is opened at module load and the pool is
- * shared within the request through React's cache(). It is never ended explicitly: an idle
- * connection closes itself after a second (ADR-0037), so nothing can use a pool that was ended
- * while the same request is still running.
+ * shared within the request through React's cache(). It is never ended explicitly (ADR-0037): an
+ * idle connection closes itself after 100ms (ADR-0050). Kept longer, connections pile up with the
+ * request rate and run PostgreSQL out of connections (#59).
  */
 export const getDb = cache(() => {
-  const pool = new Pool({ connectionString: env.DATABASE_URL, max: 2, idleTimeoutMillis: 1_000 });
+  const pool = new Pool({ connectionString: env.DATABASE_URL, max: 2, idleTimeoutMillis: 100 });
   return drizzle(pool, { schema });
 });
 

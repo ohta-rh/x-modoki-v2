@@ -48,7 +48,7 @@ status: stable
 | [0034](0034-foreign-keys-cascade-from-users-and-detach-thread-links.md) | 外部キーは、人を消すとその人のものを一緒に消し、投稿の間のつながりは外すだけにする | 採用 | エージェント |
 | [0035](0035-vendor-shadcn-from-registry-and-base-ui-toast.md) | shadcn の部品は CLI を使わずレジストリの定義から取り込み、トーストは Base UI 版にする | 採用 | エージェント |
 | [0036](0036-auth-rate-limit-configurable-for-e2e.md) | 登録とログインの回数の制限は、IP ごとに 1 分 10 回を既定にし、画面のテストのサーバーだけ環境変数で上げる | 採用 | エージェント |
-| [0037](0037-pool-closes-when-idle-not-after-response.md) | リクエストごとの接続の pool は、after() で閉じず、使わなくなって 1 秒で接続を閉じる | 採用 | エージェント |
+| [0037](0037-pool-closes-when-idle-not-after-response.md) | リクエストごとの接続の pool は、after() で閉じず、使わなくなって 1 秒で接続を閉じる | 採用（使わなくなった接続を閉じるまでの時間を ADR-0050 で 100ms に置き換え） | エージェント |
 | [0038](0038-e2e-sign-up-per-test-and-direct-bulk-fixtures.md) | 画面のテストは、テストごとに画面から登録し、画面では作れない量のデータだけをデータベースへ直接入れる | 採用 | エージェント |
 | [0039](0039-not-found-route-file-is-a-thin-shell.md) | 404 の画面は、アプリの not-found.tsx から同期の画面のコンポーネントを出し、Next.js の既定の画面を使わない | 採用 | エージェント |
 | [0040](0040-bookmark-cursor-is-time-and-post-id.md) | ブックマークの一覧のカーソルは、付けた時刻のマイクロ秒と投稿の ID の組にする | 採用 | エージェント |
@@ -61,3 +61,4 @@ status: stable
 | [0047](0047-ci-steps-that-launch-a-browser-run-in-the-playwright-image.md) | CI でブラウザを立ち上げる確認は、どれも公式の Playwright のイメージの中で動かす | 採用 | エージェント |
 | [0048](0048-read-trends-and-suggestions-per-request.md) | トレンドとおすすめのユーザーは 'use cache' で持たず、要求ごとに読む | 採用 | エージェント |
 | [0049](0049-e2e-scrolls-at-once-not-by-wheel.md) | 画面のテストは、ホイールではなく一度に動かしてスクロールする | 採用 | エージェント |
+| [0050](0050-idle-connections-close-after-100ms.md) | 使わなくなった接続は 100ms で閉じる | 採用 | エージェント |
