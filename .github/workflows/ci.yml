@@ -51,12 +51,17 @@ jobs:
         run: pnpm exec playwright install chromium firefox webkit
       # The .deb files of the browsers' system packages are cached too, so a run with a cache hit
       # never talks to the apt mirror, which can be slow for longer than any retry (#45).
+      # The runner image is rebuilt about weekly; a new image must miss the cache so it is saved
+      # again (actions/cache never saves on a primary-key hit).
+      - name: Runner image
+        id: image
+        run: echo "version=$ImageOS-$ImageVersion" >> "$GITHUB_OUTPUT"
       - name: Playwright system packages (cache)
         id: debs-cache
         uses: actions/cache@v6
         with:
           path: ~/apt-debs
-          key: playwright-debs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          key: playwright-debs-${{ steps.image.outputs.version }}-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Playwright system packages
         timeout-minutes: 15
         run: |
@@ -67,7 +72,8 @@ jobs:
           for attempt in 1 2 3; do
             # timeout runs as root so it can stop the root apt-get that Playwright starts (#44).
             if sudo --preserve-env=PATH timeout -k 15 200 "$(command -v pnpm)" exec playwright install-deps chromium firefox webkit; then
-              mkdir -p ~/apt-debs && cp /var/cache/apt/archives/*.deb ~/apt-debs/
+              mkdir -p ~/apt-debs
+              find /var/cache/apt/archives -maxdepth 1 -name '*.deb' -exec cp {} ~/apt-debs/ \;
               exit 0
             fi
             echo "attempt $attempt did not finish in 200 seconds; retrying"
