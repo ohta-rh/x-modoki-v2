@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { createPortal } from 'react-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Post } from '../model/types';
 import { PostCard } from './post-card';
@@ -51,5 +52,17 @@ describe('PostCard（#20: 詳細へのリンク）', () => {
   it('label を渡すと、その名前の article になる（スレッドの親）', () => {
     render(<PostCard post={post} now={now} label="親の投稿" />);
     expect(screen.getByRole('article', { name: '親の投稿' })).toBeInTheDocument();
+  });
+
+  it('メニューが body に出した重ね（ダイアログの背景）を押しても、詳細へ進まない（#20 のレビュー）', async () => {
+    render(
+      <PostCard
+        post={post}
+        now={now}
+        menu={createPortal(<div data-testid="backdrop" role="presentation" />, document.body)}
+      />,
+    );
+    await userEvent.click(screen.getByTestId('backdrop'));
+    expect(push).not.toHaveBeenCalled();
   });
 });

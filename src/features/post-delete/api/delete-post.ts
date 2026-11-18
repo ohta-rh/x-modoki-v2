@@ -20,8 +20,14 @@ export async function deletePost(postId: bigint): Promise<DeletePostResult> {
     .where(and(eq(posts.id, postId), isNull(posts.deletedAt)));
   if (!post) return { ok: false, error: 'NOT_FOUND' };
   if (post.authorId !== viewer.id) return { ok: false, error: 'FORBIDDEN' };
-  await db.transaction(async (tx) => {
-    await tx.update(posts).set({ deletedAt: new Date() }).where(eq(posts.id, postId));
+  // The update itself re-checks deleted_at, so of concurrent deletes only one changes the counts.
+  return db.transaction(async (tx): Promise<DeletePostResult> => {
+    const deleted = await tx
+      .update(posts)
+      .set({ deletedAt: new Date() })
+      .where(and(eq(posts.id, postId), isNull(posts.deletedAt)))
+      .returning({ id: posts.id });
+    if (deleted.length === 0) return { ok: false, error: 'NOT_FOUND' };
     if (post.replyToId !== null) {
       await tx
         .update(posts)
@@ -32,6 +38,6 @@ export async function deletePost(postId: bigint): Promise<DeletePostResult> {
       .update(user)
       .set({ postsCount: sql`greatest(${user.postsCount} - 1, 0)` })
       .where(eq(user.id, viewer.id));
+    return { ok: true };
   });
-  return { ok: true };
 }

@@ -60,4 +60,17 @@ describe('deletePost（NFR-SEC-01、T-01）', () => {
     await deletePost(orphan.id);
     expect((await row(parent.id)).replyCount).toBe(0);
   });
+
+  it('同じ投稿を同時に何回消しても、数は 1 だけ減り、ほかは NOT_FOUND（#20 のレビュー）', async () => {
+    const me = await makeUser();
+    await testDb().update(user).set({ postsCount: 5 }).where(eq(user.id, me.id));
+    const parent = await makePost({ authorId: me.id, replyCount: 5 });
+    const reply = await makePost({ authorId: me.id, replyToId: parent.id, rootId: parent.id });
+    signInAs(me);
+    const results = await Promise.all(Array.from({ length: 5 }, () => deletePost(reply.id)));
+    expect(results.filter((result) => result.ok)).toHaveLength(1);
+    expect((await row(parent.id)).replyCount).toBe(4);
+    const [author] = await testDb().select().from(user).where(eq(user.id, me.id));
+    expect(author.postsCount).toBe(4);
+  });
 });

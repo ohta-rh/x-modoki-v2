@@ -28,11 +28,9 @@ type Props = {
   connector?: boolean;
 };
 
-/** True when the click started on something with its own action: a link, a button, a menu. */
+/** True when the click started on something with its own action: a link or a button. */
 const ownAction = (event: MouseEvent) =>
-  (event.target as HTMLElement).closest(
-    'a, button, [role="menu"], [role="menuitem"], [role="dialog"], [role="alertdialog"]',
-  ) !== null;
+  (event.target as HTMLElement).closest('a, button') !== null;
 
 /**
  * One post (docs/architecture/ui-ux.md 5). The whole card opens the post's detail; links and buttons
@@ -46,6 +44,9 @@ export function PostCard({ post, now, menu, label, connector = false }: Props) {
     <article
       aria-label={label}
       onClick={(event) => {
+        // React bubbles events from portals (a dialog's backdrop) through the card: only a click
+        // on the card's own DOM opens the detail.
+        if (!event.currentTarget.contains(event.target as Node)) return;
         if (!ownAction(event)) router.push(detail);
       }}
       className={`relative flex cursor-pointer gap-3 px-4 py-3 hover:bg-hover/50 ${connector ? '' : 'border-b border-line'}`}
