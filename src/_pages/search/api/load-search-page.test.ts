@@ -43,6 +43,11 @@ describe('loadSearchPage（#27）', () => {
     expect(data).toMatchObject({ q: '並んだ', filter: 'live' });
   });
 
+  it('画面の URL の知らない f は、拒まずに「話題」として読む（人が打つ URL なので、#62）', async () => {
+    const data = await loadSearchPage('知らない', 'nope');
+    expect(data).toMatchObject({ q: '知らない', filter: 'top' });
+  });
+
   it('q が空か長すぎれば、/explore へ送る', async () => {
     for (const q of [undefined, '', '   ', 'a'.repeat(101)]) {
       await expect(loadSearchPage(q, undefined)).rejects.toThrow('NEXT_REDIRECT /explore');
