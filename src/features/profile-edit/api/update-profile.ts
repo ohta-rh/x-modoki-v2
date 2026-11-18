@@ -73,9 +73,17 @@ export async function updateProfile(input: ProfileInput): Promise<UpdateProfileR
         })
         .where(eq(user.id, viewer.id));
       // The images the new ones replace: their rows go now, their objects after the commit.
+      // Only the viewer's own rows: the column could point anywhere (#25 review 2), and only the
+      // keys of rows actually deleted lose their objects.
       const old = sealed.flatMap((item) => before[COLUMN[item.slot]] ?? []);
-      if (old.length > 0) await tx.delete(media).where(inArray(media.key, old));
-      return old;
+      const removed =
+        old.length === 0
+          ? []
+          : await tx
+              .delete(media)
+              .where(and(inArray(media.key, old), eq(media.ownerId, viewer.id)))
+              .returning({ key: media.key });
+      return removed.map((row) => row.key);
     })
     .catch((error: unknown) => (error instanceof Refused ? null : Promise.reject(error)));
   if (replaced === null) return refuse();

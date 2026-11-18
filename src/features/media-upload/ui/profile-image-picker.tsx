@@ -48,6 +48,8 @@ export function ProfileImagePicker({ kind, currentUrl, onChange }: Props) {
       if (turn === latest.current) onChange({ id, busy: false });
     } catch {
       if (turn !== latest.current) return;
+      // Nothing new will be saved, so nothing new is shown.
+      setPreview(null);
       setFailed(true);
       onChange({ id: null, busy: false });
     }

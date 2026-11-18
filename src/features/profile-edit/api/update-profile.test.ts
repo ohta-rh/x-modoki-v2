@@ -150,4 +150,22 @@ describe('updateProfileAction のアバターとバナー（#25）', () => {
       'connection lost',
     );
   });
+
+  it('前のアバターが他人の画像を指していても、他人の行と画像は消さない（レビュー 2）', async () => {
+    const me = await makeUser();
+    const victim = await makeUser();
+    const theirs = await upload(victim.id, 400, 400);
+    await testDb().update(media).set({ status: 'ready' }).where(eq(media.id, theirs.id));
+    // As if the image column were set to someone else's key behind the editor's back.
+    await testDb().update(user).set({ image: theirs.key }).where(eq(user.id, me.id));
+    signInAs(me);
+    expect(
+      await updateProfileAction({
+        ...input,
+        avatarId: (await upload(me.id, 400, 400)).id.toString(),
+      }),
+    ).toEqual({ ok: true });
+    expect(await testDb().select().from(media).where(eq(media.id, theirs.id))).toHaveLength(1);
+    expect(await readHead(theirs.key, 4)).not.toBeNull();
+  });
 });
