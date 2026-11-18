@@ -146,8 +146,11 @@ with `--window-size=375,…` lays the page out at ~500px and crops it. So:
 - **Inside the PBI's scope:** fix it now, and add a check that reproduces it before the fix
   (a Playwright test for app behavior; a rule or script check for a document or issue defect).
   Then redo items 2–7. Record it under 見つけた問題.
-- **Outside the scope:** reproduce it, state its root cause, file a PBI
-  (`.claude/rules/issue-authoring.md`), and reference it in the report. Do not fold the fix in.
+- **Outside the scope:** reproduce it, state its root cause, file a bug PBI
+  (`.claude/rules/issue-authoring.md`), and **fix it now, to completion, before resuming**
+  (`.claude/rules/bug-handling.md`). It gets its own commit and its own test report; reference
+  it in this one.
+- Do not stop, do not defer by severity, do not ask the user.
 - **If it reveals a rule gap** — something a rule should have prevented — update the rule in
   the same change (`CLAUDE.md`, "Keeping the harness current").
 - Never close the issue with a known problem in scope left open.

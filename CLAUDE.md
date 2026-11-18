@@ -90,12 +90,26 @@ Full rules: @.claude/rules/definition-of-done.md
 ## Delivery loop
 
 - **One PBI at a time, in the EPIC's order, start to closed:** read the issue and its ADRs,
-  implement test-first, `pnpm verify`, push to `main`, watch CI to green, close the issue with
-  evidence. Never close on an unmet criterion, a skipped gate, or red CI.
-- When an issue's premise fails, apply the fallback its ADR names and record a superseding
-  ADR; only a genuinely contested remedy is labelled `blocked` and left for the user.
+  implement by TDD, `pnpm verify`, look in Chrome, independent review, push to `main`, watch CI
+  to green, write the test report, close with evidence. Never close on an unmet criterion, a
+  skipped gate, or red CI.
+- The loop ends only when every sub-issue is closed.
 
 Full rules: @.claude/rules/delivery-loop.md
+
+## Bugs — fix to completion, never stop, never ask
+
+- **Every bug is fixed now, all the way** — reproduce, root cause, failing test, fix, gates,
+  Chrome, review, push, CI, record — whatever its severity and wherever it was found. A bug
+  outside the current PBI gets a bug PBI and is fixed immediately, before resuming.
+- **The loop does not stop.** No `blocked` for bugs. After three failed attempts, change the
+  approach (last green state, question the design, split smaller) and keep going.
+- **Do not ask the user.** Decide from the ADRs and rules, or decide yourself and write the ADR
+  in the same commit; list those decisions in the final report.
+- Not asking does not widen authority: no force-push, no deleting what you did not create, no
+  sign-ups, payments, or secrets, no weakened gates — find another way.
+
+Full rules: @.claude/rules/bug-handling.md
 
 ## Keeping the harness current
 

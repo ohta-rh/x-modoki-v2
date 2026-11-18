@@ -33,18 +33,20 @@ report says `コードの変更なし` under `## コードレビュー`.
 1. **Verify every finding yourself before acting.** Open the line, reproduce the failure the
    reviewer describes. Reviewers are wrong as often as authors.
 2. **A real finding:** write a failing test that reproduces it first, then fix
-   (`.claude/rules/tdd.md`). `blocker` and `major` findings are always fixed. A real `minor`
-   finding is fixed now if it is small, otherwise filed as a PBI with its root cause.
+   (`.claude/rules/tdd.md`). Every real finding is fixed now — `blocker`, `major`, and
+   `minor` alike. None is deferred (`.claude/rules/bug-handling.md`).
 3. **A wrong finding:** reject it with the evidence (the line, the test, the command output).
    Do not "fix" something that is not broken to make the reviewer happy.
-4. **A finding outside the PBI's scope:** file a PBI; do not fold the fix in.
+4. **A real finding outside the PBI's scope:** file a bug PBI and fix it immediately, in its
+   own commit with its own review, before resuming.
 5. After any change, re-run `pnpm verify`, then spawn a **new** reviewer on the new range —
    never continue the previous one, which is now anchored on its earlier reading.
 6. **`APPROVE` with `minor` findings:** fix each real one test-first, applying the fix the
    reviewer proposed. That needs no further round — the reviewer has already judged the fix.
    Anything beyond the proposed fix is a new change and gets a new round.
-7. Repeat until the verdict is `APPROVE`. **Three rounds without approval:** stop, write the
-   history on the issue, label it `blocked`, and move to the next independent PBI.
+7. Repeat until the verdict is `APPROVE`. **Three rounds without approval:** do not submit a
+   fourth of the same shape, do not label it `blocked`, do not ask the user. Return to the
+   last green state, split the change smaller, redo it by TDD, and keep going until approved.
 8. If a finding shows a rule gap, update the rule and `.claude/agents/code-reviewer.md` in the
    same change.
 

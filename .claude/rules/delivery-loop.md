@@ -49,32 +49,46 @@ its last without a human in between.
 - Push code that an independent reviewer has not approved, review its own work in place of
   the `code-reviewer` subagent, or hand the reviewer its own summary or reasoning.
 - Weaken a gate, exclude a file from coverage, or disable a lint rule to finish.
-- Fold work outside the issue's scope into the commit. Found something adjacent → file a new
-  PBI under the right EPIC (root cause stated, `.claude/rules/issue-authoring.md`) and move on.
+- Fold unrelated *improvements* into the commit. An adjacent improvement → file a new PBI
+  under the right EPIC and move on. An adjacent **bug** is different: file a bug PBI and fix it
+  now (`.claude/rules/bug-handling.md`).
+- Leave a known bug open, defer one by severity, or label one `blocked`.
 - Start Milestone 2 work, or add Cloudflare-specific packages, during Milestone 1.
-- Ask the user something an ADR, a rule, or the issue already answers.
+- Ask the user anything. Decide from the ADRs and rules, or decide yourself and write the ADR.
 
-## 3. When the issue turns out to be wrong
+## 3. When something is wrong — fix it, do not stop, do not ask (ADR-0028)
 
-An issue is wrong when its root cause, approach, or acceptance criteria cannot hold (the
-library does not behave as assumed, a criterion contradicts an ADR, a dependency is missing).
+`.claude/rules/bug-handling.md` is the rule; this is how it meets the loop.
 
-- **A verification / investigation PBI found that an assumed technology does not work:** apply
-  the fallback the ADR names (e.g. ADR-0008: Garage → SeaweedFS; ADR-0017: `proxy.ts` → layout
-  redirect). Record it in a superseding ADR, update the affected issue bodies, continue.
-- **No fallback is named and one option is clearly forced by the existing ADRs:** decide,
-  write the ADR, edit the issue (note what changed and why at the top), continue.
-- **The remedy is genuinely contested** — it would reverse a decision the user made, change
-  scope, or need an account / secret / payment: stop that issue, comment the evidence and a
-  recommendation on it, label it `blocked`, and continue with the next issue that does not
-  depend on it. Report it at the end of the loop.
+- **A bug, wherever it was found:** reproduce → root cause → failing test → fix → gates →
+  Chrome → review → push → CI → record. Inside the current PBI's scope, do it inside that PBI.
+  Outside it, file a bug PBI and fix it **now**, before resuming.
+- **An issue whose premise fails** (a library does not behave as assumed, a criterion
+  contradicts an ADR, a dependency is missing): apply the fallback the ADR names
+  (e.g. ADR-0008: Garage → SeaweedFS; ADR-0017: `proxy.ts` → layout redirect). If none is
+  named, decide from the existing ADRs and rules; if they do not answer, decide yourself.
+  Either way write the superseding ADR in the same commit, edit the affected issue bodies
+  (note what changed and why at the top), and continue.
+- **A fix or a review that keeps failing:** escalate every three attempts — back to the last
+  green state, question the design, split smaller — and keep going.
+- **Never ask the user.** No questions, no options to choose from, no waiting. Decisions go in
+  ADRs (決定者: エージェント) and in the final report.
+- **Never route around by weakening a gate**, and never take the actions listed as off-limits
+  in `.claude/rules/bug-handling.md` §3 — find another way instead.
+
+`blocked` is not used for bugs or for decisions. It exists only for work that physically
+cannot proceed without something the user alone holds (an account, a payment, a secret) —
+which Milestone 1 does not have (ADR-0019). Such an issue is labelled, explained, skipped
+without asking, and reported at the end; the loop carries on.
 
 ## 4. Stopping
 
-The loop ends when every sub-issue of the EPIC is closed, or when every remaining open issue
-is `blocked`. The final report lists: issues closed (with SHAs), ADRs added or superseded,
-test reports written, issues filed during the loop, and anything left `blocked` with its
-recommendation.
+The loop ends when every sub-issue of the EPIC is closed. A bug, a failed review, a red CI
+run, or an unanswered design question is never a stopping point.
+
+The final report lists: issues closed (with SHAs), test reports written, bugs found and fixed
+(with their bug PBIs), ADRs added or superseded — marking each decision the loop made itself —
+and anything labelled `blocked` with why it could not proceed.
 
 Context limits are not a reason to stop: commit work in progress on a passing state, and the
 next iteration resumes from step 1.
