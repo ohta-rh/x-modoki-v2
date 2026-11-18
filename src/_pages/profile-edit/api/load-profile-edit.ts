@@ -6,7 +6,12 @@ import type { ProfileInput } from '@/features/profile-edit';
 import { getSession } from '@/shared/auth/index.server';
 import { LOGIN_PATH } from '@/shared/config';
 
-export type ProfileEditData = { username: string; initial: ProfileInput };
+export type ProfileEditData = {
+  username: string;
+  initial: ProfileInput;
+  /** The current avatar and banner, shown until new ones are chosen (#25). */
+  images: { avatarUrl: string | null; bannerUrl: string | null };
+};
 
 /** /settings/profile (#23): the viewer's own values, to edit. */
 export async function loadProfileEdit(): Promise<ProfileEditData> {
@@ -26,5 +31,6 @@ export async function loadProfileEdit(): Promise<ProfileEditData> {
       location: profile.location,
       website: profile.website,
     },
+    images: { avatarUrl: profile.avatarUrl, bannerUrl: profile.bannerUrl },
   };
 }

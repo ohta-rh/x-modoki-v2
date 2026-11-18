@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+const ID = /^[1-9][0-9]*$/;
 const HTTP = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
 
 /** What the profile editor may change (#23): lengths as on X; links only http(s) (no javascript:). */
@@ -12,6 +13,9 @@ export const profileSchema = z.object({
     .trim()
     .max(100, 'ウェブサイトは 100 文字までです')
     .refine((url) => url === '' || HTTP.test(url), 'http か https の URL を入れてください'),
+  /** A new avatar or banner: an upload's ID (#25); absent keeps the current one. */
+  avatarId: z.string().regex(ID).optional(),
+  bannerId: z.string().regex(ID).optional(),
 });
 
 export type ProfileInput = z.infer<typeof profileSchema>;

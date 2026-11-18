@@ -1,8 +1,9 @@
 import type { ProfileInput } from '@/features/profile-edit';
 import { updateProfileAction } from '@/features/profile-edit/index.server';
 import { ProfileEditDialog, ProfileEditScreen } from './profile-edit-screens';
+import type { ProfileImages } from './profile-images';
 
-type Props = { username: string; initial: ProfileInput };
+type Props = { username: string; initial: ProfileInput; images: ProfileImages };
 
 /** /settings/profile over the current screen (@modal, routing.md 2). */
 export function ProfileEditModal(props: Props) {

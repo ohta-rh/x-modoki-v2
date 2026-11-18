@@ -55,3 +55,4 @@ status: stable
 | [0041](0041-repost-and-quote-target-the-original.md) | リポストと引用の対象は、リポストの行なら元の投稿、返信ならその返信にする | 採用 | エージェント |
 | [0042](0042-profile-routes-in-a-group-with-their-own-not-found.md) | プロフィールのルートは [username] の中のルートグループに置き、無いアカウントの 404 をそこだけに出す | 採用 | エージェント |
 | [0043](0043-jpeg-where-the-browser-cannot-write-webp.md) | ブラウザが WebP を書けないときは、同じ品質の JPEG で送り、サーバーは JPEG も受け付ける | 採用 | エージェント |
+| [0044](0044-client-inputs-take-in-what-was-entered-before-hydration.md) | 入力欄の値を状態に持つクライアントの部品は、マウントのときに DOM に入っている値を取り込む | 採用 | エージェント |

@@ -26,7 +26,15 @@ describe('loadProfileEdit（#23）', () => {
     expect(await loadProfileEdit()).toEqual({
       username: 'hanako',
       initial: { name: '花子', bio: '猫', location: '', website: 'https://x.test' },
+      images: { avatarUrl: null, bannerUrl: null },
     });
+  });
+
+  it('今のアバターとバナーの URL も返す（#25）', async () => {
+    signInAs(await makeUser({ image: 'media/a.webp', banner: 'media/b.webp' }));
+    const { images } = await loadProfileEdit();
+    expect(images.avatarUrl).toMatch(/\/media\/a\.webp$/);
+    expect(images.bannerUrl).toMatch(/\/media\/b\.webp$/);
   });
 
   it('入っていなければログインへ送る', async () => {

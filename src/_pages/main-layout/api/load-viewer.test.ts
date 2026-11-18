@@ -1,4 +1,6 @@
-import { setupTestDb } from '@test/db';
+import { setupTestDb, testDb } from '@test/db';
+import { eq } from 'drizzle-orm';
+import { user } from '@/shared/db';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const request = vi.hoisted(() => ({ headers: new Headers() }));
@@ -45,5 +47,27 @@ describe('loadViewer', () => {
       username: 'sample_01',
       image: null,
     });
+  });
+
+  it('アバターは、保存したキーではなく、画像の配信元の URL で返す（#25）', async () => {
+    vi.resetModules();
+    const { getAuth } = await import('@/shared/auth/index.server');
+    const response = await getAuth().api.signUpEmail({
+      body: {
+        name: 'アバターの人',
+        email: 'avatar_01@example.test',
+        password: 'correct-horse-battery',
+        username: 'avatar_01',
+        displayUsername: 'avatar_01',
+      },
+      asResponse: true,
+    });
+    await testDb()
+      .update(user)
+      .set({ image: 'media/a.webp' })
+      .where(eq(user.username, 'avatar_01'));
+    request.headers = new Headers({ cookie: response.headers.get('set-cookie')!.split(';')[0] });
+    const viewer = await (await load()).loadViewer();
+    expect(viewer!.image).toMatch(/^https?:\/\/.+\/media\/a\.webp$/);
   });
 });

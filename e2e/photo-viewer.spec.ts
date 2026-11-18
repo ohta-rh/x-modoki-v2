@@ -25,13 +25,17 @@ test('画像を押すとビューアが重なり、左右のキーで前後へ�
   await insertPosts(me.username, 20, '下の投稿');
   const card = await postWithTwoImages(page, 'ビューアの投稿');
   await page.mouse.wheel(0, 80);
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
-  const scrolled = await page.evaluate(() => window.scrollY);
+  const scrollY = () => page.evaluate(() => window.scrollY);
+  await expect.poll(scrollY).toBeGreaterThan(0);
 
   await card.getByRole('link', { name: '1 枚目の画像' }).click();
   await expect(page).toHaveURL(new RegExp(`/${me.username}/status/\\d+/photo/1$`));
   const viewer = page.getByRole('dialog', { name: '画像' });
   await expect(viewer.locator('img')).toHaveAttribute('width', '300');
+  // The screen behind, where the viewer left it: Playwright scrolls the link into view to click
+  // it, so the position before the click is not the one to keep.
+  const behind = await scrollY();
+  expect(behind).toBeGreaterThan(0);
   await page.keyboard.press('ArrowRight');
   await expect(page).toHaveURL(/\/photo\/2$/);
   await expect(viewer.locator('img')).toHaveAttribute('width', '200');
@@ -44,7 +48,8 @@ test('画像を押すとビューアが重なり、左右のキーで前後へ�
   await expect(card).toBeVisible();
   // The dialog locks the page's scroll and restores it on close, rounding a fractional position:
   // within 1px is the same place (a lost screen would be back at the top, hundreds of px away).
-  expect(Math.abs((await page.evaluate(() => window.scrollY)) - scrolled)).toBeLessThanOrEqual(1);
+  const after = await scrollY();
+  expect(Math.abs(after - behind), `behind ${behind}, after ${after}`).toBeLessThanOrEqual(1);
 });
 
 test('ビューアの URL を直接開くと詳細の上に出て、閉じると詳細になる', async ({ page }) => {

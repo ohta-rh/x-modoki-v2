@@ -44,4 +44,28 @@ describe('ProfileEditForm（#23）', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('ログインしてください');
     expect(onSaved).not.toHaveBeenCalled();
   });
+
+  it('画像の欄を差し込め、選んだ画像の ID も送る。送っている間は保存できない（#25）', async () => {
+    const action = vi.fn(async () => ({ ok: true as const }));
+    const images = (busy: boolean) => ({
+      node: <p>画像の欄</p>,
+      ids: { avatarId: '7' },
+      busy,
+    });
+    const { rerender } = render(
+      <ProfileEditForm initial={initial} action={action} onSaved={vi.fn()} images={images(true)} />,
+    );
+    expect(screen.getByText('画像の欄')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '保存' })).toBeDisabled();
+    rerender(
+      <ProfileEditForm
+        initial={initial}
+        action={action}
+        onSaved={vi.fn()}
+        images={images(false)}
+      />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: '保存' }));
+    expect(action).toHaveBeenCalledWith({ ...initial, avatarId: '7' });
+  });
 });

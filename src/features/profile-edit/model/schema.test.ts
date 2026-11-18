@@ -27,4 +27,16 @@ describe('profileSchema（#23）', () => {
     const result = profileSchema.parse({ ...valid, name: '  花子  ', website: ' https://x.test ' });
     expect(result).toMatchObject({ name: '花子', website: 'https://x.test' });
   });
+
+  it('アバターとバナーの画像の ID は、無いか、数字の文字列だけ（#25）', () => {
+    expect(profileSchema.parse({ ...valid, avatarId: '123', bannerId: '45' })).toMatchObject({
+      avatarId: '123',
+      bannerId: '45',
+    });
+    expect(profileSchema.safeParse(valid).success).toBe(true);
+    for (const bad of ['', 'abc', '-1', '1.5']) {
+      expect(profileSchema.safeParse({ ...valid, avatarId: bad }).success).toBe(false);
+      expect(profileSchema.safeParse({ ...valid, bannerId: bad }).success).toBe(false);
+    }
+  });
 });

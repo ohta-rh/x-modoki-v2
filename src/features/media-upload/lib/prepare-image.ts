@@ -1,11 +1,10 @@
-import { coverSize, fitWithin } from '@/shared/lib/image';
+import { coverSize, fitWithin, PROFILE_IMAGE_BOX } from '@/shared/lib/image';
 
 export type ImageKind = 'post' | 'avatar' | 'banner';
 export type PreparedImage = { blob: Blob; width: number; height: number };
 
 const LONG_SIDE = 2048;
 const QUALITY = 0.85;
-const BOXES = { avatar: [400, 400], banner: [1500, 500] } as const;
 
 const toBlob = (canvas: HTMLCanvasElement, type: string) =>
   new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, QUALITY));
@@ -40,7 +39,7 @@ export async function prepareImage(file: File, kind: ImageKind): Promise<Prepare
     canvas.height = size.height;
     context.drawImage(bitmap, 0, 0, size.width, size.height);
   } else {
-    const [width, height] = BOXES[kind];
+    const { width, height } = PROFILE_IMAGE_BOX[kind];
     const crop = coverSize(bitmap.width, bitmap.height, width, height);
     canvas.width = width;
     canvas.height = height;

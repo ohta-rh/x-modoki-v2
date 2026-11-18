@@ -1,3 +1,9 @@
+/** The exact size of a profile's avatar and banner (#25, ui-ux.md 4). */
+export const PROFILE_IMAGE_BOX = {
+  avatar: { width: 400, height: 400 },
+  banner: { width: 1500, height: 500 },
+} as const;
+
 /** The size an image is scaled to so that its long side is at most `max` (ADR-0018). */
 export function fitWithin(width: number, height: number, max: number) {
   const scale = Math.min(1, max / Math.max(width, height));

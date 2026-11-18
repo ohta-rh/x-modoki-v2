@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { type ReactNode, useState, useTransition } from 'react';
 import { Button } from '@/shared/ui/button';
 import { Field } from '@/shared/ui/field';
 import type { ProfileInput } from '../model/schema';
@@ -10,6 +10,12 @@ type Props = {
   initial: ProfileInput;
   action: (input: ProfileInput) => Promise<UpdateProfileActionResult>;
   onSaved: () => void;
+  /** The avatar and banner pickers (#25), composed by the page: their node and chosen IDs. */
+  images?: {
+    node: ReactNode;
+    ids: Pick<ProfileInput, 'avatarId' | 'bannerId'>;
+    busy: boolean;
+  };
 };
 
 const FIELDS: { name: keyof ProfileInput; label: string; multiline?: boolean }[] = [
@@ -19,8 +25,8 @@ const FIELDS: { name: keyof ProfileInput; label: string; multiline?: boolean }[]
   { name: 'website', label: 'ウェブサイト' },
 ];
 
-/** The profile editor (#23): name, bio, location and link, with errors per field. */
-export function ProfileEditForm({ initial, action, onSaved }: Props) {
+/** The profile editor (#23): name, bio, location and link, with errors per field; images (#25). */
+export function ProfileEditForm({ initial, action, onSaved, images }: Props) {
   const [result, setResult] = useState<UpdateProfileActionResult | null>(null);
   const [pending, startTransition] = useTransition();
   const failed = result?.ok === false ? result : null;
@@ -33,6 +39,7 @@ export function ProfileEditForm({ initial, action, onSaved }: Props) {
         const input = Object.fromEntries(
           FIELDS.map(({ name }) => [name, String(data.get(name))]),
         ) as ProfileInput;
+        Object.assign(input, images?.ids);
         startTransition(async () => {
           const next = await action(input);
           setResult(next);
@@ -40,6 +47,7 @@ export function ProfileEditForm({ initial, action, onSaved }: Props) {
         });
       }}
     >
+      {images?.node}
       {FIELDS.map((field) => (
         <Field
           key={field.name}
@@ -55,7 +63,7 @@ export function ProfileEditForm({ initial, action, onSaved }: Props) {
           {failed.message}
         </p>
       ) : null}
-      <Button type="submit" disabled={pending} className="self-end">
+      <Button type="submit" disabled={pending || images?.busy} className="self-end">
         保存
       </Button>
     </form>

@@ -1,1 +1,1 @@
-export { coverSize, fitWithin, type SniffedImage, sniffImage } from './image';
+export { coverSize, fitWithin, PROFILE_IMAGE_BOX, type SniffedImage, sniffImage } from './image';

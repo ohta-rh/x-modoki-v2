@@ -1,6 +1,8 @@
 import 'server-only';
 import { getSession } from '@/shared/auth/index.server';
+import { mediaUrl } from '@/shared/lib/media-url';
 
+/** `image` is the avatar's URL on the media host (the session holds its storage key, #25). */
 export type Viewer = { name: string; username: string; image: string | null };
 
 /**
@@ -9,5 +11,7 @@ export type Viewer = { name: string; username: string; image: string | null };
  */
 export async function loadViewer(): Promise<Viewer | null> {
   const session = await getSession();
-  return session && { name: session.name, username: session.username, image: session.image };
+  return (
+    session && { name: session.name, username: session.username, image: mediaUrl(session.image) }
+  );
 }

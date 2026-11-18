@@ -49,7 +49,9 @@ If either is missing, reply `NEEDS_CONTEXT` and say what is missing. Do not gues
    coverage. Does each behavior in the diff have a test that pins it?
 5. **Architecture** (`.claude/rules/architecture-fsd.md`, ADR-0022, ADR-0010): an import that
    goes up or sideways; a deep import past a slice's `index.ts`; database access outside an
-   `api` segment; an async Server Component under `src/`; logic in a root `app/` route file.
+   `api` segment; an async Server Component under `src/`; logic in a root `app/` route file; a
+   client component that keeps an input's value in state without taking in the DOM's value on
+   mount, or without the hydration test for it (ADR-0044).
 6. **Runtime constraints** (ADR-0017): native modules, filesystem writes, module-level
    connections or mutable state, timers assuming a long-lived process.
 7. **Scope and decisions.** Changes outside the issue's スコープ; a decision made in the diff

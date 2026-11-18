@@ -18,6 +18,8 @@ export type SealedUpload = { from: string; to: string };
 export async function sealUploads(
   ownerId: string,
   ids: bigint[],
+  /** The exact size every image must have (an avatar, a banner); any size when absent. */
+  size?: { width: number; height: number },
 ): Promise<Map<bigint, SealedUpload> | null> {
   const rows = await getDb()
     .select()
@@ -34,7 +36,8 @@ export async function sealUploads(
         found !== null &&
         found.type === row.mime &&
         found.width === row.width &&
-        found.height === row.height;
+        found.height === row.height &&
+        (size === undefined || (row.width === size.width && row.height === size.height));
       return { id: row.id, from: row.key, to, copied, ok };
     }),
   );

@@ -68,6 +68,10 @@ src/
 - A loader is a plain async function in `_pages/<page>/api/` — tested against the real
   PostgreSQL like any other `api` function.
 - `'use client'` goes on leaf components. A client file never imports `index.server`.
+- A client component that keeps an `<input>` / `<textarea>` value (files included) in state reads
+  the DOM's value once on mount and takes it in: what was entered before hydration never reaches
+  `onChange` (ADR-0044; found three times, #47 and #25). Its unit test hydrates server HTML whose
+  input already holds a value (`renderToString` → set the value → `hydrateRoot`).
 
 ## 5. Enforcement
 
