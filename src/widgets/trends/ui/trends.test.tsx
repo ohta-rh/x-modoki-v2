@@ -40,4 +40,16 @@ describe('Trends（#27）', () => {
     render(<Trends trends={[]} />);
     expect(screen.getByText('トレンドはまだありません')).toBeInTheDocument();
   });
+
+  it('2 つ並べても見出しの id が重ならない（/explore では本文と右サイドバーの両方に出る、レビュー 2）', () => {
+    const { container } = render(
+      <>
+        <Trends trends={[]} />
+        <Trends trends={[]} />
+      </>,
+    );
+    const ids = [...container.querySelectorAll('h2')].map((heading) => heading.id);
+    expect(new Set(ids).size).toBe(2);
+    expect(screen.getAllByRole('region', { name: 'いまどうしてる？' })).toHaveLength(2);
+  });
 });

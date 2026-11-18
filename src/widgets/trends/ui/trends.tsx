@@ -1,12 +1,15 @@
 import type { Route } from 'next';
 import Link from 'next/link';
+import { useId } from 'react';
 import type { Trend } from '@/entities/hashtag';
 
 /** いまどうしてる？ (#27): the trending hashtags, each opening its search. */
 export function Trends({ trends }: { trends: Trend[] }) {
+  // /explore shows it twice (the page and the right sidebar): each heading needs its own id.
+  const titleId = useId();
   return (
-    <section aria-labelledby="trends-title" className="rounded-2xl border border-line">
-      <h2 id="trends-title" className="px-4 py-3 text-title font-extrabold">
+    <section aria-labelledby={titleId} className="rounded-2xl border border-line">
+      <h2 id={titleId} className="px-4 py-3 text-title font-extrabold">
         いまどうしてる？
       </h2>
       {trends.length === 0 ? (
