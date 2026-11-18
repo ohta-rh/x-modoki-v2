@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { absoluteTime, compactCount, joinedMonth, relativeTime } from './format';
+import { absoluteTime, calendarDate, compactCount, joinedMonth, relativeTime } from './format';
 
 const now = new Date('2026-11-18T12:00:00+09:00');
 const ago = (ms: number) => new Date(now.getTime() - ms);
@@ -61,5 +61,12 @@ describe('joinedMonth（#23）', () => {
     expect(joinedMonth(new Date('2025-04-01T00:00:00Z'))).toBe('2025年4月から利用しています');
     // 2025-03-31 16:00 UTC is already April in Tokyo.
     expect(joinedMonth(new Date('2025-03-31T16:00:00Z'))).toBe('2025年4月から利用しています');
+  });
+});
+
+describe('calendarDate（#29、アカウントの登録した日）', () => {
+  it('日本の時刻で「2026年11月19日」', () => {
+    expect(calendarDate(new Date('2026-11-18T15:30:00Z'))).toBe('2026年11月19日');
+    expect(calendarDate(new Date('2026-01-05T00:00:00+09:00'))).toBe('2026年1月5日');
   });
 });

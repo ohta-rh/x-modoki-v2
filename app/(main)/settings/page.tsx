@@ -1,5 +1,5 @@
-import { ComingSoonPage } from '@/_pages/coming-soon';
+import { SettingsHome } from '@/_pages/settings';
 
 export default function Page() {
-  return <ComingSoonPage title="設定" />;
+  return <SettingsHome />;
 }

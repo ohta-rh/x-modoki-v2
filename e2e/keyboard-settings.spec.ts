@@ -141,3 +141,36 @@ test('/settings/display でテーマと色を選ぶとすぐ変わり、次に�
   expect(seen.length).toBeGreaterThan(0);
   expect(seen.filter((theme) => theme !== 'dim')).toEqual([]);
 });
+
+test('/settings は 2 ペイン。/settings/account にユーザー名・メールアドレス・登録した日が出る', async ({
+  page,
+}) => {
+  const me = await signUp(page);
+  await page.goto('/settings');
+  const list = page.getByRole('navigation', { name: '設定' });
+  await expect(list.getByRole('link', { name: 'アカウント' })).toBeVisible();
+  await expect(list.getByRole('link', { name: '表示' })).toBeVisible();
+  await list.getByRole('link', { name: 'アカウント' }).click();
+  await expect(page).toHaveURL(/\/settings\/account$/);
+  // Both panes at 1280px.
+  await expect(list).toBeVisible();
+  const account = page.getByRole('region', { name: 'アカウントの情報' });
+  await expect(account).toContainText(`@${me.username}`);
+  await expect(account).toContainText(me.email);
+  await expect(account).toContainText(/\d{4}年\d{1,2}月\d{1,2}日/);
+});
+
+test.describe('640px 未満の設定', () => {
+  test.use({ viewport: { width: 375, height: 800 } });
+
+  test('一覧と中身は 1 ペインずつ', async ({ page }) => {
+    await signUp(page);
+    await page.goto('/settings');
+    const list = page.getByRole('navigation', { name: '設定' });
+    await expect(list).toBeVisible();
+    await list.getByRole('link', { name: '表示' }).click();
+    await expect(page).toHaveURL(/\/settings\/display$/);
+    await expect(page.getByRole('radio', { name: 'ダークブルー' })).toBeVisible();
+    await expect(list).toBeHidden();
+  });
+});

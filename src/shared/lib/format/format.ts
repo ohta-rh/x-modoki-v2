@@ -64,3 +64,8 @@ export function joinedMonth(date: Date): string {
   );
   return `${values.year}年${values.month}月から利用しています`;
 }
+
+/** A calendar date, 「2026年11月19日」, in Japan time (#29: when an account was made). */
+export function calendarDate(date: Date): string {
+  return absoluteTime(date).split(' · ')[1];
+}
