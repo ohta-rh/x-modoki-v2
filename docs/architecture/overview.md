@@ -143,6 +143,7 @@ x-modoki は、X（x.com）の Web 版の見た目と操作を可能な限り再
 | 非同期の Server Component はルートの `app/` の中だけに書き、判断を持たせない | [ADR-0021](../adr/0021-coverage-100-percent.md)、[ADR-0022](../adr/0022-feature-sliced-design.md) |
 | EPIC の子 issue は 1 件ずつ、確認と CI を通して閉じる | [ADR-0023](../adr/0023-delivery-loop-one-pbi-at-a-time.md) |
 | CI が通り、カバレッジが 100% でなければ完了としない | [ADR-0020](../adr/0020-ci-required-github-actions.md)、[ADR-0021](../adr/0021-coverage-100-percent.md) |
+| 全ての PBI を、本物のブラウザで操作して確かめ、記録を残してから閉じる | [ADR-0024](../adr/0024-definition-of-done-requires-browser-testing.md) |
 | 決めたら ADR を書く。文書は OKF の形で `docs/` に置く | [ADR-0001](../adr/0001-record-architecture-decisions.md)、[ADR-0002](../adr/0002-docs-as-okf-bundle.md) |
 
 ## 5. リスクと対策

@@ -51,6 +51,19 @@ Full rules: @.claude/rules/architecture-fsd.md
 
 Full rules: @.claude/rules/quality-gates.md
 
+## Definition of Done
+
+- **One definition, no exceptions:** acceptance criteria checked one by one, `pnpm verify`
+  green, Playwright covering every browser-observable criterion on Chromium / Firefox / WebKit,
+  CI green, ADRs and documents updated, evidence on the issue.
+- **Always test in a real browser.** For every PBI — including server-only and
+  documentation-only ones — open the production build in a browser, exercise the change and a
+  failure path at 1280 / 768 / 375px, confirm a clean console, and record what you saw in the
+  closing comment. An unrecorded check counts as not done.
+- Every PBI body carries the seven items as a 完了の定義 checklist.
+
+Full rules: @.claude/rules/definition-of-done.md
+
 ## Delivery loop
 
 - **One PBI at a time, in the EPIC's order, start to closed:** read the issue and its ADRs,

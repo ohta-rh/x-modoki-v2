@@ -18,17 +18,23 @@ its last without a human in between.
    (`.claude/rules/architecture-fsd.md`). Tests land in the same commit as the code.
 6. **Verify.** `pnpm verify` exits 0 — all seven gates, coverage 100%. Then check every
    acceptance criterion in the issue by the method the issue states, one by one.
+   **Then test in a real browser** against `pnpm build && pnpm start`: the change itself, a
+   failure path, three widths, the themes it touches, a clean console
+   (`.claude/rules/definition-of-done.md`). Fix what it finds before going on.
 7. **Record decisions.** Any architecture / technology / cross-cutting decision made on the
    way gets an ADR in the same commit (`.claude/rules/documentation.md`).
 8. **Commit and push to `main`.** Stage by explicit path; `git diff --check`; message
    references the issue (`Refs #N`); push.
 9. **Watch CI to the end.** Green → continue. Red → fix forward now; do not start the next PBI.
-10. **Close with evidence.** Comment on the issue: commit SHA, CI run URL, and each acceptance
-    criterion with how it was verified. Then close it and tick it in the EPIC's list.
+10. **Close with evidence — only when the Definition of Done holds.** Tick every item in the
+    issue's 完了の定義 section. Comment: commit SHA, CI run URL, each acceptance criterion with
+    how it was verified, and the `### ブラウザでの確認` record. Then close it and tick it in the
+    EPIC's list.
 
 ## 2. What the loop never does
 
-- Close an issue with an unmet acceptance criterion, a skipped gate, or red CI.
+- Close an issue with an unmet acceptance criterion, a skipped gate, red CI, or no recorded
+  hands-on browser test. The Definition of Done has no exceptions.
 - Weaken a gate, exclude a file from coverage, or disable a lint rule to finish.
 - Fold work outside the issue's scope into the commit. Found something adjacent → file a new
   PBI under the right EPIC (root cause stated, `.claude/rules/issue-authoring.md`) and move on.

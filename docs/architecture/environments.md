@@ -93,11 +93,12 @@ GitHub Actions が、`main` への push と全ての PR で動かす（[ADR-0020
 | 4 | 整形 | `pnpm format:check` | 整形されていないファイル |
 | 5 | テストとカバレッジ | `pnpm test --coverage` | テストの失敗、または行・分岐・関数・文のどれかが 100% 未満（[ADR-0021](../adr/0021-coverage-100-percent.md)） |
 | 6 | ビルド | `pnpm build` | ビルドのエラー（`<Suspense>` の包み忘れを含む） |
-| 7 | 画面を通したテスト | `pnpm test:e2e` | テストの失敗。最初の失敗で止める |
+| 7 | 画面を通したテスト | `pnpm test:e2e` | Chromium・Firefox・WebKit のどれかでのテストの失敗。最初の失敗で止める。失敗のときは、画面の写真と操作の記録を成果物に残す |
 
 - PostgreSQL と S3 互換のストレージは、CI のサービスのコンテナで動かす
 - Node.js と pnpm の版は、`.nvmrc` と `package.json` の `packageManager` から読む
 - 手元では `pnpm verify` が同じ 7 つを動かす。通してから push し、push のあと CI の結果を最後まで見る
+- CI が緑でも、完了ではない。`pnpm build && pnpm start` のアプリを本物のブラウザで操作して確かめ、記録を issue に残すまでが完了（[ADR-0024](../adr/0024-definition-of-done-requires-browser-testing.md)）
 
 ## 7. 本番への配備（マイルストーン 2 で作る）
 

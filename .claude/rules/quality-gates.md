@@ -1,5 +1,8 @@
 # Quality gates — CI, coverage, runtime constraints, milestones
 
+These gates are part of the Definition of Done (`.claude/rules/definition-of-done.md`), which
+also requires a hands-on test in a real browser for every PBI. Green gates alone are not done.
+
 Applies to every change that touches code, tests, configuration, or CI.
 Decided in ADR-0017, ADR-0019, ADR-0020, ADR-0021; this file is the operating rule.
 
@@ -38,6 +41,8 @@ Decided in ADR-0017, ADR-0019, ADR-0020, ADR-0021; this file is the operating ru
 - **Async Server Components exist only in root `app/`.** Every component under `src/` is
   synchronous and unit-tested.
 - **Every page route has at least one Playwright test** — that is what covers the excluded files.
+- `pnpm test:e2e` runs on Chromium, Firefox, and WebKit in CI, and keeps the screenshot and
+  trace of a failure as an artifact (ADR-0024).
 - No coverage-ignore comments (`/* v8 ignore */`, `/* istanbul ignore */`, `/* c8 ignore */`).
   A branch that cannot be reached by a test is deleted, not ignored.
 - Write the test with the code, in the same commit. Data access layer, Server Actions, and

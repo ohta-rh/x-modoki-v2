@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **Creation**: [ADR-0024](adr/0024-definition-of-done-requires-browser-testing.md)（完了の定義に、本物のブラウザでのテストを必ず含め、全ての PBI の本文に書く）を記録した。
 * **Update**: コードの分け方を Feature-Sliced Design に変えた。[ADR-0022](adr/0022-feature-sliced-design.md) が [ADR-0010](adr/0010-dal-server-actions-route-handlers.md) の置き場所と [ADR-0021](adr/0021-coverage-100-percent.md) の外すパスを置き換えた。[アプリケーションの構造](architecture/application-structure.md) を書き直した。
 * **Creation**: [ADR-0023](adr/0023-delivery-loop-one-pbi-at-a-time.md)（EPIC の子 issue を 1 件ずつ終わらせるループ）を記録した。
 * **Update**: 本番を Cloudflare Workers に変えた。[ADR-0017](adr/0017-cloudflare-workers-opennext.md) が [ADR-0012](adr/0012-single-container-docker-compose.md) を置き換え、[ADR-0018](adr/0018-resize-images-in-browser.md) が画像の変換をブラウザに移した。根拠は [Cloudflare Workers で動かす方法の調査](research/cloudflare.md)。
