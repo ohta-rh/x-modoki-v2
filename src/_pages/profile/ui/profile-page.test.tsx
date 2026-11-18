@@ -96,6 +96,14 @@ describe('ProfilePage（#23）', () => {
     expect(screen.queryByRole('menuitem', { name: 'プロフィールに固定する' })).toBeNull();
   });
 
+  it('本人でも、ポストのタブ以外では固定の項目を出さない（固定の印はポストのタブだけにある）', async () => {
+    const { default: userEvent } = await import('@testing-library/user-event');
+    page({ tab: 'with_replies' });
+    await userEvent.click(screen.getByRole('button', { name: 'もっと見る' }));
+    expect(await screen.findByRole('menuitem', { name: '削除' })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: 'プロフィールに固定する' })).toBeNull();
+  });
+
   it('無いアカウントの画面', () => {
     render(<ProfileNotFound />);
     expect(

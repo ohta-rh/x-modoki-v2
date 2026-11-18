@@ -50,7 +50,8 @@ export function ProfilePage({ profile, tab, firstPage, now, signedIn }: Props) {
               bookmarkAction: setBookmarkAction,
               repostAction: setRepostAction,
               quoteAction: createQuoteAction,
-              pinAction: profile.isSelf ? setPinAction : undefined,
+              // Only the ポスト tab marks the pinned post, so only there can the menu unpin it.
+              pinAction: profile.isSelf && tab === 'posts' ? setPinAction : undefined,
             }
           : {})}
       />
