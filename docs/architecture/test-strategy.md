@@ -46,15 +46,16 @@ status: stable
 - Vitest の全体の準備（`test/global-setup.ts`）が、`xmodoki_test` を作り直し、マイグレーションを流す
 - 各ワーカーは、`xmodoki_test` をひな形にして `xmodoki_test_<VITEST_POOL_ID>` を作る
 - 各テストの前に、`test/db.ts` の `resetDb()` が全ての表を `TRUNCATE … RESTART IDENTITY CASCADE` で空にする
-- データアクセス層が呼ぶ `getDb()` は、`vi.mock('@/shared/db', …)` で、そのワーカーのデータベースを返すものに替える
+- データアクセス層が呼ぶ `getDb()` は、全てのテストの準備（`test/setup.ts`）の `vi.mock('@/shared/db/client', …)` で、そのワーカーのデータベースを返すものに替える。`vi.mock` は補助の関数の中では効かないので、準備のファイルに置く。本物の `getDb()` は `src/shared/db/client.test.ts` が `vi.importActual` で確かめる
+- 補助の名前は `setupTestDb()`。`use` で始めると、ESLint が React のフックとして扱う
 - データは `test/factories.ts` の関数で作る。シードには頼らない
 
 ```ts
 // 形の例（実装は #16）
 import { makePost, makeUser } from '@test/factories';
-import { resetDb, useTestDb } from '@test/db';
+import { resetDb, setupTestDb } from '@test/db';
 
-useTestDb(); // vi.mock と beforeEach(resetDb) をまとめたもの
+setupTestDb(); // beforeEach(resetDb) と、ファイルの終わりで接続を閉じる afterAll
 
 it('FR-REACT-03: 同じ人が 2 回いいねしても、数は 1 しか増えない', async () => {
   const author = await makeUser();

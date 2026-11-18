@@ -45,3 +45,4 @@ status: stable
 | [0031](0031-database-tests-per-worker-database-and-truncate.md) | データベースのテストは、ワーカーごとのデータベースを使い、テストごとに表を空にし、補助はリポジトリのルートの `test/` に置く | 採用 | エージェント |
 | [0032](0032-pin-dependencies-published-at-least-seven-days-ago.md) | 依存は、公開から 7 日以上たった版に固定し、pnpm の新しい版の除外を使わない | 採用 | エージェント |
 | [0033](0033-ci-services-via-docker-compose.md) | CI の PostgreSQL と Garage は、GitHub Actions の services: ではなく、手元と同じ Docker Compose で動かす | 採用 | エージェント |
+| [0034](0034-foreign-keys-cascade-from-users-and-detach-thread-links.md) | 外部キーは、人を消すとその人のものを一緒に消し、投稿の間のつながりは外すだけにする | 採用 | エージェント |

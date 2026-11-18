@@ -8,7 +8,7 @@ status: stable
 
 # データモデル
 
-- 決定: [ADR-0006](../adr/0006-postgresql-drizzle.md)、[ADR-0015](../adr/0015-timeline-fan-out-on-read.md)、[ADR-0016](../adr/0016-time-ordered-64bit-post-ids.md)、[ADR-0007](../adr/0007-better-auth-db-sessions.md)
+- 決定: [ADR-0006](../adr/0006-postgresql-drizzle.md)、[ADR-0015](../adr/0015-timeline-fan-out-on-read.md)、[ADR-0016](../adr/0016-time-ordered-64bit-post-ids.md)、[ADR-0007](../adr/0007-better-auth-db-sessions.md)、[ADR-0034](../adr/0034-foreign-keys-cascade-from-users-and-detach-thread-links.md)
 - 正本は `src/shared/db/schema/` の TypeScript。この文書は表の関係と意図を示す
 
 ## 1. 表の関係
@@ -131,7 +131,18 @@ verifications（Better Auth）     rate_limits
 
 `(key, window_start)` が主キー。`INSERT … ON CONFLICT DO UPDATE SET count = count + 1` で数える。
 
+### 外部キーと、消したときの振る舞い（ADR-0034）
+
+- 人を参照する全ての列は、人を消すと一緒に消える（`ON DELETE CASCADE`）
+- 投稿を参照する列のうち、いいね・ブックマーク・画像とハッシュタグの結びつき・メンション・通知・リポストの元（`repost_of_id`）は一緒に消える
+- 返信の相手・スレッドの最初・引用の元（`reply_to_id`・`root_id`・`quote_of_id`）は null になる
+- `users.pinned_post_id` には外部キーが無い。固定した投稿を消すときは、アプリが null にする
+- Better Auth の表の名前は `users`・`sessions`・`accounts`・`verifications`。Drizzle では `user`・`session`・`account`・`verification` という名前で出す（Better Auth がその名前で探す）
+
 ## 3. 索引
+
+- 新しい順（`DESC`）の索引は、全て `DESC NULLS FIRST`。`ORDER BY … DESC` の既定と同じにして、並べ替えに使われるようにする（ADR-0034）
+- 文書の 3 節の全ての索引の形は、`src/shared/db/schema.test.ts` が `pg_indexes` で確かめる
 
 | 索引 | 使う場面 |
 |---|---|

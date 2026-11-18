@@ -59,7 +59,7 @@ status: stable
 | `pnpm install` | 依存を入れる |
 | `pnpm db:generate` | スキーマの差分からマイグレーションの SQL を作る |
 | `pnpm db:migrate` | マイグレーションを流す |
-| `pnpm db:seed` | 架空のユーザーと投稿を入れる |
+| `pnpm db:seed` | 架空の 20 人・投稿 300 件・フォロー・いいねを入れる。もう人がいれば何もしない（手で作ったデータを消さない） |
 | `pnpm dev` | 開発のサーバー |
 | `pnpm docs:check` | `node scripts/check-docs.mjs`。`docs/` の OKF の形・リンク・ADR のステータスを確かめる |
 | `pnpm typecheck` | `next typegen && tsc --noEmit`（ルートの型を作ってから確かめる） |
