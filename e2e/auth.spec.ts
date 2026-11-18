@@ -13,6 +13,7 @@ test('ログアウトすると / へ戻り、ユーザー名でもメールア�
   await expect(page).toHaveURL(/\/$/);
   // Let the landing page finish rendering before navigating again (Firefox aborts otherwise).
   await expect(page.getByRole('link', { name: 'アカウントを作成' })).toBeVisible();
+  await page.waitForLoadState('networkidle');
   await page.goto('/home');
   await expect(page).toHaveURL(/\/i\/flow\/login\?next=%2Fhome$/);
 
@@ -21,8 +22,10 @@ test('ログアウトすると / へ戻り、ユーザー名でもメールア�
 
   await page.getByRole('button', { name: 'アカウントのメニュー' }).click();
   await page.getByRole('menuitem', { name: `@${account.username}からログアウト` }).click();
-  await expect(page.getByRole('link', { name: 'アカウントを作成' })).toBeVisible();
-  await page.goto('/i/flow/login');
+  // Move on by a click, as a person would: a goto here can abort the router's own navigation
+  // that is still settling after the sign-out redirect (Firefox: NS_BINDING_ABORTED).
+  await page.getByRole('link', { name: 'ログイン' }).click();
+  await expect(page).toHaveURL(/\/i\/flow\/login$/);
   await signIn(page, account.email, account.password);
   await expect(page).toHaveURL(/\/home$/);
 });

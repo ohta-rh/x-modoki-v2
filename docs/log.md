@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **New**: [ADR-0038](adr/0038-e2e-sign-up-per-test-and-direct-bulk-fixtures.md)（画面のテストの登録と前提のデータ）を記録し、[テストの設計](architecture/test-strategy.md)の 5 節を直した（#19）。
 * **New**: [#18 の試験レポート](test-reports/issue-0018-auth.md)（登録・ログイン・ログアウト）と [#44 の試験レポート](test-reports/issue-0044-ci-root-timeout.md)（CI の apt の上限）を足した。
 * **New**: [ADR-0036](adr/0036-auth-rate-limit-configurable-for-e2e.md)（登録とログインの回数の制限）と [ADR-0037](adr/0037-pool-closes-when-idle-not-after-response.md)（接続の pool の閉じ方）を記録し、[環境と配備](architecture/environments.md)と[アプリケーションの構造](architecture/application-structure.md)を直した（#18）。
 * **New**: [#43 の試験レポート](test-reports/issue-0043-ci-browser-setup.md)（CI のブラウザの準備）を足した。

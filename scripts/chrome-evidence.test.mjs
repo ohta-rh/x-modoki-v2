@@ -1,4 +1,5 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -49,6 +50,13 @@ describe('parseArgs', () => {
     });
   });
 
+  it('--storage-state でログインした状態のファイルを受け取る', () => {
+    expect(parseArgs(['--storage-state', 's.json', '--out', 'o', 'a=http://x']).storageState).toBe(
+      's.json',
+    );
+    expect(parseArgs(['--out', 'o', 'a=http://x']).storageState).toBeUndefined();
+  });
+
   it('知らない引数を拒む', () => {
     expect(() => parseArgs(['--nope'])).toThrow('unknown argument: --nope');
   });
@@ -88,6 +96,51 @@ describe('capture（本物の Chromium）', () => {
   }, 60_000);
   afterAll(async () => {
     await browser?.close();
+  });
+
+  it('storageState を渡すと、その cookie を付けて開く（ログインが要る画面のため）', async () => {
+    const seen = [];
+    const server = createServer((request, response) => {
+      seen.push(request.headers.cookie ?? '');
+      response.setHeader('content-type', 'text/html');
+      response.end('<h1>ok</h1>');
+    });
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const { port } = server.address();
+    const state = join(dir, 'state.json');
+    writeFileSync(
+      state,
+      JSON.stringify({
+        cookies: [
+          {
+            name: 'session',
+            value: 'abc',
+            domain: '127.0.0.1',
+            path: '/',
+            expires: -1,
+            httpOnly: true,
+            secure: false,
+            sameSite: 'Lax',
+          },
+        ],
+        origins: [],
+      }),
+    );
+    try {
+      const out = mkdtempSync(join(dir, 'out-'));
+      const record = await capture(
+        browser,
+        { name: 'auth', url: `http://127.0.0.1:${port}/` },
+        375,
+        600,
+        out,
+        state,
+      );
+      expect(record.loaded).toBe(true);
+      expect(seen[0]).toBe('session=abc');
+    } finally {
+      server.close();
+    }
   });
 
   it('指定の幅で撮り、幅・横のスクロール・コンソール・通信を記録する', async () => {

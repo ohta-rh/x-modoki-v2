@@ -93,8 +93,9 @@ it('FR-REACT-03: 同じ人が 2 回いいねしても、数は 1 しか増えな
 - 相手は本番のビルド（`pnpm build && pnpm start`）。Docker Compose の PostgreSQL と Garage を使う
 - Chromium・Firefox・WebKit の 3 つで動かす。最初の失敗で止める（`--max-failures=1`）
 - 失敗したら、画面の写真と操作の記録（trace）を残す。CI は成果物として上げる
-- ログインは、テストの前に 1 回だけ API で登録・ログインし、`storageState` を保存して使う（`e2e/support/auth.ts`）。画面の登録の流れは、登録のテスト（#18）でだけ通す
-- データは、テストごとに API（Better Auth の登録と、Server Action を通る画面の操作）で作る。シードに頼らない
+- ログインした状態は、テストごとに画面の登録のフォームで作る（`e2e/support/auth.ts` の `signUp`。[ADR-0038](../adr/0038-e2e-sign-up-per-test-and-direct-bulk-fixtures.md)）。Better Auth の登録の HTTP の入口は閉じてある（#18）
+- 操作は画面から行う。画面では作れない量の前提のデータ（60 件の投稿など）だけを、`e2e/support/db.ts` からアプリのデータベースへ直接入れる。シードに頼らない
+- 全員の投稿が混ざる画面（`おすすめ`）では、並列のテストの投稿が混ざるので、自分の投稿の位置を確かめない
 - 待つときは、決まった秒数ではなく、画面に出るものを待つ（`expect(locator).toBeVisible()`）
 - 受け入れ条件のうち、画面で観測できるものは全部、Playwright のテストにする（完了の定義の 4）
 - 全てのページのルートに、Playwright のテストが 1 本以上ある（NFR-MAINT-04）

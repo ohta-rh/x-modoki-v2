@@ -1,7 +1,10 @@
 // Captures test-report evidence at exact viewport widths (ADR-0024, ADR-0025).
 //
 //   node scripts/chrome-evidence.mjs --out <dir> [--widths 1280,768,375] [--height 900] \
-//        <name>=<url> [<name>=<url> ...]
+//        [--storage-state <file>] <name>=<url> [<name>=<url> ...]
+//
+// --storage-state takes a Playwright storage state (cookies) so pages that need a signed-in user
+// can be captured.
 //
 // For every URL and width it opens a fresh page with that viewport, saves
 // <out>/<name>-<width>.jpg, and prints one JSON line with what the browser reported: the real
@@ -16,7 +19,7 @@ import { join } from 'node:path';
 import { chromium } from 'playwright';
 
 const USAGE =
-  'usage: chrome-evidence.mjs --out <dir> [--widths a,b,c] [--height h] <name>=<url> ...';
+  'usage: chrome-evidence.mjs --out <dir> [--widths a,b,c] [--height h] [--storage-state f] <name>=<url> ...';
 
 export function parseArgs(argv) {
   const options = { widths: [1280, 768, 375], height: 900, out: null, targets: [] };
@@ -25,6 +28,7 @@ export function parseArgs(argv) {
     if (arg === '--out') options.out = argv[(i += 1)];
     else if (arg === '--widths') options.widths = argv[(i += 1)].split(',').map(Number);
     else if (arg === '--height') options.height = Number(argv[(i += 1)]);
+    else if (arg === '--storage-state') options.storageState = argv[(i += 1)];
     else if (arg.includes('=')) {
       const at = arg.indexOf('=');
       options.targets.push({ name: arg.slice(0, at), url: arg.slice(at + 1) });
@@ -45,8 +49,12 @@ export function judge(record, width) {
   );
 }
 
-export async function capture(browser, target, width, height, outDir) {
-  const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1 });
+export async function capture(browser, target, width, height, outDir, storageState) {
+  const context = await browser.newContext({
+    viewport: { width, height },
+    deviceScaleFactor: 1,
+    storageState,
+  });
   const page = await context.newPage();
   const consoleErrors = [];
   const consoleWarnings = [];
@@ -111,7 +119,14 @@ export async function run(argv, { log = console, launch = defaultLaunch } = {}) 
   try {
     for (const target of options.targets) {
       for (const width of options.widths) {
-        const record = await capture(browser, target, width, options.height, options.out);
+        const record = await capture(
+          browser,
+          target,
+          width,
+          options.height,
+          options.out,
+          options.storageState,
+        );
         log.log(JSON.stringify(record));
         if (judge(record, width)) failed = true;
       }

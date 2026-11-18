@@ -62,6 +62,8 @@ with `--window-size=375,…` lays the page out at ~500px and crops it. So:
   Google Chrome; the bundled Chromium in CI), saves
   `<name>-<width>.jpg` for 1280 / 768 / 375, prints the real `innerWidth`, sideways scroll,
   console errors, and failed requests, and exits 1 if any of them is wrong.
+  For a page that needs a signed-in user, add `--storage-state <file>` (a Playwright storage state
+  saved after signing in to the local app with a test account).
 - **Then open the saved images and read them.** A screenshot nobody looked at is not evidence.
 - Save a screenshot the moment you find a problem, before fixing it — the "before" is evidence too.
 

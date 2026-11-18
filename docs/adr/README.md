@@ -49,3 +49,4 @@ status: stable
 | [0035](0035-vendor-shadcn-from-registry-and-base-ui-toast.md) | shadcn の部品は CLI を使わずレジストリの定義から取り込み、トーストは Base UI 版にする | 採用 | エージェント |
 | [0036](0036-auth-rate-limit-configurable-for-e2e.md) | 登録とログインの回数の制限は、IP ごとに 1 分 10 回を既定にし、画面のテストのサーバーだけ環境変数で上げる | 採用 | エージェント |
 | [0037](0037-pool-closes-when-idle-not-after-response.md) | リクエストごとの接続の pool は、after() で閉じず、使わなくなって 1 秒で接続を閉じる | 採用 | エージェント |
+| [0038](0038-e2e-sign-up-per-test-and-direct-bulk-fixtures.md) | 画面のテストは、テストごとに画面から登録し、画面では作れない量のデータだけをデータベースへ直接入れる | 採用 | エージェント |
