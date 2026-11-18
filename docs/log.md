@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-19
+* **New**: [ADR-0052](adr/0052-local-webkit-in-the-playwright-image.md)（macOS の手元では、画面のテストの WebKit を CI と同じ Playwright のイメージで動かす）（#61）。
 * **New**: [#29 の試験レポート](test-reports/issue-0029-keyboard-settings.md)（キーボード・表示の設定・設定の 2 ペイン）。
 * **New**: [#59 の試験レポート](test-reports/issue-0059-db-connections.md)（データベースの接続の上限）。
 * **New**: [ADR-0050](adr/0050-idle-connections-close-after-100ms.md)（使わなくなった接続は 100ms で閉じる）。ADR-0037 の 1 秒を置き換えた（#59）。

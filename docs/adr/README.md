@@ -63,3 +63,4 @@ status: stable
 | [0049](0049-e2e-scrolls-at-once-not-by-wheel.md) | 画面のテストは、ホイールではなく一度に動かしてスクロールする | 採用 | エージェント |
 | [0050](0050-idle-connections-close-after-100ms.md) | 使わなくなった接続は 100ms で閉じる | 採用 | エージェント |
 | [0051](0051-theme-from-a-head-script-not-the-root-layout.md) | テーマとアクセントの色は、ルートのレイアウトではなく head の小さなスクリプトで html に付ける | 採用 | エージェント |
+| [0052](0052-local-webkit-in-the-playwright-image.md) | macOS の手元では、画面のテストの WebKit を CI と同じ Playwright のイメージで動かす | 採用 | エージェント |

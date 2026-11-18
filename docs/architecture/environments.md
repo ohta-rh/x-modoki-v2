@@ -56,7 +56,7 @@ status: stable
 
 | コマンド | すること |
 |---|---|
-| `sh scripts/setup-local.sh` | 初めての準備と、毎回の立ち上げ。Garage の設定を作り、PostgreSQL と Garage を立ち上げ、バケットとキーを作り、`.env.local` の空の値を埋め、バケットの CORS で `http://localhost:3000` と `http://localhost:3300` からの PUT を許す（`scripts/storage-cors.mjs`。ブラウザが署名つき URL へ直接送るため、#25）。何度流してもよい（`docker compose up -d` だけでは、Garage の設定が無くて立ち上がらない） |
+| `sh scripts/setup-local.sh` | 初めての準備と、毎回の立ち上げ。Garage の設定を作り、PostgreSQL と Garage（macOS では画面のテストの WebKit も: [ADR-0052](../adr/0052-local-webkit-in-the-playwright-image.md)）を立ち上げ、バケットとキーを作り、`.env.local` の空の値を埋め、バケットの CORS で `http://localhost:3000` と `http://localhost:3300` からの PUT を許す（`scripts/storage-cors.mjs`。ブラウザが署名つき URL へ直接送るため、#25）。何度流してもよい（`docker compose up -d` だけでは、Garage の設定が無くて立ち上がらない） |
 | `pnpm install` | 依存を入れる |
 | `pnpm db:generate` | スキーマの差分からマイグレーションの SQL を作る |
 | `pnpm db:migrate` | マイグレーションを流す |
@@ -67,7 +67,7 @@ status: stable
 | `pnpm lint` | `eslint`・`steiger ./src`・`node scripts/check-src-layers.mjs`（FSD の層と公開 API と `src/` の直下。[ADR-0022](../adr/0022-feature-sliced-design.md)・[ADR-0030](../adr/0030-fsd-lint-exceptions-and-own-layer-check.md)） |
 | `pnpm format:check` | `prettier --check .` |
 | `pnpm test` | Vitest（単体とデータアクセス層）。`--coverage` でカバレッジ |
-| `pnpm test:e2e` | Playwright |
+| `pnpm test:e2e` | Playwright。macOS では WebKit だけ `docker compose` の `webkit`（CI と同じイメージ）につなぐ（[ADR-0052](../adr/0052-local-webkit-in-the-playwright-image.md)） |
 | `pnpm build` | `next build` |
 | `pnpm verify` | 上の 7 つの確認を、CI と同じ順で全部動かす |
 

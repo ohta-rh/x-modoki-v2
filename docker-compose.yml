@@ -24,6 +24,13 @@ services:
       - storage-meta:/var/lib/garage/meta
       - storage-data:/var/lib/garage/data
     ports: ['127.0.0.1:3900:3900', '127.0.0.1:3902:3902']
+  # WebKit for `pnpm test:e2e` on macOS, where concurrent headless WebKit stops getting
+  # requestAnimationFrame (#61, ADR-0052). The same image CI runs in; the version follows
+  # @playwright/test.
+  webkit:
+    image: mcr.microsoft.com/playwright:v1.65.0-noble
+    command: npx -y playwright@1.65.0 run-server --port 3333 --host 0.0.0.0
+    ports: ['127.0.0.1:3333:3333']
 volumes:
   db-data:
   storage-meta:

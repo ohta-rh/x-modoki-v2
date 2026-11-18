@@ -16,7 +16,19 @@ export default defineConfig({
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
     { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+    {
+      name: 'webkit',
+      use: {
+        ...devices['Desktop Safari'],
+        // On macOS, concurrent headless WebKit stops getting requestAnimationFrame (#61): run it
+        // in the same Linux image as CI (`docker compose up -d webkit`), reaching the app through
+        // the test runner's loopback (ADR-0052).
+        connectOptions:
+          process.platform === 'darwin'
+            ? { wsEndpoint: 'ws://127.0.0.1:3333/', exposeNetwork: '<loopback>' }
+            : undefined,
+      },
+    },
   ],
   webServer: {
     command: `pnpm start -p ${port}`,

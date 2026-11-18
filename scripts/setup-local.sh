@@ -14,6 +14,8 @@ fi
 
 docker compose up -d --wait db
 docker compose up -d storage
+# macOS runs the e2e WebKit in the same Linux image as CI (#61, ADR-0052).
+if [ "$(uname)" = Darwin ]; then docker compose up -d webkit; fi
 
 g() { docker compose exec -T storage /garage "$@"; }
 i=0
