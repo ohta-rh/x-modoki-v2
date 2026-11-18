@@ -1,6 +1,9 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **New**: [#50 の試験レポート](test-reports/issue-0050-follow-test-wait.md)（フォローの画面のテストの待ち方）を足した。
+* **New**: [#49 の試験レポート](test-reports/issue-0049-postgres-connections.md)（PostgreSQL の接続の数の上限）を足した。
+* **New**: [#48 の試験レポート](test-reports/issue-0048-feed-row-heights.md)（タイムラインのカードの重なり）を足した。
 * **Update**: [環境と配備](architecture/environments.md)に、ローカルと CI の PostgreSQL の `max_connections` を書いた（#49）。
 * **New**: [#24 の試験レポート](test-reports/issue-0024-follow.md)（フォロー）を足した。
 * **Update**: [ルーティング](architecture/routing.md)の 2 節と[アプリケーションの構造](architecture/application-structure.md)の 5 節に、フォローの一覧を書いた（#24）。
