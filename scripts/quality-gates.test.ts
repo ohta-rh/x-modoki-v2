@@ -1,11 +1,87 @@
-// The quality gates themselves: the rules kept by configuration, checked against that
-// configuration, so weakening one turns this red.
+// The quality gates themselves (#30): the requirements that are kept by configuration — coverage,
+// CI, lint, the browsers — checked against that configuration, so weakening one turns this red.
 
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import playwright from '../playwright.config';
+import vitestConfig from '../vitest.config';
 
-describe('品質の確認の設定', () => {
+/**
+ * The rule ids ESLint reports for `code` at `filePath`, with the project's own config. In a child
+ * process: loaded here, the config and its local rules would be counted twice by coverage.
+ */
+const lintAs = async (filePath: string, code: string) => {
+  const run = spawnSync(
+    'node_modules/.bin/eslint',
+    ['--stdin', '--stdin-filename', filePath, '--format', 'json'],
+    { input: code, encoding: 'utf8' },
+  );
+  const [result] = JSON.parse(run.stdout) as { messages: { ruleId: string }[] }[];
+  return result.messages.map((message) => message.ruleId);
+};
+
+describe('品質の確認の設定（#30）', () => {
+  // NFR-MAINT-01: カバレッジ 100%
+  it('カバレッジの閾値は、行・分岐・関数・文の全部で 100%。外せるのは ADR-0021・ADR-0022 の種類だけ', () => {
+    const coverage = vitestConfig.test!.coverage as {
+      thresholds: Record<string, number>;
+      exclude: string[];
+    };
+    expect(coverage.thresholds).toEqual({
+      lines: 100,
+      branches: 100,
+      functions: 100,
+      statements: 100,
+    });
+    expect(coverage.exclude).toEqual([
+      '**/*.test.*',
+      'src/shared/ui/kit/**',
+      'src/shared/db/schema/**',
+    ]);
+  });
+
+  // NFR-MAINT-02: CI の 7 つの確認
+  it('CI は push と PR のたびに、7 つの確認を順に流す', () => {
+    const ci = readFileSync('.github/workflows/ci.yml', 'utf8');
+    expect(ci).toMatch(/on:\n\s+push:[\s\S]*pull_request:/);
+    const order = [
+      'pnpm docs:check',
+      'pnpm typecheck',
+      'pnpm lint',
+      'pnpm format:check',
+      'pnpm test --coverage',
+      'pnpm build',
+      'pnpm test:e2e',
+    ].map((step) => ci.indexOf(step));
+    expect(order.every((at) => at >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+    expect(ci).not.toMatch(/^\s*continue-on-error:/m);
+  });
+
+  // NFR-MAINT-03: Steiger と ESLint の違反 0
+  it('lint は ESLint（警告も 0）と Steiger と src の層の確かめで、ルートから DB を読むと止まる', async () => {
+    const pkg = JSON.parse(readFileSync('package.json', 'utf8')) as {
+      scripts: Record<string, string>;
+    };
+    expect(pkg.scripts.lint).toBe(
+      'eslint --max-warnings 0 . && steiger ./src && node scripts/check-src-layers.mjs',
+    );
+    expect(
+      await lintAs('app/x/page.tsx', "import { getDb } from '@/shared/db';\nvoid getDb;\n"),
+    ).toContain('no-restricted-imports');
+  });
+
+  // NFR-MAINT-06: Workers で動かないもの
+  it('サーバーのコードで、ネイティブのモジュール（sharp）とファイルシステムを読むと止まる', async () => {
+    for (const code of [
+      "import sharp from 'sharp';\nvoid sharp;\n",
+      "import { writeFileSync } from 'node:fs';\nvoid writeFileSync;\n",
+    ]) {
+      expect(await lintAs('src/features/x/api/x.ts', code)).toContain('no-restricted-imports');
+    }
+  });
+
   it('macOS では、WebKit を CI と同じ Playwright のイメージで動かす（#61）', () => {
     const { devDependencies } = JSON.parse(readFileSync('package.json', 'utf8')) as {
       devDependencies: Record<string, string>;
@@ -23,5 +99,23 @@ describe('品質の確認の設定', () => {
         ? { wsEndpoint: 'ws://127.0.0.1:3333/', exposeNetwork: '<loopback>' }
         : undefined,
     );
+  });
+
+  it('ドキュメントの確認は、要件とテストの結びつきも確かめる（#30、ADR-0053）', () => {
+    const pkg = JSON.parse(readFileSync('package.json', 'utf8')) as {
+      scripts: Record<string, string>;
+    };
+    expect(pkg.scripts['docs:check']).toBe(
+      'node scripts/check-docs.mjs && node scripts/check-traceability.mjs',
+    );
+  });
+
+  // NFR-COMPAT-01: 3 つのブラウザ
+  it('画面のテストは Chromium・Firefox・WebKit の 3 つで流す', () => {
+    expect(playwright.projects!.map((project) => project.name)).toEqual([
+      'chromium',
+      'firefox',
+      'webkit',
+    ]);
   });
 });

@@ -1,5 +1,5 @@
 import { makePost, makeUser } from '@test/factories';
-import { setupTestDb, testDb } from '@test/db';
+import { failingAtCommit, setupTestDb, testDb } from '@test/db';
 import { currentSession, signInAs, signOut } from '@test/session';
 import { and, eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -33,6 +33,7 @@ describe('setLike（data-model.md の 4 節、#21）', () => {
     expect(await testDb().select().from(likes)).toHaveLength(0);
   });
 
+  // FR-REACT-03: いいねの重複
   it('同時に 2 回いいねしても、数は 1 しか増えない', async () => {
     const me = await makeUser();
     const post = await makePost({ authorId: me.id });
@@ -90,6 +91,16 @@ describe('setLike の通知（#26）', () => {
         postId: notifications.postId,
       })
       .from(notifications);
+
+  // FR-NOTIF-01: 元の操作と同じトランザクション
+  it('いいねがコミットで失敗すると、通知も残らない（同じトランザクション、#30）', async () => {
+    const author = await makeUser();
+    const post = await makePost({ authorId: author.id });
+    signInAs(await makeUser());
+    await failingAtCommit('likes', () => expect(setLike(post.id, true)).rejects.toThrow());
+    expect(await testDb().select().from(likes)).toEqual([]);
+    expect(await notes()).toEqual([]);
+  });
 
   it('いいねで作者へ通知を作り、外すと消す。繰り返しても 1 行。自分の投稿には作らない', async () => {
     const [me, them] = [await makeUser(), await makeUser()];

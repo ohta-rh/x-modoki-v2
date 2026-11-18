@@ -36,6 +36,7 @@ describe('PostText（NFR-SEC-06）', () => {
     for (const link of screen.getAllByRole('link')) expect(link).toHaveClass('text-brand');
   });
 
+  // FR-VIEW-06: 自動のリンク
   it('T-05・T-06: <script> は文字のまま出し、javascript: はリンクにしない', () => {
     const { container } = render(
       <PostText text={'<script>alert(1)</script> javascript:alert(1)'} />,
@@ -47,6 +48,7 @@ describe('PostText（NFR-SEC-06）', () => {
 });
 
 describe('PostCard（ui-ux.md の 5 節）', () => {
+  // FR-VIEW-09: 投稿カードの並び
   it('アバター・名前・@ユーザー名・時刻・本文・操作の列の順で出す', () => {
     render(<PostCard post={post} now={now} />);
     const card = screen.getByRole('article');
@@ -83,6 +85,7 @@ describe('PostCard（ui-ux.md の 5 節）', () => {
 });
 
 describe('PostCard の長い本文（#28、ui-ux.md の 5 節）', () => {
+  // FR-TL-09: 長い本文
   it('9 行以上は最初の 8 行だけを出し、詳細への「さらに表示」を出す。8 行までは出さない', () => {
     const long = Array.from({ length: 12 }, (_, i) => `行 ${i + 1}`).join('\n');
     const { unmount } = render(<PostCard post={{ ...post, text: long }} now={now} />);

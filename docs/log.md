@@ -4,6 +4,8 @@
 * **New**: [#60 の試験レポート](test-reports/issue-0060-server-rendered-feed.md)（投稿の一覧をサーバーの HTML に入れる）。
 * **New**: [#61 の試験レポート](test-reports/issue-0061-local-webkit-in-image.md)（macOS の手元の WebKit を CI と同じイメージで）。
 * **New**: [ADR-0052](adr/0052-local-webkit-in-the-playwright-image.md)（macOS の手元では、画面のテストの WebKit を CI と同じ Playwright のイメージで動かす）（#61）。
+* **New**: [要件とテストの対応](requirements/traceability.md)（#30）。
+* **New**: [ADR-0053](adr/0053-requirements-trace-to-tests.md)（全部の要件を、通っているテストに結びつける）（#30）。
 * **New**: [#29 の試験レポート](test-reports/issue-0029-keyboard-settings.md)（キーボード・表示の設定・設定の 2 ペイン）。
 * **New**: [#59 の試験レポート](test-reports/issue-0059-db-connections.md)（データベースの接続の上限）。
 * **New**: [ADR-0050](adr/0050-idle-connections-close-after-100ms.md)（使わなくなった接続は 100ms で閉じる）。ADR-0037 の 1 秒を置き換えた（#59）。

@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { signUp } from './support/auth';
 import { pngFile } from './support/images';
 
+// FR-POST-05: 画像つきの投稿
 test('画像を付けて投稿すると、カードに画像が出る', async ({ page }) => {
   await signUp(page);
   await page.goto('/home?tab=following');
@@ -33,4 +34,28 @@ test('5 枚目は選べない', async ({ page }) => {
   await expect(page.getByRole('group', { name: '添付した画像' }).getByRole('img')).toHaveCount(4);
   await expect(page.getByText('画像は 4 枚までです')).toBeVisible();
   await expect(page.getByLabel('画像を追加')).toBeDisabled();
+});
+
+// FR-POST-06: 画像でないもの・5MB を超えるものは拒まれる
+test('画像を選ぶ欄は 4 つの形式だけを受け付け、画像でないファイルと 5MB を超える GIF は送れない（#30）', async ({
+  page,
+}) => {
+  await signUp(page);
+  await page.goto('/home?tab=following');
+  const input = page.getByLabel('画像を追加');
+  await expect(input).toHaveAttribute('accept', 'image/jpeg,image/png,image/webp,image/gif');
+  // A 1×1 GIF padded past 5MB: GIFs are sent as they are, so its size is what is checked.
+  const gif = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
+  const big = Buffer.concat([gif, Buffer.alloc(5 * 1024 * 1024)]);
+  for (const file of [
+    { name: 'note.txt', mimeType: 'text/plain', buffer: Buffer.from('画像ではない') },
+    { name: 'big.gif', mimeType: 'image/gif', buffer: big },
+  ]) {
+    // A fresh screen for each file, so one refusal is not read as the other's.
+    await page.goto('/home?tab=following');
+    await input.setInputFiles(file);
+    await expect(
+      page.getByRole('alert').filter({ hasText: '画像を送れませんでした' }),
+    ).toBeVisible();
+  }
 });

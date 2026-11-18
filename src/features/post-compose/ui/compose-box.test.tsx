@@ -17,6 +17,7 @@ describe('ComposeBox（ui-ux.md の 7 節）', () => {
     expect(button()).toBeEnabled();
   });
 
+  // FR-POST-04: 文字数の輪
   it('残り 20 で輪が黄色になって数字が出て、0 未満で赤と負の数になり、押せない', () => {
     render(<ComposeBox action={ok()} />);
     fireEvent.change(box(), { target: { value: 'a'.repeat(259) } });

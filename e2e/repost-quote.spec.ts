@@ -12,6 +12,7 @@ const card = (page: Page, text: string) => page.getByRole('article').filter({ ha
 const actionDone = (page: Page) =>
   page.waitForResponse((response) => response.request().headers()['next-action'] !== undefined);
 
+// FR-CONV-06: リポストの表示
 test('リポストすると、タイムラインに「〜さんがリポスト」と出る', async ({ page }) => {
   const me = await signUp(page);
   await postFromHome(page, 'リポストされる投稿');
@@ -34,6 +35,7 @@ test('リポストすると、タイムラインに「〜さんがリポスト�
   await expect(page.getByText(`${me.name}さんがリポスト`)).toHaveCount(0);
 });
 
+// FR-CONV-08: 引用
 test('引用すると、入れ子のカードの付いた入力欄が開き、投稿すると引用が出る', async ({ page }) => {
   await signUp(page);
   await postFromHome(page, '引用される投稿');

@@ -7,6 +7,7 @@ describe('measurePost（ui-ux.md の 5 節、FR-POST）', () => {
     expect(measurePost('a'.repeat(281))).toEqual({ weighted: 281, remaining: -1, postable: false });
   });
 
+  // FR-POST-02: 文字数の上限
   it('日本語は 2 なので、実質 140 文字', () => {
     expect(measurePost('あ'.repeat(140)).postable).toBe(true);
     expect(measurePost('あ'.repeat(141))).toEqual({
@@ -28,6 +29,7 @@ describe('measurePost（ui-ux.md の 5 節、FR-POST）', () => {
     expect(measurePost('が').weighted).toBe(measurePost('が').weighted);
   });
 
+  // FR-POST-03: 空の本文
   it.each(['', '   ', '\n\n'])('空や空白だけの本文 %j は投稿できない', (text) => {
     expect(measurePost(text).postable).toBe(false);
   });

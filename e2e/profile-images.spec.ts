@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { signUp } from './support/auth';
 import { pngFile } from './support/images';
 
+// FR-PROF-06: アバターとバナー
 test('プロフィールの編集で、アバターとバナーを変えられる', async ({ page }) => {
   const me = await signUp(page);
   await page.goto('/settings/profile');

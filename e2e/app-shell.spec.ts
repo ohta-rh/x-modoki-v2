@@ -21,6 +21,7 @@ async function open(page: Page, viewportWidth: number) {
   await expect(page.getByRole('main')).toBeVisible();
 }
 
+// FR-SHELL-01: 3 カラムの骨格
 test('1280px で 275 / 600 / 350px の 3 カラムが出る', async ({ page }) => {
   await open(page, 1280);
   expect(await width(page, page.getByTestId('left-column'))).toBe(275);
@@ -30,6 +31,7 @@ test('1280px で 275 / 600 / 350px の 3 カラムが出る', async ({ page }) =
   await expect(tabBar(page)).toBeHidden();
 });
 
+// FR-SHELL-02: 幅ごとの切り替え（左ナビの縮小）
 test('1024〜1279px では、左ナビがアイコンだけ（88px）で、右サイドバーが出る', async ({ page }) => {
   await open(page, 1100);
   expect(await width(page, page.getByTestId('left-column'))).toBe(88);
@@ -41,6 +43,7 @@ test('1024〜1279px では、左ナビがアイコンだけ（88px）で、右�
   await expect(sidebar(page)).toBeVisible();
 });
 
+// FR-SHELL-03: 幅ごとの切り替え（右サイドバー）
 test('640〜1023px では、右サイドバーが出ず、左ナビはアイコンだけ', async ({ page }) => {
   await open(page, 800);
   await expect(sidebar(page)).toBeHidden();
@@ -48,6 +51,8 @@ test('640〜1023px では、右サイドバーが出ず、左ナビはアイコ�
   expect(await width(page, main(page))).toBe(600);
 });
 
+// FR-SHELL-04: 下のタブバー
+// NFR-COMPAT-02: 画面の幅 360px から、横にスクロールせずに全ての機能を使える
 test('640px 未満では、左ナビが出ず、下のタブバーと右下の投稿ボタンが出る', async ({ page }) => {
   await open(page, 375);
   await expect(leftNav(page)).toBeHidden();
@@ -57,6 +62,7 @@ test('640px 未満では、左ナビが出ず、下のタブバーと右下の�
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(375);
 });
 
+// FR-SHELL-05: sticky のヘッダー
 test('ヘッダーは高さ 53px で半透明、スクロールしてもヘッダー・左ナビ・右サイドバーが上に残る', async ({
   page,
 }) => {
@@ -78,6 +84,7 @@ test('ヘッダーは高さ 53px で半透明、スクロールしてもヘッ�
   expect((await sidebar(page).boundingBox())!.y).toBeLessThanOrEqual(0 + 1);
 });
 
+// NFR-A11Y-05: フォーカスの輪が、キーボードで動かしたとき（`:focus-visible`）に、2px のアクセント色で出る
 test('フォーカスの輪は、キーボードで動かしたときだけ 2px のアクセント色で出る', async ({
   page,
 }) => {
@@ -94,6 +101,7 @@ test('フォーカスの輪は、キーボードで動かしたときだけ 2px 
     .toBe('rgb(29, 155, 240)');
 });
 
+// FR-SHELL-09: 関係の無い旨の表示
 test('表示の名前は x-modoki で、どの幅でもフッターに X Corp. とは関係が無いと出る', async ({
   page,
 }) => {
@@ -108,6 +116,7 @@ test('表示の名前は x-modoki で、どの幅でもフッターに X Corp. �
   }
 });
 
+// FR-SHELL-06: 3 つのテーマ
 test('data-theme で背景の色が変わる（light / dim / dark）', async ({ page }) => {
   await open(page, 1280);
   const background = () =>

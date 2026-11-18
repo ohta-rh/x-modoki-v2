@@ -15,6 +15,7 @@ async function onTimeline(page: Page, count = 3) {
 const focusedText = (page: Page) =>
   page.evaluate(() => document.activeElement?.closest('article')?.textContent ?? '');
 
+// FR-OPS-01: 投稿のキー
 test('n で入力欄が開く。入力欄の中では n は文字になる', async ({ page }) => {
   await onTimeline(page);
   await page.keyboard.press('n');
@@ -24,6 +25,7 @@ test('n で入力欄が開く。入力欄の中では n は文字になる', asy
   await expect(box).toHaveValue('n');
 });
 
+// FR-OPS-02: 移動のキー
 test('j / k で次 / 前の投稿を選び、フォーカスの輪が出て、画面の中に入る', async ({ page }) => {
   await onTimeline(page, 30);
   await page.keyboard.press('j');
@@ -56,6 +58,7 @@ test('j / k で次 / 前の投稿を選び、フォーカスの輪が出て、�
   expect(visible).toBe(true);
 });
 
+// FR-OPS-03: 操作のキー
 test('l で選んだ投稿にいいね、t でリポストのメニュー、r で返信の欄', async ({ page }) => {
   await onTimeline(page);
   await page.keyboard.press('j');
@@ -75,6 +78,7 @@ test('l で選んだ投稿にいいね、t でリポストのメニュー、r �
   await expect(page.getByRole('textbox', { name: '返信の本文' })).toBeFocused();
 });
 
+// FR-OPS-04: 画面を移るキー
 test('g のあと h / n / p で、ホーム / 通知 / プロフィールへ', async ({ page }) => {
   const me = await onTimeline(page);
   await page.keyboard.press('g');
@@ -88,6 +92,7 @@ test('g のあと h / n / p で、ホーム / 通知 / プロフィールへ', a
   await expect(page).toHaveURL(/\/home$/);
 });
 
+// FR-OPS-05: キーの一覧
 test('? でキーの一覧が出て、Esc で閉じる', async ({ page }) => {
   await onTimeline(page);
   await page.keyboard.press('?');
@@ -98,6 +103,8 @@ test('? でキーの一覧が出て、Esc で閉じる', async ({ page }) => {
   await expect(list).toBeHidden();
 });
 
+// FR-SHELL-07: アクセントの色
+// FR-SET-01: テーマとアクセントの選択
 test('/settings/display でテーマと色を選ぶとすぐ変わり、次に開いたときも最初の描画から同じ', async ({
   page,
 }) => {
@@ -142,6 +149,30 @@ test('/settings/display でテーマと色を選ぶとすぐ変わり、次に�
   expect(seen.filter((theme) => theme !== 'dim')).toEqual([]);
 });
 
+// FR-SHELL-07: 選んだ色が、投稿ボタンとリンクの色になる
+test('選んだアクセントの色が、投稿のボタンと本文のリンクの色になる（#30）', async ({ page }) => {
+  const me = await signUp(page);
+  await insertPosts(me.username, 1, 'リンクの色 https://example.com/accent');
+  await page.goto('/settings/display');
+  const done = page.waitForResponse(
+    (response) => response.request().headers()['next-action'] !== undefined,
+  );
+  await page.getByRole('radio', { name: '紫' }).check();
+  await done;
+  await page.goto('/home?tab=following');
+  const purple = 'rgb(120, 86, 255)';
+  const button = page.getByRole('navigation', { name: 'メインのメニュー' }).getByRole('link', {
+    name: '投稿する',
+  });
+  await expect(button).toHaveCSS('background-color', purple);
+  const link = page
+    .getByRole('article')
+    .first()
+    .getByRole('link', { name: /example\.com/ });
+  await expect(link).toHaveCSS('color', purple);
+});
+
+// FR-SET-03: アカウントの情報
 test('/settings は 2 ペイン。/settings/account にユーザー名・メールアドレス・登録した日が出る', async ({
   page,
 }) => {
@@ -163,6 +194,7 @@ test('/settings は 2 ペイン。/settings/account にユーザー名・メー�
 test.describe('640px 未満の設定', () => {
   test.use({ viewport: { width: 375, height: 800 } });
 
+  // FR-SET-04: 設定の画面の形
   test('一覧と中身は 1 ペインずつ', async ({ page }) => {
     await signUp(page);
     await page.goto('/settings');

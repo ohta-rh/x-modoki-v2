@@ -41,6 +41,7 @@ const actions = () => ({
 });
 
 describe('PostThread（#20）', () => {
+  // FR-POST-09: 削除した投稿の跡
   it('親（線つき）・削除された親・本体・返信の入力欄・返信の一覧の順で出す', () => {
     render(
       wrap(<PostThread detail={detail} now="2026-11-18T03:00:00.000Z" signedIn {...actions()} />),

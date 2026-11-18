@@ -15,6 +15,7 @@ setupTestDb();
 beforeEach(signOut);
 
 describe('getNotifications（#26）', () => {
+  // FR-NOTIF-07: 他人の通知
   it('自分宛てだけを新しい順に、相手と投稿と既読かどうかを付けて返す', async () => {
     const me = await makeUser({ username: 'me_n', name: '私' });
     const hana = await makeUser({ username: 'hana_n', name: '花子' });
@@ -61,6 +62,7 @@ describe('getNotifications（#26）', () => {
     ]);
   });
 
+  // FR-NOTIF-04: メンションのタブ
   it('20 件ずつ、カーソルで続きを返す。「メンション」はメンションと返信だけ', async () => {
     const me = await makeUser();
     const them = await makeUser();

@@ -11,6 +11,7 @@ const views = async (id: bigint) =>
   (await testDb().select().from(posts).where(eq(posts.id, id)))[0].viewCount;
 
 describe('countView（#21）', () => {
+  // FR-REACT-06: 表示の回数
   it('表示の回数を 1 足す。削除された投稿は足さない（ログインは要らない）', async () => {
     const me = await makeUser();
     const post = await makePost({ authorId: me.id });

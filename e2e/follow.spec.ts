@@ -11,6 +11,7 @@ async function postFromHome(page: Page, text: string) {
 const actionDone = (page: Page) =>
   page.waitForResponse((response) => response.request().headers()['next-action'] !== undefined);
 
+// FR-FOLLOW-02: フォロー解除
 test('フォローすると、相手の投稿が「フォロー中」に出る', async ({ browser }) => {
   const theirPage = await (await browser.newContext()).newPage();
   const them = await signUp(theirPage);

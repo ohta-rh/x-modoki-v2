@@ -42,3 +42,23 @@ export function setupTestDb(): void {
   beforeEach(resetDb);
   afterAll(closeTestDb);
 }
+
+/**
+ * Runs `run` while every transaction that inserts into `table` fails at COMMIT, after all of its
+ * writes: a deferred constraint trigger. Shows which writes share that transaction (#30).
+ */
+export async function failingAtCommit<T>(table: 'likes' | 'follows', run: () => Promise<T>) {
+  const name = sql.raw(`fail_at_commit_${table}`);
+  const target = sql.raw(table);
+  await testDb().execute(sql`
+    CREATE FUNCTION ${name}() RETURNS trigger LANGUAGE plpgsql
+      AS $$ BEGIN RAISE EXCEPTION 'failed at commit'; END $$;
+    CREATE CONSTRAINT TRIGGER ${name} AFTER INSERT ON ${target}
+      DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION ${name}();
+  `);
+  try {
+    return await run();
+  } finally {
+    await testDb().execute(sql`DROP TRIGGER ${name} ON ${target}; DROP FUNCTION ${name}();`);
+  }
+}

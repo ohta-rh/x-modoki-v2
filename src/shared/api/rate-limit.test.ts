@@ -8,6 +8,7 @@ setupTestDb();
 const at = (seconds: number) => Date.UTC(2026, 10, 18, 12, 0, seconds);
 
 describe('hitRateLimit（NFR-SEC-05、ADR-0010）', () => {
+  // NFR-SEC-05: 投稿（1 分に 10）・フォロー（1 分に 30）・画像の署名・ログインと登録（同じ IP から 1 分に 10）に回数の制限があり、超えると `RATE_LIMITED`（429）
   it('区切りの中で limit 回までは通し、limit + 1 回目で止める', async () => {
     const results = [];
     for (let i = 0; i < 11; i += 1) {

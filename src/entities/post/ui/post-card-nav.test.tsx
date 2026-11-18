@@ -43,6 +43,7 @@ describe('PostCard（#20: 詳細へのリンク）', () => {
     expect(push).not.toHaveBeenCalled();
   });
 
+  // FR-CONV-02: 返信先の表示
   it('返信には「返信先: @user」を出し、そのユーザーへのリンクにする', () => {
     render(<PostCard post={{ ...post, replyTo: { username: 'hana' } }} now={now} />);
     expect(screen.getByText('返信先:', { exact: false })).toHaveTextContent('返信先: @hana');

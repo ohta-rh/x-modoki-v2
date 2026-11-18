@@ -49,6 +49,8 @@ async function likeFrom(browser: import('@playwright/test').Browser, author: str
   return account;
 }
 
+// FR-NOTIF-03: 通知の一覧
+// FR-NOTIF-06: 既読
 test('2 人のいいねは 1 行にまとまり、通知を開くと既読になってバッジが消える', async ({
   browser,
 }) => {
@@ -94,6 +96,7 @@ test('メンションのタブには、メンションだけが出る', async ({
   );
 });
 
+// FR-NOTIF-05: 未読の数
 test('未読の数は 30 秒ごとに確かめる（時計を進める）', async ({ browser }) => {
   const authorPage = await (await browser.newContext()).newPage();
   const author = await signUp(authorPage);

@@ -1,11 +1,13 @@
 import { expect, test } from '@playwright/test';
 import { newAccount, signIn, signUp } from './support/auth';
 
+// FR-AUTH-01: 登録
 test('登録すると /home へ進む', async ({ page }) => {
   await signUp(page);
   await expect(page.getByRole('heading', { level: 1, name: 'ホーム' })).toBeVisible();
 });
 
+// FR-AUTH-07: ログアウト
 test('ログアウトすると / へ戻り、ユーザー名でもメールアドレスでも入り直せる', async ({ page }) => {
   const account = await signUp(page);
   await page.getByRole('button', { name: 'アカウントのメニュー' }).click();
@@ -30,6 +32,7 @@ test('ログアウトすると / へ戻り、ユーザー名でもメールア�
   await expect(page).toHaveURL(/\/home$/);
 });
 
+// FR-AUTH-04: ログイン
 test('間違えたときは、どちらが違うかを言わない 1 つの文言を出す', async ({ page, browser }) => {
   const account = await signUp(page);
   const other = await browser.newPage();
@@ -45,6 +48,7 @@ test('間違えたときは、どちらが違うかを言わない 1 つの文�
   await other.close();
 });
 
+// FR-AUTH-05: ログインへの転送
 test('ログインが要る画面を開くとログインへ送られ、入ったあと元の画面へ戻る', async ({
   page,
   browser,
@@ -58,6 +62,7 @@ test('ログインが要る画面を開くとログインへ送られ、入っ�
   await other.close();
 });
 
+// NFR-SEC-10: ログインのあとの戻り先は、同じサイトの中のパスだけを受け付ける（開いた転送をしない）
 test('戻り先に外の URL を入れても、入ったあとは /home へ進む', async ({ page, browser }) => {
   const account = await signUp(page);
   for (const next of ['https://evil.test/', '//evil.test/', '/\\evil.test']) {
@@ -69,6 +74,7 @@ test('戻り先に外の URL を入れても、入ったあとは /home へ進�
   }
 });
 
+// FR-AUTH-06: 入口
 test('/ は、入っていないときは入口を出し、入っているときは /home へ送る', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('link', { name: 'アカウントを作成' })).toHaveAttribute(

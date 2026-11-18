@@ -36,6 +36,7 @@ describe('env', () => {
     expect((await load({ S3_FORCE_PATH_STYLE: 'false' })).S3_FORCE_PATH_STYLE).toBe(false);
   });
 
+  // NFR-SEC-08: 秘密の値は環境変数だけに置き、`src/shared/config/env.ts` で検証する。`NEXT_PUBLIC_` を付けるのは公開してよい値だけ。リポジトリに秘密の値が無い
   it('NFR-SEC-08: 足りない変数があると、読み込みの時点で例外を投げる', async () => {
     await expect(load({ DATABASE_URL: undefined })).rejects.toThrow(
       /Invalid environment variables/,

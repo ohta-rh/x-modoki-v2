@@ -21,6 +21,9 @@ describe('getTimeline（data-model.md の 4 節、ADR-0015）', () => {
     expect(await getTimeline('following', null)).toEqual({ ok: false, error: 'UNAUTHORIZED' });
   });
 
+  // FR-CONV-04: 返信はタイムラインに出ない
+  // FR-TL-01: 「フォロー中」
+  // FR-TL-05: 削除した投稿を出さない
   it('フォロー中: 自分とフォローしている人の、返信でない・削除されていない投稿を、新しい順に', async () => {
     const me = await makeUser();
     const friend = await makeUser();
@@ -42,6 +45,7 @@ describe('getTimeline（data-model.md の 4 節、ADR-0015）', () => {
     expect(result.ok && result.page.items.map((post) => post.text)).toEqual(['フォロー中', '自分']);
   });
 
+  // FR-TL-02: 「おすすめ」
   it('おすすめ: 全員の返信でない投稿', async () => {
     const me = await makeUser();
     const stranger = await makeUser();
@@ -50,6 +54,39 @@ describe('getTimeline（data-model.md の 4 節、ADR-0015）', () => {
     signInAs(me);
     const result = await getTimeline('for-you', null);
     expect(result.ok && result.page.items.map((post) => post.text)).toEqual(['知らない人', '自分']);
+  });
+
+  // FR-TL-05: 削除した投稿は、どちらのタブにも出ない
+  it('削除した投稿は、フォロー中にもおすすめにも出ない（#30）', async () => {
+    const me = await makeUser();
+    const friend = await makeUser();
+    await makeFollow(me.id, friend.id);
+    await makePost({ id: at(1), authorId: friend.id, text: '残る' });
+    await makePost({ id: at(2), authorId: friend.id, text: '消した', deletedAt: new Date() });
+    await makePost({ id: at(3), authorId: me.id, text: '自分が消した', deletedAt: new Date() });
+    signInAs(me);
+    for (const tab of ['following', 'for-you'] as const) {
+      const result = await getTimeline(tab, null);
+      expect(result.ok && result.page.items.map((post) => post.text)).toEqual(['残る']);
+    }
+  });
+
+  // FR-CONV-06: リポストは、リポストした人のフォロワーの「フォロー中」に出る
+  it('フォローしている人のリポストは「フォロー中」に元の投稿として出て、知らない人のリポストは出ない（#30）', async () => {
+    const me = await makeUser();
+    const friend = await makeUser({ name: 'フォロー中の人' });
+    const stranger = await makeUser();
+    const author = await makeUser();
+    await makeFollow(me.id, friend.id);
+    const original = await makePost({ id: at(1), authorId: author.id, text: '元の投稿' });
+    const other = await makePost({ id: at(2), authorId: author.id, text: '別の投稿' });
+    await makePost({ id: at(3), authorId: friend.id, text: '', repostOfId: original.id });
+    await makePost({ id: at(4), authorId: stranger.id, text: '', repostOfId: other.id });
+    signInAs(me);
+    const result = await getTimeline('following', null);
+    expect(
+      result.ok && result.page.items.map((post) => [post.text, post.repostedBy?.name ?? null]),
+    ).toEqual([['元の投稿', 'フォロー中の人']]);
   });
 
   it('20 件ずつ。21 件目があればカーソルを返し、カーソルの次から続きを返し、最後は null', async () => {
@@ -73,6 +110,7 @@ describe('getTimeline（data-model.md の 4 節、ADR-0015）', () => {
     expect(second.ok && second.page.nextCursor).toBeNull();
   });
 
+  // NFR-SEC-03: クライアントへ渡すのは DTO だけで、パスワードのハッシュ・メールアドレス（本人の設定の画面を除く）・内部の列を含まない
   it('DTO の形: ID は文字列、作者・数・見ている人のいいね。メールやハッシュを含まない（NFR-SEC-03）', async () => {
     const me = await makeUser({ name: 'サンプル', username: 'sample_01' });
     const post = await makePost({ id: at(1), authorId: me.id, text: 'こんにちは', likeCount: 1 });

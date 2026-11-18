@@ -20,6 +20,7 @@ const names = (result: Awaited<ReturnType<typeof searchUsers>>) => {
 };
 
 describe('searchUsers（#27）', () => {
+  // FR-SEARCH-04: ユーザーの検索
   it('名前かユーザー名に含む人を、フォロワーの多い順に。大文字と小文字は区別しない。フォローしているかも付く', async () => {
     const me = await makeUser({ username: 'me_search' });
     const hana = await makeUser({ username: 'hanako_x', name: '花子', followersCount: 3 });

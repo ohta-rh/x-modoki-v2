@@ -97,6 +97,7 @@ test('a valid bundle passes', () => {
   assert.equal(status, 0, output);
 });
 
+// NFR-MAINT-05: `docs/` が OKF の形で、`node scripts/check-docs.mjs` が通る
 test('the repository itself passes', () => {
   const lines = [];
   const status = main([], { log: (l) => lines.push(l), error: (l) => lines.push(l) });

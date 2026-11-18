@@ -23,6 +23,8 @@ const repostRows = (authorId: string) =>
     .where(and(eq(posts.authorId, authorId), isNotNull(posts.repostOfId)));
 
 describe('setRepost（#22、ADR-0015）', () => {
+  // FR-CONV-05: リポスト
+  // FR-CONV-07: リポストの取り消し
   it('リポストは本文の空な posts の 1 行で、元の数を 1 増やす。2 回しても 1 行。取り消すと行が消え 1 減る', async () => {
     const author = await makeUser();
     const me = await makeUser();

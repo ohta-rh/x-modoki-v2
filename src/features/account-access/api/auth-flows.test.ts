@@ -61,6 +61,7 @@ describe('signUp', () => {
     expect((await testDb().select({ n: count() }).from(user))[0].n).toBe(1);
   });
 
+  // FR-AUTH-03: ユーザー名の一意
   it('大文字と小文字だけ違うユーザー名は、使われているとして拒む（T-09）', async () => {
     await (await load()).signUp(input('Sample_01'));
     const result = await (
@@ -126,6 +127,7 @@ describe('signIn', () => {
     ).toEqual(wrong);
   });
 
+  // FR-AUTH-08: 回数の制限
   it('NFR-SEC-05: ログインも同じ IP から 1 分に 11 回目は RATE_LIMITED', async () => {
     const { signIn } = await load();
     for (let i = 0; i < 10; i += 1) {

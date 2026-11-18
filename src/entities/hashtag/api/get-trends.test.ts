@@ -32,6 +32,7 @@ async function tagged(
 }
 
 describe('getTrends（#27）', () => {
+  // FR-SEARCH-06: トレンド
   it('直近 24 時間のハッシュタグを、投稿の数の多い順に 10 件、数と一緒に返す。古い投稿と消した投稿は数えない', async () => {
     await tagged('猫', 3);
     await tagged('犬', 5);

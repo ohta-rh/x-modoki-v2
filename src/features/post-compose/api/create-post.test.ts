@@ -42,6 +42,8 @@ describe('createPost（FR-POST、NFR-SEC-01・02・05）', () => {
     expect(await testDb().select().from(posts)).toEqual([]);
   });
 
+  // FR-PROF-09: 投稿の数
+  // NFR-I18N-03: 日本語・絵文字・結合文字・右から左の文字を含む本文が、崩れずに保存され、出る
   it('NFC にそろえた本文で投稿を作り、作者の投稿の数を 1 増やす', async () => {
     const me = await makeUser();
     signInAs(me);
@@ -53,6 +55,7 @@ describe('createPost（FR-POST、NFR-SEC-01・02・05）', () => {
     expect((await testDb().select().from(user).where(eq(user.id, me.id)))[0].postsCount).toBe(1);
   });
 
+  // FR-POST-14: ハッシュタグとメンションの記録
   it('ハッシュタグ（小文字にそろえて重ねない）とメンション（実在する人だけ）を、同じ投稿に結ぶ', async () => {
     const me = await makeUser();
     const taro = await makeUser({ username: 'taro_x' });
@@ -107,6 +110,7 @@ describe('createPost（FR-POST、NFR-SEC-01・02・05）', () => {
     expect(await testDb().select().from(posts)).toHaveLength(2);
   });
 
+  // FR-POST-13: 投稿の回数の制限
   it('NFR-SEC-05: 同じ人の 11 回目は 1 分の中で RATE_LIMITED', async () => {
     // hitRateLimit counts in one-minute windows; pin the clock mid-minute so the 11 calls share one.
     vi.useFakeTimers({ toFake: ['Date'] });
@@ -214,6 +218,7 @@ describe('createPost の引用（#22）', () => {
 });
 
 describe('createPost の画像（#25、T-07・T-08）', () => {
+  // FR-POST-07: 代替テキスト
   it('置かれた画像を確かめてから ready にし、代替テキストと順に結びつける。本文が空でもよい', async () => {
     const me = await makeUser();
     signInAs(me);
@@ -239,6 +244,7 @@ describe('createPost の画像（#25、T-07・T-08）', () => {
     expect(rows.find((row) => row.id === b.id)!.alt).toBe('二枚目');
   });
 
+  // NFR-SEC-07: 画像は、署名の前に種類と大きさを、置かれたあとに先頭のバイトで種類と縦横を確かめる。アプリとは別のドメイン（ローカルは別のポート）から出す
   it('他人の画像・無い画像・置かれていない画像・申告と違う中身（PNG を WebP と偽る、縦横の違い）・使用済みは拒み、何も書かない', async () => {
     const me = await makeUser();
     const other = await makeUser();
@@ -398,6 +404,7 @@ describe('createPost の通知（#26）', () => {
       })
       .from(notifications);
 
+  // FR-NOTIF-01: 6 種類の通知
   it('返信は親の作者へ、引用は元の作者へ、メンションは本文の中の実在する全員へ。どれも新しい投稿を指す。自分には作らない', async () => {
     const me = await makeUser({ username: 'me_26' });
     const hana = await makeUser({ username: 'hana_26' });
@@ -422,5 +429,13 @@ describe('createPost の通知（#26）', () => {
         { recipientId: hana.id, actorId: me.id, type: 'reply', postId: BigInt(reply.id) },
       ].sort((a, b) => a.type.localeCompare(b.type) || a.recipientId.localeCompare(b.recipientId)),
     );
+  });
+
+  it('自分の投稿を引用しても、通知はできない（#30）', async () => {
+    const me = await makeUser();
+    const own = await makePost({ authorId: me.id });
+    signInAs(me);
+    expect((await createPost('自分を引用', { quoteOfId: own.id })).ok).toBe(true);
+    expect(await notes()).toEqual([]);
   });
 });

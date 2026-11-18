@@ -18,6 +18,8 @@ async function postWithTwoImages(page: Page, text: string) {
   return card;
 }
 
+// FR-VIEW-03: 画像のビューア
+// FR-VIEW-04: ビューアの操作
 test('画像を押すとビューアが重なり、左右のキーで前後へ、Esc で前の画面へスクロールの位置のまま戻る', async ({
   page,
 }) => {

@@ -42,6 +42,7 @@ describe('UnreadBadge（#26）', () => {
     expect(screen.getByText('2', { exact: false }).closest('span')).toHaveClass('bg-brand');
   });
 
+  // NFR-PERF-07: 新着と未読の確認の GET は 30 秒に 1 回で、タブが見えていない間は送らない
   it('30 秒ごとに確かめて数を変える。タブが見えていない間は確かめない', async () => {
     show(1);
     await act(() => vi.advanceTimersByTimeAsync(29_000));

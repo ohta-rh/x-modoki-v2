@@ -47,6 +47,7 @@ beforeEach(() => {
 });
 
 describe('getAuth（ADR-0007、#10 の調査の設定）', () => {
+  // NFR-SEC-04: セッションの cookie は HttpOnly・SameSite=Lax。本番では Secure
   it('NFR-SEC-04: 登録の応答の cookie は HttpOnly・SameSite=Lax', async () => {
     const response = await signUpAs('Sample_01');
     expect(response.status).toBe(200);
@@ -54,6 +55,18 @@ describe('getAuth（ADR-0007、#10 の調査の設定）', () => {
     expect(cookie).toMatch(/better-auth\.session_token=/);
     expect(cookie).toMatch(/HttpOnly/i);
     expect(cookie).toMatch(/SameSite=Lax/i);
+  });
+
+  it('NFR-SEC-04: 本番（https の URL）では、セッションの cookie に Secure が付く。手元の http では付かない（#30）', async () => {
+    expect((await signUpAs('Local_01')).headers.get('set-cookie')).not.toMatch(/;\s*Secure/i);
+    vi.stubEnv('BETTER_AUTH_URL', 'https://x-modoki.example');
+    try {
+      const cookie = (await signUpAs('Prod_01')).headers.get('set-cookie') ?? '';
+      expect(cookie).toMatch(/session_token=[^;]+;[^,]*Secure/i);
+      expect(cookie).toMatch(/HttpOnly/i);
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it('ユーザー名は小文字で、入力したままの形も残し、パスワードはハッシュで入る', async () => {

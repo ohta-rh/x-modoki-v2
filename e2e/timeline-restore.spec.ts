@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { signUp } from './support/auth';
 import { insertPosts } from './support/db';
 
+// FR-TL-07: スクロールの位置の復元
 test('一覧から詳細へ進んで戻ると、スクロールの位置と読み込んだ続きが元のまま', async ({ page }) => {
   const me = await signUp(page);
   // Two pages of 20: the second is read only by scrolling down.

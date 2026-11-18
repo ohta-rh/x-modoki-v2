@@ -5,6 +5,8 @@ const now = new Date('2026-11-18T12:00:00+09:00');
 const ago = (ms: number) => new Date(now.getTime() - ms);
 
 describe('relativeTime（ui-ux.md の 5 節、NFR-I18N-02）', () => {
+  // FR-VIEW-07: 相対の時刻
+  // NFR-I18N-02: 時刻は日本の形（`N秒`・`N分`・`N時間`・`M月D日`・`YYYY年M月D日`）、数は日本の省略（`1.2万`・`3.4億`）で出す
   it.each([
     [0, '0秒'],
     [59_000, '59秒'],
@@ -31,6 +33,7 @@ describe('relativeTime（ui-ux.md の 5 節、NFR-I18N-02）', () => {
 });
 
 describe('compactCount（ui-ux.md の 5 節）', () => {
+  // FR-VIEW-08: 数の省略
   it.each([
     [0, '0'],
     [999, '999'],

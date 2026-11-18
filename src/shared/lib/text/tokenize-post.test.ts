@@ -14,6 +14,7 @@ describe('tokenizePost（NFR-SEC-06、T-05・T-06）', () => {
     ]);
   });
 
+  // NFR-SEC-06: 本文は文字として出し、HTML として解釈しない。リンクにするのは `http` と `https` の URL だけ
   it('http と https の URL だけをリンクにする（スキームの無いもの、javascript: は文字のまま）', () => {
     expect(tokenizePost('example.com javascript:alert(1)')).toEqual([
       { type: 'text', value: 'example.com javascript:alert(1)' },

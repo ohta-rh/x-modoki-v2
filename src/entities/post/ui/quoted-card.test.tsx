@@ -30,6 +30,7 @@ describe('QuotedCard（#22）', () => {
     expect(push).toHaveBeenCalledWith('/hana/status/7');
   });
 
+  // FR-CONV-09: 削除された元の投稿
   it('元も引用なら「ポストを表示」のリンク。削除されていれば印だけ', () => {
     const { rerender } = render(
       <QuotedCard quoted={{ ...quoted, quotesAnother: true }} now={now} />,

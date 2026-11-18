@@ -20,6 +20,7 @@ beforeEach(() => {
 });
 
 describe('setDisplayAction（#29）', () => {
+  // FR-SET-02: 選択の保存
   it('自分のテーマとアクセントの色を users に残し、cookie にも書く。ほかの人は変えない', async () => {
     const me = await makeUser();
     const other = await makeUser();

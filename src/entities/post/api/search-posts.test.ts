@@ -22,6 +22,8 @@ const texts = (result: Awaited<ReturnType<typeof searchPosts>>) => {
 };
 
 describe('searchPosts（#27、data-model.md の 4 節）', () => {
+  // FR-SEARCH-01: 本文の検索
+  // FR-SEARCH-02: 結果のタブ
   it('話題は本文に含む投稿をいいねの多い順、最新は新しい順。消した投稿は出ない', async () => {
     const me = await makeUser();
     await makePost({ authorId: me.id, text: 'りんごの話 1', likeCount: 1 });
@@ -41,6 +43,7 @@ describe('searchPosts（#27、data-model.md の 4 節）', () => {
     ]);
   });
 
+  // FR-SEARCH-05: 検索の語の扱い
   it('英語は大文字と小文字を区別しない。% と _ は文字として扱う', async () => {
     const me = await makeUser();
     await makePost({ authorId: me.id, text: 'Hello World' });
@@ -53,6 +56,7 @@ describe('searchPosts（#27、data-model.md の 4 節）', () => {
     expect(texts(await searchPosts('a_b', 'live', null))).toEqual(['a_b']);
   });
 
+  // FR-SEARCH-03: ハッシュタグの検索
   it('# で始まる語は、ハッシュタグの完全一致で引く（大文字と小文字は区別しない）', async () => {
     const me = await makeUser();
     const tagged = await makePost({ authorId: me.id, text: '#猫 の写真' });
@@ -97,6 +101,7 @@ describe('searchPosts（#27、data-model.md の 4 節）', () => {
     expect(await searchPosts('続き', 'live', 'nope')).toEqual({ ok: false, error: 'BAD_CURSOR' });
   });
 
+  // FR-SEARCH-08: 索引を使う
   it('本文の検索の条件は、posts_text_trgm_idx を使える（EXPLAIN、本物の条件で）', async () => {
     const plan = await testDb().transaction(async (tx) => {
       // Few rows make a full scan cheaper; turn it off to see whether the index can serve the shape.

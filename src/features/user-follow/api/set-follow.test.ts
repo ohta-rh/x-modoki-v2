@@ -1,5 +1,5 @@
 import { makePost, makeUser } from '@test/factories';
-import { setupTestDb, testDb } from '@test/db';
+import { failingAtCommit, setupTestDb, testDb } from '@test/db';
 import { currentSession, signInAs, signOut } from '@test/session';
 import { eq } from 'drizzle-orm';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -29,6 +29,7 @@ const counts = async (id: string) => {
 };
 
 describe('setFollow（#24）', () => {
+  // FR-FOLLOW-01: フォロー
   it('フォローの行と両方の数が同じトランザクションで変わる。2 回でも 1 回。解除で戻る（0 より小さくしない）', async () => {
     const me = await makeUser();
     const them = await makeUser({ username: 'them' });
@@ -65,6 +66,7 @@ describe('setFollow（#24）', () => {
     expect((await Promise.all(calls)).every((result) => result.ok)).toBe(true);
   });
 
+  // FR-FOLLOW-04: タイムラインへの反映
   it('フォローすると相手の返信でない投稿が「フォロー中」に出て、解除すると出なくなる', async () => {
     const me = await makeUser();
     const them = await makeUser({ username: 'them' });
@@ -81,6 +83,8 @@ describe('setFollow（#24）', () => {
     expect(await texts()).toEqual([]);
   });
 
+  // FR-FOLLOW-03: 自分はフォローできない
+  // FR-FOLLOW-05: 回数の制限
   it('自分は FORBIDDEN、無い人は NOT_FOUND、ログイン無しは UNAUTHORIZED、1 分に 31 回目は RATE_LIMITED', async () => {
     const me = await makeUser({ username: 'me' });
     await makeUser({ username: 'them' });
@@ -95,6 +99,16 @@ describe('setFollow（#24）', () => {
 });
 
 describe('setFollow の通知（#26）', () => {
+  it('フォローがコミットで失敗すると、通知も残らない（同じトランザクション、#30）', async () => {
+    const [me, them] = [await makeUser(), await makeUser()];
+    signInAs(me);
+    await failingAtCommit('follows', () =>
+      expect(setFollow(them.username!, true)).rejects.toThrow(),
+    );
+    expect(await testDb().select().from(follows)).toEqual([]);
+    expect(await testDb().select().from(notifications)).toEqual([]);
+  });
+
   it('フォローで相手へ通知を作り（投稿は無し）、外すと消す。繰り返しても 1 行', async () => {
     const [me, them] = [await makeUser(), await makeUser()];
     signInAs(me);

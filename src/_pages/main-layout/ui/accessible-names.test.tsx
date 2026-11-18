@@ -34,6 +34,7 @@ const post: Post = {
 const ok = async () => ({ ok: true as const });
 
 describe('名前の無いボタンが 0 個（#29、ui-ux.md の 10 節）', () => {
+  // NFR-A11Y-06: アイコンだけのボタンの全てに、読み上げられる名前（`aria-label`）がある。画像の全てに `alt` がある
   it('外枠・ナビ・投稿の欄・タイムラインの操作・投稿のモーダル', () => {
     render(
       <QueryClientProvider client={new QueryClient()}>

@@ -4,6 +4,9 @@ import { signUp } from './support/auth';
 const composer = (page: Page) => page.getByRole('dialog', { name: 'ポストする' });
 const box = (page: Page) => composer(page).getByRole('textbox', { name: '投稿の本文' });
 
+// FR-POST-10: モーダルの入力欄
+// FR-OPS-08: フォーカスの扱い
+// NFR-A11Y-04: 全てのモーダルが、開くとフォーカスを中に閉じ込め、`Esc` で閉じ、閉じると開いた要素へフォーカスを戻す
 test('投稿ボタンで /compose/post がモーダルで開く。フォーカスは中に閉じ、閉じると元のボタンへ戻る', async ({
   page,
 }) => {
@@ -47,6 +50,7 @@ test('/compose/post を直接開くとページとして出る', async ({ page }
   await expect(page.getByRole('textbox', { name: '投稿の本文' })).toBeVisible();
 });
 
+// FR-POST-11: 下書きの保存
 test('中身があるときに閉じると「破棄 / 保存」を聞き、保存した下書きは次に開いたときに戻る', async ({
   page,
 }) => {
@@ -78,6 +82,7 @@ test('中身があるときに閉じると「破棄 / 保存」を聞き、保�
   await expect(page.getByRole('alertdialog')).toHaveCount(0);
 });
 
+// FR-POST-12: 送ったあとの知らせ
 test('送ったあと、下の中央に「ポストを送信しました」と「表示」のリンクが出て、その投稿へ進める', async ({
   page,
 }) => {

@@ -33,6 +33,7 @@ describe('PostMedia（#25、ui-ux.md の 5 節）', () => {
     expect(screen.getByTestId('post-media').firstElementChild).toHaveClass('max-h-[510px]');
   });
 
+  // FR-VIEW-05: 画像の並び
   it('2 枚は左右、3 枚は左に大 1 と右に小 2、4 枚は 2×2。すき間は 2px', () => {
     const { unmount } = show([image(1), image(2)]);
     expect(screen.getByTestId('post-media')).toHaveClass('grid', 'grid-cols-2', 'gap-0.5');

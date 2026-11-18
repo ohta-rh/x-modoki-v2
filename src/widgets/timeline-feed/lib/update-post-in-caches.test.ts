@@ -26,6 +26,7 @@ const likedOnce = (target: Post): Post => ({
 });
 
 describe('updatePostInCaches（#21: 同じ投稿の全ての表示を変える）', () => {
+  // FR-REACT-04: 同じ投稿の表示をそろえる
   it('全ての一覧（ホームの 2 つのタブ・返信・ブックマーク）の、その ID の投稿だけを書き換える', () => {
     const client = new QueryClient();
     client.setQueryData(['timeline', 'following'], pages([post('1'), post('2')]));

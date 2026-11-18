@@ -21,6 +21,7 @@ describe('signUpSchema（FR-AUTH、routing.md の 4 節）', () => {
     });
   });
 
+  // FR-AUTH-02: ユーザー名の形
   it.each(['abc', 'a'.repeat(16), 'has-dash', 'has space', 'ひらがな'])(
     'ユーザー名 %s は、英数字とアンダースコアの 4〜15 文字でないので拒む',
     (username) => {

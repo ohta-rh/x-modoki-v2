@@ -15,6 +15,7 @@ const card = (page: Page, text: string) => page.getByRole('article').filter({ ha
 const actionDone = (page: Page) =>
   page.waitForResponse((response) => response.request().headers()['next-action'] !== undefined);
 
+// FR-REACT-01: いいね
 test('いいねを押すと、すぐに数が 1 増える。もう一度押すと戻る', async ({ page }) => {
   await signUp(page);
   await postFromHome(page, 'いいねされる投稿');
@@ -34,6 +35,8 @@ test('いいねを押すと、すぐに数が 1 増える。もう一度押す�
   await expect(like).not.toContainText('1');
 });
 
+// FR-REACT-02: いいねの失敗
+// FR-OPS-07: トースト
 test('いいねが失敗したら元に戻り、トーストが出る', async ({ page }) => {
   await signUp(page);
   await postFromHome(page, '失敗する投稿');
@@ -50,6 +53,7 @@ test('いいねが失敗したら元に戻り、トーストが出る', async ({
   await expect(like).not.toContainText('1');
 });
 
+// FR-REACT-05: ブックマーク
 test('ブックマークすると /i/bookmarks に出て、全て削除で消える', async ({ page }) => {
   await signUp(page);
   await postFromHome(page, '取っておく投稿');
@@ -84,6 +88,8 @@ test('詳細を開くと表示の回数が数えられ、カードに出る', as
 test.describe('動きを減らす設定', () => {
   test.use({ reducedMotion: 'reduce' });
 
+  // FR-REACT-07: 動きを減らす設定
+  // NFR-A11Y-07: OS が動きを減らす設定（`prefers-reduced-motion: reduce`）のとき、アニメーションをしない
   test('prefers-reduced-motion のとき、ハートは動かない', async ({ page }) => {
     await signUp(page);
     await postFromHome(page, '動かない投稿');

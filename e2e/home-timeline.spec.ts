@@ -6,6 +6,7 @@ const composer = (page: import('@playwright/test').Page) =>
   page.getByRole('textbox', { name: '投稿の本文' });
 
 // おすすめ shows everyone's posts, including other tests running in parallel; check on フォロー中.
+// FR-POST-01: 文字だけの投稿
 test('投稿すると、タイムラインの先頭に出る', async ({ page }) => {
   await signUp(page);
   await page.goto('/home?tab=following');
@@ -50,6 +51,7 @@ test('残りの文字数: 超えると赤い数字が出て、投稿ボタンを
   await expect(button).toBeEnabled();
 });
 
+// FR-TL-04: 無限スクロール
 test('「フォロー中」は 20 件ずつ読み、下まで行くと続きを読み、最後で止まる。画面の外のカードは DOM から外れる', async ({
   page,
 }) => {
@@ -71,6 +73,7 @@ test('「フォロー中」は 20 件ずつ読み、下まで行くと続きを�
   await expect(page.getByText('e2e の投稿 60', { exact: true })).toHaveCount(0);
 });
 
+// FR-TL-03: タブの切り替え
 test('タブを切り替えると、選んだタブに下線が出る', async ({ page }) => {
   await signUp(page);
   await page.getByRole('tab', { name: 'フォロー中' }).click();

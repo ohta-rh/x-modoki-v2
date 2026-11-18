@@ -8,6 +8,8 @@ async function postFromHome(page: Page, text: string) {
   await expect(page.getByRole('article').first()).toContainText(text);
 }
 
+// FR-PROF-01: プロフィールの表示
+// FR-PROF-02: 無いユーザー
 test('/{username} に名前と自己紹介が出る。ログイン無しでも見られ、無いユーザー名は 404', async ({
   page,
   browser,
@@ -35,6 +37,7 @@ test('/{username} に名前と自己紹介が出る。ログイン無しでも�
   ).toBeVisible();
 });
 
+// FR-PROF-05: 編集のモーダル
 test('プロフィールを編集はモーダルで開き、保存すると変わる。直接開くとページになる', async ({
   page,
 }) => {
@@ -75,6 +78,7 @@ test('自分の投稿を固定すると、プロフィールの先頭に「固�
   await expect(first).toContainText('固定する投稿');
 });
 
+// FR-OPS-06: ホバーのカード
 test('アバターに約 0.5 秒ホバーすると、プロフィールの小さなカードが出る', async ({ page }) => {
   const me = await signUp(page);
   await postFromHome(page, 'ホバーする投稿');

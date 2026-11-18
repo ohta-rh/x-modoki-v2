@@ -17,6 +17,7 @@ beforeEach(signOut);
 const at = (n: number) => new Date(Date.UTC(2026, 10, 18, 0, 0, n));
 
 describe('getFollows（#24）', () => {
+  // FR-PROF-08: フォロー中とフォロワーの一覧
   it('フォロー中とフォロワーを、フォローした順の新しい順に、見ている人がフォローしているか付きで返す', async () => {
     const hana = await makeUser({ username: 'hana', name: '花', bio: '猫' });
     const a = await makeUser({ username: 'aa', name: 'A' });

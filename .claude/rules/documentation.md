@@ -95,6 +95,13 @@ exit 0. Its own tests are `scripts/check-docs.test.mjs`, run by `pnpm test` (Vit
   JPEG/WebP screenshot under `evidence/<report name>/` (≤ 300KB, ≤ 12), linked from
   `docs/log.md`; `issue-NNNN-*` reports also need `### TDD の記録` under `## 自動のテスト` and
   a `## コードレビュー` section.
+- Requirements trace to tests (`scripts/check-traceability.mjs`, the second half of
+  `pnpm docs:check`, ADR-0053): every `FR-` / `NFR-` ID and every routing URL has a row in
+  `docs/requirements/traceability.md` naming a test that exists, by its exact name, in a file
+  that mentions the ID (`// FR-POST-01: …` above the test); URL rows name a Playwright test.
+  `#NN で確かめる` is allowed only for a PBI that owns the requirement. Adding a requirement
+  or renaming a test means updating that table in the same commit; a PBI that owns a
+  `#NN で確かめる` row replaces it with its test before it closes.
 
 **Not checked by the script — check by hand:**
 

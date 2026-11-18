@@ -10,6 +10,9 @@ async function postFromHome(page: Page, text: string) {
   await expect(page.getByRole('article').first()).toContainText(text);
 }
 
+// FR-CONV-01: 返信
+// FR-CONV-03: スレッドの表示
+// FR-VIEW-01: 投稿の詳細
 test('カードを押すと詳細が開き、返信すると返信の一覧に出て、返信先が出る', async ({ page }) => {
   const me = await signUp(page);
   await postFromHome(page, '親の投稿');
@@ -42,6 +45,7 @@ test('カードの中のリンクは、詳細ではなくその行き先へ進�
   void me;
 });
 
+// FR-VIEW-02: 詳細の URL
 test('URL のユーザー名が作者と違えば正しい URL へ、無い ID と数字でない ID は 404', async ({
   page,
 }) => {
@@ -65,6 +69,7 @@ test('URL のユーザー名が作者と違えば正しい URL へ、無い ID �
   }
 });
 
+// FR-POST-08: 削除
 test('自分の投稿は、確認のダイアログのあとで削除でき、一覧から消える', async ({ page }) => {
   await signUp(page);
   await postFromHome(page, '消す投稿');

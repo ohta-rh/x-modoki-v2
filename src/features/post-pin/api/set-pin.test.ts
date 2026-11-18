@@ -20,6 +20,7 @@ const pinned = async (id: string) =>
   (await testDb().select().from(user).where(eq(user.id, id)))[0].pinnedPostId;
 
 describe('setPin（#23）', () => {
+  // FR-PROF-07: 固定した投稿
   it('自分の投稿を固定でき、固定は 1 つだけ（新しく固定すると入れ替わる）。外すと無くなる', async () => {
     const me = await makeUser();
     const a = await makePost({ authorId: me.id });

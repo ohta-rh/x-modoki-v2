@@ -14,6 +14,7 @@ setupTestDb();
 beforeEach(signOut);
 
 describe('getSuggestions（#27）', () => {
+  // FR-SEARCH-07: おすすめのユーザー
   it('自分と、フォローしている人を除いて、フォロワーの多い順に 3 人', async () => {
     const me = await makeUser({ username: 'me_sg', followersCount: 100 });
     const followed = await makeUser({ username: 'followed_sg', followersCount: 50 });

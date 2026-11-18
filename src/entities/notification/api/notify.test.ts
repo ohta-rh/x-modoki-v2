@@ -17,6 +17,7 @@ const rows = () =>
     .from(notifications);
 
 describe('notify・unnotify（#26、data-model.md の notifications）', () => {
+  // FR-NOTIF-02: 繰り返しと取り消し
   it('相手への通知の行を作る。同じ人・種類・投稿は繰り返しても 1 行', async () => {
     const [me, them] = [await makeUser(), await makeUser()];
     const post = await makePost({ authorId: them.id });

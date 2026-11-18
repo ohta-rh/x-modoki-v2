@@ -8,6 +8,7 @@ const errors = (input: Record<string, unknown>) => {
 };
 
 describe('profileSchema（#23）', () => {
+  // FR-PROF-04: 編集
   it('名前は 1〜50 文字、自己紹介 160、場所 30、リンクは 100 文字までの http か https', () => {
     expect(errors({})).toEqual({});
     expect(errors({ name: '' }).name).toEqual(['名前を入れてください']);

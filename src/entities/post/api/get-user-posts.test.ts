@@ -46,6 +46,7 @@ describe('getUserPosts（#23）', () => {
     expect(result.page.items[1].pinned).toBeUndefined();
   });
 
+  // FR-PROF-03: タブ
   it('返信: 返信もリポストも含めて全部。メディア: 画像のある投稿だけ', async () => {
     const me = await makeUser({ username: 'me' });
     const first = await makePost({ id: at(1), authorId: me.id, text: '最初' });

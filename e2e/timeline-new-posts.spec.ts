@@ -37,6 +37,7 @@ async function openFollowing(page: Page) {
   await expect(page).toHaveURL(/\/home\?tab=following$/);
 }
 
+// FR-TL-06: 「N 件のポストを表示」
 test('ホームを開いたまま、ほかの人の新しい投稿は 30 秒以内に「N 件のポストを表示」で知らされ、押すまで一覧は動かない', async ({
   page,
 }) => {
@@ -70,6 +71,7 @@ test('ホームを開いたまま、ほかの人の新しい投稿は 30 秒以�
 test.describe('640px 未満', () => {
   test.use({ viewport: { width: 375, height: 800 }, hasTouch: true });
 
+  // FR-TL-08: 引っ張って更新
   test('一覧を引っ張ると新しい投稿を読み込む', async ({ page }) => {
     await signUp(page);
     const them = await followSomeone(page);

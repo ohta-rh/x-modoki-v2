@@ -31,6 +31,7 @@ afterEach(() => {
 });
 
 describe('prepareImage（#25、ADR-0018）', () => {
+  // FR-POST-06: 画像の種類と大きさ
   it('投稿の画像は長辺 2048px 以下の WebP（品質 0.85）にする', async () => {
     const result = await prepareImage(new File(['x'], 'a.png', { type: 'image/png' }), 'post');
     expect(result).toMatchObject({ width: 2048, height: 1536 });

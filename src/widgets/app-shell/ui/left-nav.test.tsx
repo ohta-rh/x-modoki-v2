@@ -7,6 +7,7 @@ const nav = () => screen.getByRole('navigation', { name: 'メインのメニュ�
 const link = (name: string) => within(nav()).getByRole('link', { name });
 
 describe('LeftNav（ui-ux.md の 3 節）', () => {
+  // FR-SHELL-08: 今いる画面の表示
   it('今いる画面の項目は aria-current で、太字と塗りつぶしのアイコンになる', () => {
     render(<LeftNav currentPath="/home" />);
     expect(link('ホーム')).toHaveAttribute('aria-current', 'page');

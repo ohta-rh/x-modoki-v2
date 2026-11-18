@@ -33,6 +33,23 @@ const show = (
 };
 
 describe('NotificationList（#26）', () => {
+  // FR-NOTIF-03: 種類ごとのアイコン
+  it.each([
+    ['like', 'lucide-heart', 'text-like'],
+    ['repost', 'lucide-repeat-2', 'text-repost'],
+    ['follow', 'lucide-user', 'text-brand'],
+    ['reply', 'lucide-message-circle', 'text-brand'],
+    ['quote', 'lucide-quote', 'text-brand'],
+    ['mention', 'lucide-at-sign', 'text-brand'],
+  ] as const)('%s の行は %s のアイコンを %s で出す（#30）', (type, icon, color) => {
+    show({
+      items: [item('1', type, person(1, '花子'), type === 'follow' ? null : mine)],
+      nextCursor: null,
+    });
+    const svg = screen.getByRole('article').querySelector('svg[data-icon]');
+    expect(svg).toHaveClass(icon, color);
+  });
+
   it('同じ種類と投稿をまとめ、種類のアイコン・アバター・文言・投稿を出す', () => {
     show({
       items: [
