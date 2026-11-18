@@ -152,7 +152,7 @@ verifications（Better Auth）     rate_limits
 | `posts (root_id, id)` | スレッド |
 | `posts USING gin (text gin_trgm_ops)` | 本文の検索 |
 | `users (lower(username))` 一意 | プロフィール、ログイン |
-| `users USING gin ((name \|\| ' ' \|\| username) gin_trgm_ops)` | ユーザーの検索 |
+| `users USING gin ((name \|\| ' ' \|\| coalesce(username, '')) gin_trgm_ops)` | ユーザーの検索。問い合わせも同じ式で書く（式の索引は、同じ式でしか使われない） |
 | `follows (followee_id, follower_id)` | フォロワーの一覧 |
 | `likes (post_id)`、`likes (user_id, created_at DESC)` | いいねした人、プロフィールの「いいね」 |
 | `bookmarks (user_id, created_at DESC)` | ブックマーク |
