@@ -9,4 +9,4 @@ export {
   type NavItem,
   type NavKey,
 } from './routes';
-export { RESERVED_USERNAMES } from './reserved-usernames';
+export { isAllowedUsername, RESERVED_USERNAMES, USERNAME_PATTERN } from './reserved-usernames';

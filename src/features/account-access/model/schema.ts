@@ -1,7 +1,5 @@
 import { z } from 'zod';
-import { RESERVED_USERNAMES } from '@/shared/config';
-
-const USERNAME = /^[A-Za-z0-9_]{4,15}$/;
+import { RESERVED_USERNAMES, USERNAME_PATTERN } from '@/shared/config';
 
 export const signUpSchema = z
   .object({
@@ -13,7 +11,7 @@ export const signUpSchema = z
     username: z
       .string()
       .trim()
-      .regex(USERNAME, 'ユーザー名は英数字とアンダースコアの 4〜15 文字にしてください')
+      .regex(USERNAME_PATTERN, 'ユーザー名は英数字とアンダースコアの 4〜15 文字にしてください')
       .refine(
         (name) => !RESERVED_USERNAMES.includes(name.toLowerCase()),
         'このユーザー名は使えません',

@@ -7,6 +7,16 @@ vi.mock('next/navigation', () => ({ usePathname: () => '/home' }));
 vi.mock('@/features/account-access/index.server', () => ({ signOutAction: async () => undefined }));
 
 describe('MainLayout', () => {
+  it('入っていない人には、アカウントのメニューを出さない', () => {
+    render(
+      <MainLayout viewer={null} modal={null}>
+        ページ
+      </MainLayout>,
+    );
+    expect(screen.queryByRole('button', { name: 'アカウントのメニュー' })).toBeNull();
+    expect(within(screen.getByRole('main')).getByText('ページ')).toBeInTheDocument();
+  });
+
   it('ページを 3 カラムのメインに出し、モーダルの枠も並べる', () => {
     render(
       <MainLayout

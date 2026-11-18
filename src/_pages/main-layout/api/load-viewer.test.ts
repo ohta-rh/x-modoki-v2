@@ -22,8 +22,8 @@ beforeEach(() => {
 });
 
 describe('loadViewer', () => {
-  it('入っていなければログインへ送る（proxy.ts だけに頼らない）', async () => {
-    await expect((await load()).loadViewer()).rejects.toThrow('NEXT_REDIRECT /i/flow/login');
+  it('入っていなければ null（ログインを求めるのは proxy.ts と各ページ。/{username} はログインが要らない）', async () => {
+    await expect((await load()).loadViewer()).resolves.toBeNull();
   });
 
   it('入っていれば、左ナビに要る名前・ユーザー名・画像だけを返す', async () => {

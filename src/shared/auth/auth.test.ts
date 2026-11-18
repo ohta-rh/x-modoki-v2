@@ -66,6 +66,22 @@ describe('getAuth（ADR-0007、#10 の調査の設定）', () => {
   });
 });
 
+describe('username のプラグインの検証（アプリと同じ決まり）', () => {
+  it.each(['home', 'a.b.c', 'abc'])('%s は、サーバーの中から呼んでも登録できない', async (name) => {
+    const { getAuth } = await load();
+    await expect(
+      getAuth().api.signUpEmail({
+        body: {
+          name: 'x',
+          email: `${name}@example.test`,
+          password: 'correct-horse-battery',
+          username: name,
+        },
+      }),
+    ).rejects.toMatchObject({ body: { code: expect.stringMatching(/USERNAME/) } });
+  });
+});
+
 describe('getSession と requireSession', () => {
   it('cookie があれば、その人を DTO で返す。無ければ null', async () => {
     const response = await signUpAs('Sample_02');

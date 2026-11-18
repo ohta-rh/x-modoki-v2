@@ -7,7 +7,7 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { connection } from 'next/server';
 import { cache } from 'react';
-import { env, LOGIN_PATH } from '@/shared/config';
+import { env, isAllowedUsername, LOGIN_PATH } from '@/shared/config';
 import { getDb, schema } from '@/shared/db';
 
 /** Better Auth for this request (ADR-0007; the settings verified in #10). */
@@ -19,7 +19,17 @@ export const getAuth = cache(() =>
     emailAndPassword: { enabled: true, minPasswordLength: 8 },
     // One rate limit mechanism for the whole app: rate_limits (ADR-0010, NFR-SEC-05).
     rateLimit: { enabled: false },
-    plugins: [username({ minUsernameLength: 4, maxUsernameLength: 15 }), nextCookies()],
+    // Sign-up and sign-in only through the Server Actions, which validate and rate-limit them
+    // (src/features/account-access); Better Auth's own HTTP endpoints for them stay closed (T-09, T-10).
+    disabledPaths: ['/sign-up/email', '/sign-in/email', '/sign-in/username'],
+    plugins: [
+      username({
+        minUsernameLength: 4,
+        maxUsernameLength: 15,
+        usernameValidator: isAllowedUsername,
+      }),
+      nextCookies(),
+    ],
   }),
 );
 
