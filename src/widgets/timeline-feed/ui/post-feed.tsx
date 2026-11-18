@@ -131,8 +131,9 @@ export function PostFeed({
           script has run, #60) pushes the next one and what follows the list down, never covers it. */}
       <div
         style={{
-          paddingTop: rows[0].start,
-          paddingBottom: virtualizer.getTotalSize() - rows.at(-1)!.end,
+          // No rows at all in a window with no height (review 2): no padding then.
+          paddingTop: rows[0]?.start ?? 0,
+          paddingBottom: virtualizer.getTotalSize() - (rows.at(-1)?.end ?? 0),
         }}
       >
         {rows.map((row) => (

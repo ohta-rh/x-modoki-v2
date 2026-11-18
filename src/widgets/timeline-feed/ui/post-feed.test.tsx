@@ -365,3 +365,22 @@ describe('PostFeed のハイドレーション（#60 review 1）', () => {
     container.remove();
   });
 });
+
+describe('PostFeed の高さの無い窓（#60 review 2）', () => {
+  it('窓の高さが 0 で描く行が無くても、一覧は落ちない', () => {
+    vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(0);
+    expect(() =>
+      render(
+        <QueryClientProvider client={new QueryClient()}>
+          <PostFeed
+            queryKey={['zero-height']}
+            endpoint="/api/zero-height"
+            firstPage={{ items: [post(1, false)], nextCursor: null }}
+            now="2026-11-18T03:00:00.000Z"
+          />
+        </QueryClientProvider>,
+      ),
+    ).not.toThrow();
+    vi.restoreAllMocks();
+  });
+});
