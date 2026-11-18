@@ -49,6 +49,10 @@ Decided in ADR-0017, ADR-0019, ADR-0020, ADR-0021; this file is the operating ru
 - **Async Server Components exist only in root `app/`.** Every component under `src/` is
   synchronous and unit-tested.
 - **Every page route has at least one Playwright test** — that is what covers the excluded files.
+- **Check the docs on what you commit, not on the working tree.** `check-docs` passes while a
+  report you have not staged sits beside it; committing `docs/log.md` or an index that links it then
+  breaks CI (6c382f4, found in #28). When staging part of the docs, run
+  `git stash push --keep-index -u -- docs && node scripts/check-docs.mjs; git stash pop` first.
 - **E2e tests scroll at once, never by wheel (ADR-0049).** `page.mouse.wheel` keeps moving after the
   test reads the position; it flaked twice (#56, #28) and ESLint now rejects it under `e2e/`. Use
   `window.scrollTo` / `scrollBy` with `behavior: 'instant'`, then `expect.poll` the position.
