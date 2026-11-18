@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/ui/kit';
+import { UnreadBadge } from '@/entities/notification';
 import { Logo } from '@/shared/ui/logo';
 import { type Account, AccountMenu } from './account-menu';
 
@@ -32,9 +33,11 @@ type Props = {
   username?: string;
   account?: Account;
   signOut?: () => Promise<void>;
+  /** The viewer's unread notifications (#26); absent when signed out. */
+  unread?: number;
 };
 
-export function LeftNav({ currentPath, username, account, signOut }: Props) {
+export function LeftNav({ currentPath, username, account, signOut, unread }: Props) {
   return (
     <nav
       aria-label="メインのメニュー"
@@ -50,7 +53,6 @@ export function LeftNav({ currentPath, username, account, signOut }: Props) {
           <Link
             key={item.key}
             href={item.href}
-            aria-label={item.label}
             aria-current={active ? 'page' : undefined}
             className={cn(itemClass, active && 'font-bold')}
           >
@@ -61,7 +63,11 @@ export function LeftNav({ currentPath, username, account, signOut }: Props) {
               fill={active && item.key !== 'explore' ? 'currentColor' : 'none'}
               strokeWidth={active ? 2.5 : 2}
             />
-            <span className="hidden pr-4 xl:inline">{item.label}</span>
+            {/* The name comes from the text (not aria-label), so the unread count joins it. */}
+            <span className="sr-only xl:not-sr-only xl:pr-4">{item.label}</span>
+            {item.key === 'notifications' && unread !== undefined ? (
+              <UnreadBadge initial={unread} />
+            ) : null}
           </Link>
         );
       })}

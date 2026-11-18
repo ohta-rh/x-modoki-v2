@@ -19,11 +19,14 @@ export function AppShell({
   sidebar,
   account,
   signOut,
+  unread,
 }: {
   children: ReactNode;
   sidebar?: ReactNode;
   account?: Account;
   signOut?: () => Promise<void>;
+  /** The viewer's unread notifications (#26); absent when signed out. */
+  unread?: number;
 }) {
   const currentPath = usePathname();
   return (
@@ -32,7 +35,7 @@ export function AppShell({
         data-testid="left-column"
         className="sticky top-0 hidden h-screen w-[88px] shrink-0 flex-col px-2 sm:flex xl:w-[275px] xl:px-3"
       >
-        <LeftNav currentPath={currentPath} account={account} signOut={signOut} />
+        <LeftNav currentPath={currentPath} account={account} signOut={signOut} unread={unread} />
       </div>
       <main className="min-h-screen w-full max-w-[600px] min-w-0 border-line pb-[53px] sm:border-x sm:pb-0">
         {children}
@@ -42,7 +45,7 @@ export function AppShell({
         {sidebar}
       </aside>
       <div className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-[var(--header-bg)] backdrop-blur-[12px] sm:hidden">
-        <TabBar currentPath={currentPath} />
+        <TabBar currentPath={currentPath} unread={unread} />
       </div>
       <div className="fixed right-4 bottom-20 z-10 sm:hidden">
         <Link

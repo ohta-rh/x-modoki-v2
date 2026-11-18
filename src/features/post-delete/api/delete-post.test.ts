@@ -3,7 +3,7 @@ import { setupTestDb, testDb } from '@test/db';
 import { currentSession, signInAs, signOut } from '@test/session';
 import { eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { posts, user } from '@/shared/db';
+import { notifications, posts, user } from '@/shared/db';
 import { newId } from '@/shared/lib/id';
 import { deletePost } from './delete-post';
 
@@ -72,5 +72,25 @@ describe('deletePost（NFR-SEC-01、T-01）', () => {
     expect((await row(parent.id)).replyCount).toBe(4);
     const [author] = await testDb().select().from(user).where(eq(user.id, me.id));
     expect(author.postsCount).toBe(4);
+  });
+});
+
+describe('deletePost の通知（#26）', () => {
+  it('消した投稿についての通知（それへの反応も、それが知らせたものも）を消し、ほかは残す', async () => {
+    const [me, them] = [await makeUser(), await makeUser()];
+    const doomed = await makePost({ authorId: me.id });
+    const kept = await makePost({ authorId: me.id });
+    await testDb()
+      .insert(notifications)
+      .values([
+        { id: newId(), recipientId: me.id, actorId: them.id, type: 'like', postId: doomed.id },
+        { id: newId(), recipientId: them.id, actorId: me.id, type: 'mention', postId: doomed.id },
+        { id: newId(), recipientId: me.id, actorId: them.id, type: 'like', postId: kept.id },
+        { id: newId(), recipientId: me.id, actorId: them.id, type: 'follow', postId: null },
+      ]);
+    signInAs(me);
+    await deletePost(doomed.id);
+    const left = await testDb().select({ postId: notifications.postId }).from(notifications);
+    expect(left.map((row) => row.postId).sort()).toEqual([kept.id, null].sort());
   });
 });

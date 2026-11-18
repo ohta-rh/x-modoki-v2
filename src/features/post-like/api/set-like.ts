@@ -1,5 +1,6 @@
 import 'server-only';
 import { and, eq, isNull, sql } from 'drizzle-orm';
+import { notify, unnotify } from '@/entities/notification/index.server';
 import { getSession } from '@/shared/auth/index.server';
 import { getDb, likes, posts } from '@/shared/db';
 
@@ -18,7 +19,7 @@ export async function setLike(postId: bigint, liked: boolean): Promise<SetLikeRe
     // Lock the row for the count update up front: presses on one post queue instead of
     // deadlocking (a share lock then an update deadlocks), and a delete waits until this commits.
     const [post] = await tx
-      .select({ count: posts.likeCount })
+      .select({ count: posts.likeCount, authorId: posts.authorId })
       .from(posts)
       .where(and(eq(posts.id, postId), isNull(posts.deletedAt)))
       .for('no key update');
@@ -48,6 +49,14 @@ export async function setLike(postId: bigint, liked: boolean): Promise<SetLikeRe
               .where(eq(posts.id, postId))
               .returning({ count: posts.likeCount })
           )[0].count;
+    // The author hears of it in the same transaction; an unlike takes it back (#26).
+    const notification = {
+      recipientId: post.authorId,
+      actorId: viewer.id,
+      type: 'like',
+      postId,
+    } as const;
+    await (liked ? notify(tx, [notification]) : unnotify(tx, notification));
     return { ok: true, liked, count };
   });
 }

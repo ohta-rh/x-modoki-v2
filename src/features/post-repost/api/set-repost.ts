@@ -1,5 +1,6 @@
 import 'server-only';
 import { and, eq, isNull, sql } from 'drizzle-orm';
+import { notify, unnotify } from '@/entities/notification/index.server';
 import { getSession } from '@/shared/auth/index.server';
 import { getDb, posts } from '@/shared/db';
 import { newId } from '@/shared/lib/id';
@@ -27,7 +28,7 @@ export async function setRepost(postId: bigint, reposted: boolean): Promise<SetR
   return db.transaction(async (tx): Promise<SetRepostResult> => {
     // Locked for the count update up front, so concurrent reposts queue instead of deadlocking.
     const [original] = await tx
-      .select({ count: posts.repostCount })
+      .select({ count: posts.repostCount, authorId: posts.authorId })
       .from(posts)
       .where(and(eq(posts.id, target), isNull(posts.deletedAt)))
       .for('no key update');
@@ -57,6 +58,14 @@ export async function setRepost(postId: bigint, reposted: boolean): Promise<SetR
               .where(eq(posts.id, target))
               .returning({ count: posts.repostCount })
           )[0].count;
+    // The original's author hears of it in the same transaction; undoing takes it back (#26).
+    const notification = {
+      recipientId: original.authorId,
+      actorId: viewer.id,
+      type: 'repost',
+      postId: target,
+    } as const;
+    await (reposted ? notify(tx, [notification]) : unnotify(tx, notification));
     return { ok: true, reposted, count };
   });
 }

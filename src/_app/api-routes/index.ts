@@ -8,3 +8,4 @@ export { getUserPostList } from './user-posts';
 export { getUserProfile } from './user-profile';
 export { getUserFollows } from './user-follows';
 export { postUploadPresign } from './uploads';
+export { getNotificationList, getUnreadCount } from './notifications';

@@ -2,6 +2,7 @@ import 'server-only';
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import twitterText from 'twitter-text';
 import { sealUploads } from '@/entities/media/index.server';
+import { type NewNotification, notify } from '@/entities/notification/index.server';
 import { hitRateLimit } from '@/shared/api/index.server';
 import { getSession } from '@/shared/auth/index.server';
 import {
@@ -108,6 +109,8 @@ export async function createPost(
                 .where(and(inArray(media.id, mediaIds), eq(media.status, 'pending')))
                 .returning({ id: media.id });
         if (claimed.length !== items.length) throw new Refused('VALIDATION');
+        // Who hears of this post (#26): written with it, in this transaction.
+        const heard: NewNotification[] = [];
         // The parent's count goes first and re-checks deleted_at: a parent deleted after the check
         // above takes no reply.
         if (parent) {
@@ -115,16 +118,28 @@ export async function createPost(
             .update(posts)
             .set({ replyCount: sql`${posts.replyCount} + 1` })
             .where(and(eq(posts.id, parent.id), isNull(posts.deletedAt)))
-            .returning({ id: posts.id });
+            .returning({ authorId: posts.authorId });
           if (counted.length === 0) throw new Refused('NOT_FOUND');
+          heard.push({
+            recipientId: counted[0].authorId,
+            actorId: viewer.id,
+            type: 'reply',
+            postId: id,
+          });
         }
         if (quoted !== undefined) {
           const counted = await tx
             .update(posts)
             .set({ quoteCount: sql`${posts.quoteCount} + 1` })
             .where(and(eq(posts.id, quoted), isNull(posts.deletedAt)))
-            .returning({ id: posts.id });
+            .returning({ authorId: posts.authorId });
           if (counted.length === 0) throw new Refused('NOT_FOUND');
+          heard.push({
+            recipientId: counted[0].authorId,
+            actorId: viewer.id,
+            type: 'quote',
+            postId: id,
+          });
         }
         await tx.insert(posts).values({
           id,
@@ -164,7 +179,11 @@ export async function createPost(
               .insert(mentions)
               .values(people.map((person) => ({ postId: id, userId: person.id })));
           }
+          for (const person of people) {
+            heard.push({ recipientId: person.id, actorId: viewer.id, type: 'mention', postId: id });
+          }
         }
+        await notify(tx, heard);
         await tx
           .update(user)
           .set({ postsCount: sql`${user.postsCount} + 1` })

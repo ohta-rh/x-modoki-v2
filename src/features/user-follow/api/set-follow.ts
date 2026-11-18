@@ -1,6 +1,7 @@
 import 'server-only';
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import { hitRateLimit } from '@/shared/api/index.server';
+import { notify, unnotify } from '@/entities/notification/index.server';
 import { getSession } from '@/shared/auth/index.server';
 import { follows, getDb, user } from '@/shared/db';
 
@@ -57,6 +58,14 @@ export async function setFollow(username: string, following: boolean): Promise<S
       .set({ followersCount: sql`greatest(${user.followersCount} + ${moved}, 0)` })
       .where(eq(user.id, target.id))
       .returning({ followersCount: user.followersCount });
+    // The followed hear of it in the same transaction; an unfollow takes it back (#26).
+    const notification = {
+      recipientId: target.id,
+      actorId: viewer.id,
+      type: 'follow',
+      postId: null,
+    } as const;
+    await (following ? notify(tx, [notification]) : unnotify(tx, notification));
     return { ok: true, following, followersCount: counted.followersCount };
   });
 }

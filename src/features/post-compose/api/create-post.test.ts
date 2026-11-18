@@ -4,7 +4,16 @@ import { jpegHead, makeUpload, pngHead, webpHead } from '@test/uploads';
 import { currentSession, signInAs, signOut } from '@test/session';
 import { eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { hashtags, media, mentions, postHashtags, postMedia, posts, user } from '@/shared/db';
+import {
+  hashtags,
+  media,
+  mentions,
+  notifications,
+  postHashtags,
+  postMedia,
+  posts,
+  user,
+} from '@/shared/db';
 import { newId } from '@/shared/lib/id';
 import { sniffImage } from '@/shared/lib/image';
 import { presignUpload, readHead } from '@/shared/storage';
@@ -375,5 +384,43 @@ describe('createPost の画像（#25、T-07・T-08）', () => {
       width: 300,
       height: 200,
     });
+  });
+});
+
+describe('createPost の通知（#26）', () => {
+  const notes = () =>
+    testDb()
+      .select({
+        recipientId: notifications.recipientId,
+        actorId: notifications.actorId,
+        type: notifications.type,
+        postId: notifications.postId,
+      })
+      .from(notifications);
+
+  it('返信は親の作者へ、引用は元の作者へ、メンションは本文の中の実在する全員へ。どれも新しい投稿を指す。自分には作らない', async () => {
+    const me = await makeUser({ username: 'me_26' });
+    const hana = await makeUser({ username: 'hana_26' });
+    const jiro = await makeUser({ username: 'jiro_26' });
+    const parent = await makePost({ authorId: hana.id });
+    const quoted = await makePost({ authorId: jiro.id });
+    const own = await makePost({ authorId: me.id });
+    signInAs(me);
+    const reply = await createPost('返信', { replyToId: parent.id });
+    const quote = await createPost('引用', { quoteOfId: quoted.id });
+    const mention = await createPost('@hana_26 @jiro_26 @me_26 @nobody_26 こんにちは');
+    await createPost('自分への返信', { replyToId: own.id });
+    if (!reply.ok || !quote.ok || !mention.ok) throw new Error('not created');
+    const sorted = (await notes()).sort(
+      (a, b) => a.type.localeCompare(b.type) || a.recipientId.localeCompare(b.recipientId),
+    );
+    expect(sorted).toEqual(
+      [
+        { recipientId: hana.id, actorId: me.id, type: 'mention', postId: BigInt(mention.id) },
+        { recipientId: jiro.id, actorId: me.id, type: 'mention', postId: BigInt(mention.id) },
+        { recipientId: jiro.id, actorId: me.id, type: 'quote', postId: BigInt(quote.id) },
+        { recipientId: hana.id, actorId: me.id, type: 'reply', postId: BigInt(reply.id) },
+      ].sort((a, b) => a.type.localeCompare(b.type) || a.recipientId.localeCompare(b.recipientId)),
+    );
   });
 });

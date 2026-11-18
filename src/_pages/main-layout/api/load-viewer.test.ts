@@ -46,6 +46,7 @@ describe('loadViewer', () => {
       name: 'サンプル',
       username: 'sample_01',
       image: null,
+      unread: 0,
     });
   });
 

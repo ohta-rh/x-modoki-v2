@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { AppShell } from './app-shell';
@@ -61,6 +62,33 @@ describe('AppShell（ui-ux.md の 2 節）', () => {
   });
 });
 
+describe('通知の未読の数（#26）', () => {
+  const notifications = (nav: string) =>
+    within(screen.getByRole('navigation', { name: nav })).getByRole('link', { name: /^通知/ });
+
+  it('ログインしていれば、左のナビと下のタブの「通知」に未読の数が付く', () => {
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <AppShell account={{ name: '花子', username: 'hanako', image: null }} unread={2}>
+          <p>中身</p>
+        </AppShell>
+      </QueryClientProvider>,
+    );
+    expect(notifications('メインのメニュー')).toHaveAccessibleName('通知 未読 2 件');
+    expect(notifications('下のタブ')).toHaveAccessibleName('通知 未読 2 件');
+  });
+
+  it('未読の数が渡されなければ（ログインしていない）、「通知」だけ', () => {
+    render(
+      <AppShell>
+        <p>中身</p>
+      </AppShell>,
+    );
+    expect(notifications('メインのメニュー')).toHaveAccessibleName('通知');
+    expect(notifications('下のタブ')).toHaveAccessibleName('通知');
+  });
+});
+
 describe('TabBar', () => {
   it('ホーム・検索・通知を出し、今いるタブを塗りつぶす', () => {
     render(<TabBar currentPath="/home" />);
@@ -68,7 +96,7 @@ describe('TabBar', () => {
     expect(
       within(tabs)
         .getAllByRole('link')
-        .map((link) => link.getAttribute('aria-label')),
+        .map((link) => link.textContent),
     ).toEqual(['ホーム', '検索', '通知']);
     expect(within(tabs).getByRole('link', { name: 'ホーム' })).toHaveAttribute(
       'aria-current',

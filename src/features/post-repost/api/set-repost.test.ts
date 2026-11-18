@@ -3,7 +3,7 @@ import { setupTestDb, testDb } from '@test/db';
 import { currentSession, signInAs, signOut } from '@test/session';
 import { and, eq, isNotNull } from 'drizzle-orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { posts } from '@/shared/db';
+import { posts, notifications } from '@/shared/db';
 import { newId } from '@/shared/lib/id';
 import { setRepost } from './set-repost';
 
@@ -94,5 +94,30 @@ describe('setRepost（#22、ADR-0015）', () => {
     });
     expect(await setRepost(post.id, true)).toEqual({ ok: false, error: 'NOT_FOUND' });
     expect(await repostRows(me.id)).toHaveLength(0);
+  });
+});
+
+describe('setRepost の通知（#26）', () => {
+  it('リポストで元の作者へ通知を作り、取り消すと消す。自分の投稿には作らない', async () => {
+    const [me, them] = [await makeUser(), await makeUser()];
+    const theirs = await makePost({ authorId: them.id });
+    const mine = await makePost({ authorId: me.id });
+    signInAs(me);
+    await setRepost(theirs.id, true);
+    await setRepost(mine.id, true);
+    const notes = () =>
+      testDb()
+        .select({
+          recipientId: notifications.recipientId,
+          actorId: notifications.actorId,
+          type: notifications.type,
+          postId: notifications.postId,
+        })
+        .from(notifications);
+    expect(await notes()).toEqual([
+      { recipientId: them.id, actorId: me.id, type: 'repost', postId: theirs.id },
+    ]);
+    await setRepost(theirs.id, false);
+    expect(await notes()).toEqual([]);
   });
 });

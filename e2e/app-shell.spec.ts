@@ -33,7 +33,10 @@ test('1280px で 275 / 600 / 350px の 3 カラムが出る', async ({ page }) =
 test('1024〜1279px では、左ナビがアイコンだけ（88px）で、右サイドバーが出る', async ({ page }) => {
   await open(page, 1100);
   expect(await width(page, page.getByTestId('left-column'))).toBe(88);
-  await expect(leftNav(page).getByText('ホーム', { exact: true })).toBeHidden();
+  // The label stays for screen readers (it names the link, #26) but is not drawn: 1px or less.
+  expect(
+    (await leftNav(page).getByText('ホーム', { exact: true }).boundingBox())!.width,
+  ).toBeLessThanOrEqual(1);
   await expect(leftNav(page).getByRole('link', { name: 'ホーム', exact: true })).toBeVisible();
   await expect(sidebar(page)).toBeVisible();
 });
@@ -135,7 +138,6 @@ test('/home を開くと、コンソールのエラーと失敗した通信が 0
 
 for (const [path, title] of [
   ['/explore', '話題を検索'],
-  ['/notifications', '通知'],
   ['/compose/post', 'ポストする'],
   ['/settings', '設定'],
 ] as const) {

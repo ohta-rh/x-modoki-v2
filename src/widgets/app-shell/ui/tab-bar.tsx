@@ -1,13 +1,14 @@
 import { Bell, House, Search } from 'lucide-react';
 import Link from 'next/link';
 import { tabItems } from '@/shared/config';
+import { UnreadBadge } from '@/entities/notification';
 import { cn } from '@/shared/lib/cn';
 import { isCurrent } from './left-nav';
 
 const ICONS = { home: House, explore: Search, notifications: Bell } as const;
 
 /** The bottom tab bar under 640px (docs/architecture/ui-ux.md 2–3). */
-export function TabBar({ currentPath }: { currentPath: string }) {
+export function TabBar({ currentPath, unread }: { currentPath: string; unread?: number }) {
   return (
     <nav aria-label="下のタブ" className="flex h-[53px] items-center justify-around">
       {tabItems.map((item) => {
@@ -17,9 +18,8 @@ export function TabBar({ currentPath }: { currentPath: string }) {
           <Link
             key={item.key}
             href={item.href}
-            aria-label={item.label}
             aria-current={active ? 'page' : undefined}
-            className={cn('rounded-full p-3 text-text hover:bg-hover')}
+            className={cn('flex items-center rounded-full p-3 text-text hover:bg-hover')}
           >
             <Icon
               aria-hidden="true"
@@ -28,6 +28,10 @@ export function TabBar({ currentPath }: { currentPath: string }) {
               fill={active && item.key !== 'explore' ? 'currentColor' : 'none'}
               strokeWidth={active ? 2.5 : 2}
             />
+            <span className="sr-only">{item.label}</span>
+            {item.key === 'notifications' && unread !== undefined ? (
+              <UnreadBadge initial={unread} />
+            ) : null}
           </Link>
         );
       })}

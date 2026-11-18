@@ -3,7 +3,7 @@ import { setupTestDb, testDb } from '@test/db';
 import { currentSession, signInAs, signOut } from '@test/session';
 import { and, eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { likes, posts } from '@/shared/db';
+import { likes, notifications, posts } from '@/shared/db';
 import { newId } from '@/shared/lib/id';
 import { setLike } from './set-like';
 
@@ -77,5 +77,32 @@ describe('setLike の同時の操作（#21 のレビュー）', () => {
     expect(results.every((result) => result.ok)).toBe(true);
     const [row] = await testDb().select().from(posts).where(eq(posts.id, post.id));
     expect(row.likeCount).toBe(8);
+  });
+});
+
+describe('setLike の通知（#26）', () => {
+  const notes = () =>
+    testDb()
+      .select({
+        recipientId: notifications.recipientId,
+        actorId: notifications.actorId,
+        type: notifications.type,
+        postId: notifications.postId,
+      })
+      .from(notifications);
+
+  it('いいねで作者へ通知を作り、外すと消す。繰り返しても 1 行。自分の投稿には作らない', async () => {
+    const [me, them] = [await makeUser(), await makeUser()];
+    const theirs = await makePost({ authorId: them.id });
+    const mine = await makePost({ authorId: me.id });
+    signInAs(me);
+    await setLike(theirs.id, true);
+    await setLike(theirs.id, true);
+    await setLike(mine.id, true);
+    expect(await notes()).toEqual([
+      { recipientId: them.id, actorId: me.id, type: 'like', postId: theirs.id },
+    ]);
+    await setLike(theirs.id, false);
+    expect(await notes()).toEqual([]);
   });
 });

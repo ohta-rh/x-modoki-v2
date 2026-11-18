@@ -15,3 +15,6 @@ export const getDb = cache(() => {
   const pool = new Pool({ connectionString: env.DATABASE_URL, max: 2, idleTimeoutMillis: 1_000 });
   return drizzle(pool, { schema });
 });
+
+/** A transaction inside getDb(): what a mutation passes to a shared write (e.g. a notification). */
+export type Tx = Parameters<Parameters<ReturnType<typeof getDb>['transaction']>[0]>[0];

@@ -4,7 +4,7 @@ import { currentSession, signInAs, signOut } from '@test/session';
 import { eq } from 'drizzle-orm';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getTimeline } from '@/entities/post/index.server';
-import { follows, user } from '@/shared/db';
+import { follows, notifications, user } from '@/shared/db';
 import { setFollow } from './set-follow';
 
 vi.mock('@/shared/auth/index.server', async (importOriginal) => ({
@@ -91,5 +91,28 @@ describe('setFollow（#24）', () => {
     for (let i = 0; i < 27; i++) await setFollow('them', i % 2 === 0);
     expect(await setFollow('them', true)).toMatchObject({ ok: true });
     expect(await setFollow('them', false)).toEqual({ ok: false, error: 'RATE_LIMITED' });
+  });
+});
+
+describe('setFollow の通知（#26）', () => {
+  it('フォローで相手へ通知を作り（投稿は無し）、外すと消す。繰り返しても 1 行', async () => {
+    const [me, them] = [await makeUser(), await makeUser()];
+    signInAs(me);
+    await setFollow(them.username!, true);
+    await setFollow(them.username!, true);
+    const notes = () =>
+      testDb()
+        .select({
+          recipientId: notifications.recipientId,
+          actorId: notifications.actorId,
+          type: notifications.type,
+          postId: notifications.postId,
+        })
+        .from(notifications);
+    expect(await notes()).toEqual([
+      { recipientId: them.id, actorId: me.id, type: 'follow', postId: null },
+    ]);
+    await setFollow(them.username!, false);
+    expect(await notes()).toEqual([]);
   });
 });

@@ -1,5 +1,6 @@
 import 'server-only';
 import { and, eq, isNull, sql } from 'drizzle-orm';
+import { forgetPost } from '@/entities/notification/index.server';
 import { getSession } from '@/shared/auth/index.server';
 import { getDb, posts, user } from '@/shared/db';
 
@@ -38,6 +39,7 @@ export async function deletePost(postId: bigint): Promise<DeletePostResult> {
       .update(user)
       .set({ postsCount: sql`greatest(${user.postsCount} - 1, 0)` })
       .where(eq(user.id, viewer.id));
+    await forgetPost(tx, postId);
     return { ok: true };
   });
 }

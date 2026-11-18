@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { MainLayout } from './main-layout';
@@ -19,13 +20,21 @@ describe('MainLayout', () => {
 
   it('ページを 3 カラムのメインに出し、モーダルの枠も並べる', () => {
     render(
-      <MainLayout
-        viewer={{ name: 'サンプル', username: 'taro', image: null }}
-        modal={<div role="dialog">モーダル</div>}
-      >
-        ページ
-      </MainLayout>,
+      <QueryClientProvider client={new QueryClient()}>
+        <MainLayout
+          viewer={{ name: 'サンプル', username: 'taro', image: null, unread: 3 }}
+          modal={<div role="dialog">モーダル</div>}
+        >
+          ページ
+        </MainLayout>
+      </QueryClientProvider>,
     );
+    // The viewer's unread notifications reach the shell (#26).
+    expect(
+      within(screen.getByRole('navigation', { name: 'メインのメニュー' })).getByRole('link', {
+        name: /^通知/,
+      }),
+    ).toHaveAccessibleName('通知 未読 3 件');
     expect(screen.getByRole('button', { name: 'アカウントのメニュー' })).toHaveTextContent('@taro');
     expect(within(screen.getByRole('main')).getByText('ページ')).toBeInTheDocument();
     expect(screen.getByRole('dialog')).toHaveTextContent('モーダル');
