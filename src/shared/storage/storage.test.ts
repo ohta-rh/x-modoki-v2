@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { newId } from '@/shared/lib/id';
-import { presignUpload, readHead, removeObject } from './storage';
+import { copyObject, presignUpload, readHead, removeObject } from './storage';
 
 // Runs against the Garage from Docker Compose (docs/research/garage-presigned-upload.md).
 describe('storage（#25、ADR-0008）', () => {
@@ -35,5 +35,17 @@ describe('storage（#25、ADR-0008）', () => {
     await fetch(url, { method: 'PUT', body: 'GIF8', headers: { 'content-type': 'image/gif' } });
     await expect(readHead(key, 0)).rejects.toThrow();
     await removeObject(key);
+  });
+
+  it('オブジェクトをバケットの中で写せる。無いものは false、それ以外の失敗はそのまま投げる（#25 レビュー 2）', async () => {
+    const from = `test/${newId()}`;
+    const to = `test/${newId()}`;
+    const url = await presignUpload({ key: from, contentType: 'image/gif', contentLength: 6 });
+    await fetch(url, { method: 'PUT', body: 'GIF89a', headers: { 'content-type': 'image/gif' } });
+    expect(await copyObject(from, to)).toBe(true);
+    expect([...(await readHead(to, 6))!]).toEqual([...new TextEncoder().encode('GIF89a')]);
+    expect(await copyObject(`test/${newId()}`, `test/${newId()}`)).toBe(false);
+    await expect(copyObject(from, '')).rejects.toThrow();
+    await Promise.all([removeObject(from), removeObject(to)]);
   });
 });

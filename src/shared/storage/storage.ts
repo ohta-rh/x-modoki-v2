@@ -1,5 +1,6 @@
 import 'server-only';
 import {
+  CopyObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
   NoSuchKey,
@@ -58,4 +59,21 @@ export async function readHead(key: string, length: number): Promise<Uint8Array 
 /** Deletes an object; deleting one that does not exist is not an error. */
 export async function removeObject(key: string): Promise<void> {
   await client().send(new DeleteObjectCommand({ Bucket: env.S3_BUCKET, Key: key }));
+}
+
+/** Copies an object inside the bucket; false when there is no such object to copy. */
+export async function copyObject(from: string, to: string): Promise<boolean> {
+  try {
+    await client().send(
+      new CopyObjectCommand({
+        Bucket: env.S3_BUCKET,
+        CopySource: `${env.S3_BUCKET}/${from}`,
+        Key: to,
+      }),
+    );
+    return true;
+  } catch (error) {
+    if (error instanceof NoSuchKey) return false;
+    throw error;
+  }
 }

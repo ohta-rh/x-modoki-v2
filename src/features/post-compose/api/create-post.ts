@@ -1,7 +1,7 @@
 import 'server-only';
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import twitterText from 'twitter-text';
-import { checkUploads } from '@/entities/media/index.server';
+import { sealUploads } from '@/entities/media/index.server';
 import { hitRateLimit } from '@/shared/api/index.server';
 import { getSession } from '@/shared/auth/index.server';
 import {
@@ -15,6 +15,7 @@ import {
   user,
 } from '@/shared/db';
 import { newId as defaultNewId, toIdString } from '@/shared/lib/id';
+import { removeObject } from '@/shared/storage';
 import { measurePost } from '@/shared/lib/text';
 
 export type CreatePostResult =
@@ -85,7 +86,8 @@ export async function createPost(
     quoted = target.repostOfId ?? target.id;
   }
   const mediaIds = items.map((item) => item.id);
-  if (items.length > 0 && !(await checkUploads(viewer.id, mediaIds))) {
+  const sealed = items.length > 0 ? await sealUploads(viewer.id, mediaIds) : new Map();
+  if (sealed === null) {
     return { ok: false, error: 'VALIDATION' };
   }
   const tags = unique(twitterText.extractHashtags(body));
@@ -133,7 +135,10 @@ export async function createPost(
           quoteOfId: quoted ?? null,
         });
         for (const [position, item] of items.entries()) {
-          await tx.update(media).set({ alt: item.alt }).where(eq(media.id, item.id));
+          await tx
+            .update(media)
+            .set({ alt: item.alt, key: sealed.get(item.id)!.to })
+            .where(eq(media.id, item.id));
           await tx.insert(postMedia).values({ postId: id, mediaId: item.id, position });
         }
         if (tags.length > 0) {
@@ -168,10 +173,17 @@ export async function createPost(
       })
       .catch((error: unknown) => (error instanceof Refused ? error.reason : Promise.reject(error)));
 
-  const created = (id: bigint | 'NOT_FOUND' | 'VALIDATION'): CreatePostResult =>
-    typeof id === 'string' ? { ok: false, error: id } : { ok: true, id: toIdString(id) };
+  // The keys left behind: the originals once the post holds the copies, the copies if it was refused.
+  const created = async (id: bigint | 'NOT_FOUND' | 'VALIDATION'): Promise<CreatePostResult> => {
+    await Promise.all(
+      [...sealed.values()].map((upload) =>
+        removeObject(typeof id === 'string' ? upload.to : upload.from),
+      ),
+    );
+    return typeof id === 'string' ? { ok: false, error: id } : { ok: true, id: toIdString(id) };
+  };
   try {
-    return created(await insert(newId()));
+    return await created(await insert(newId()));
   } catch (error) {
     if (!isIdCollision(error)) throw error;
     return created(await insert(newId()));

@@ -1,11 +1,13 @@
 import { makePost, makeUser } from '@test/factories';
 import { setupTestDb, testDb } from '@test/db';
-import { jpegHead, makeUpload, pngHead } from '@test/uploads';
+import { jpegHead, makeUpload, pngHead, webpHead } from '@test/uploads';
 import { currentSession, signInAs, signOut } from '@test/session';
 import { eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { hashtags, media, mentions, postHashtags, postMedia, posts, user } from '@/shared/db';
 import { newId } from '@/shared/lib/id';
+import { sniffImage } from '@/shared/lib/image';
+import { presignUpload, readHead } from '@/shared/storage';
 import { createPost } from './create-post';
 
 vi.mock('@/shared/auth/index.server', async (importOriginal) => ({
@@ -348,5 +350,30 @@ describe('createPost の画像（#25、T-07・T-08）', () => {
       .from(media)
       .where(eq(media.id, upload.id));
     expect(row.status).toBe('pending');
+  });
+
+  it('投稿したあと、まだ有効な署名つき URL で元のキーを上書きしても、投稿の画像は確かめた中身のまま（レビュー 2）', async () => {
+    const me = await makeUser();
+    signInAs(me);
+    const upload = await makeUpload(me.id);
+    const result = await createPost('写真', { media: [{ id: upload.id, alt: '' }] });
+    if (!result.ok) throw new Error(result.error);
+    // The same key, type and length the browser was allowed to PUT: different content.
+    const forged = pngHead().slice(0, webpHead(300, 200).length);
+    const url = await presignUpload({
+      key: upload.key,
+      contentType: 'image/webp',
+      contentLength: forged.length,
+    });
+    expect(
+      (await fetch(url, { method: 'PUT', body: forged, headers: { 'content-type': 'image/webp' } }))
+        .ok,
+    ).toBe(true);
+    const [row] = await testDb().select().from(media).where(eq(media.id, upload.id));
+    expect(sniffImage((await readHead(row.key, 1024))!)).toEqual({
+      type: 'image/webp',
+      width: 300,
+      height: 200,
+    });
   });
 });

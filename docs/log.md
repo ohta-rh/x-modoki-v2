@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-18
+* **Update**: [脅威モデル](architecture/threat-model.md)の T-07 に、結びつけるときに写してから確かめることを書いた（#25 レビュー 2）。
 * **New**: [#50 の試験レポート](test-reports/issue-0050-follow-test-wait.md)（フォローの画面のテストの待ち方）を足した。
 * **New**: [#49 の試験レポート](test-reports/issue-0049-postgres-connections.md)（PostgreSQL の接続の数の上限）を足した。
 * **New**: [#48 の試験レポート](test-reports/issue-0048-feed-row-heights.md)（タイムラインのカードの重なり）を足した。

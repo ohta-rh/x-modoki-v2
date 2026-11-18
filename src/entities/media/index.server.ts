@@ -1,1 +1,1 @@
-export { checkUploads } from './api/check-uploads';
+export { sealUploads, type SealedUpload } from './api/seal-uploads';

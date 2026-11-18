@@ -1,1 +1,1 @@
-export { presignUpload, readHead, removeObject } from './storage';
+export { copyObject, presignUpload, readHead, removeObject } from './storage';
