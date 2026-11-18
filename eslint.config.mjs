@@ -69,6 +69,21 @@ const config = defineConfig([
     files: ['app/**/*.{ts,tsx}'],
     rules: { 'no-restricted-imports': ['error', { paths: RUNTIME, patterns: [DB, ROUTING_ONLY] }] },
   },
+  {
+    // A wheel scroll keeps moving after the test has read the position (#56, #28): ADR-0049.
+    files: ['e2e/**/*.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "CallExpression[callee.property.name='wheel'][callee.object.property.name='mouse']",
+          message:
+            "Scroll with window.scrollTo / scrollBy and behavior: 'instant', then wait for the position (ADR-0049).",
+        },
+      ],
+    },
+  },
 ]);
 
 export default config;

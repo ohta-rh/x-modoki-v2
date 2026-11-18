@@ -63,7 +63,7 @@ test('「フォロー中」は 20 件ずつ読み、下まで行くと続きを�
     i < 40 && !(await page.getByText('e2e の投稿 1', { exact: true }).isVisible());
     i += 1
   ) {
-    await page.mouse.wheel(0, 3000);
+    await page.evaluate(() => window.scrollBy({ top: 3000, behavior: 'instant' }));
     await page.waitForTimeout(150);
   }
   await expect(page.getByText('e2e の投稿 1', { exact: true })).toBeVisible();

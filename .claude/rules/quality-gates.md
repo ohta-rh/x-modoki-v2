@@ -49,6 +49,9 @@ Decided in ADR-0017, ADR-0019, ADR-0020, ADR-0021; this file is the operating ru
 - **Async Server Components exist only in root `app/`.** Every component under `src/` is
   synchronous and unit-tested.
 - **Every page route has at least one Playwright test** — that is what covers the excluded files.
+- **E2e tests scroll at once, never by wheel (ADR-0049).** `page.mouse.wheel` keeps moving after the
+  test reads the position; it flaked twice (#56, #28) and ESLint now rejects it under `e2e/`. Use
+  `window.scrollTo` / `scrollBy` with `behavior: 'instant'`, then `expect.poll` the position.
 - **Stop your own servers by PID, not by name.** `next start` renames itself to `next-server`, so
   `pkill -f "next start"` misses it and the next check hits a stale build (found in #15). Check
   `lsof -iTCP:<port> -sTCP:LISTEN` before a browser test; never touch a process you did not start.

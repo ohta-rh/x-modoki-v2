@@ -26,9 +26,7 @@ test.describe('右サイドバー（#58）', () => {
     await page.goto('/home?tab=following');
     await expect(page.getByRole('article').first()).toBeVisible();
     const search = page.getByRole('complementary').getByRole('searchbox', { name: '検索' });
-    // Over the timeline, where the reader is.
-    await page.mouse.move(640, 300);
-    await page.mouse.wheel(0, 400);
+    await page.evaluate(() => window.scrollBy({ top: 400, behavior: 'instant' }));
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
     await expect.poll(async () => (await search.boundingBox())!.y).toBeLessThan(20);
   });

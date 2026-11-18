@@ -60,3 +60,4 @@ status: stable
 | [0046](0046-ci-browser-tests-in-the-official-playwright-image.md) | CI の画面のテストは、公式の Playwright のイメージの中で、ランナーの Node.js で動かす | 採用（「7 番目だけ」を ADR-0047 で置き換え） | ユーザー・エージェント |
 | [0047](0047-ci-steps-that-launch-a-browser-run-in-the-playwright-image.md) | CI でブラウザを立ち上げる確認は、どれも公式の Playwright のイメージの中で動かす | 採用 | エージェント |
 | [0048](0048-read-trends-and-suggestions-per-request.md) | トレンドとおすすめのユーザーは 'use cache' で持たず、要求ごとに読む | 採用 | エージェント |
+| [0049](0049-e2e-scrolls-at-once-not-by-wheel.md) | 画面のテストは、ホイールではなく一度に動かしてスクロールする | 採用 | エージェント |

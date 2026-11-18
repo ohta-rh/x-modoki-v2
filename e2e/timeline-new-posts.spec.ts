@@ -60,7 +60,7 @@ test('ホームを開いたまま、ほかの人の新しい投稿は 30 秒以�
   // Not until it is pressed.
   await expect(first).toContainText('前からある投稿');
 
-  await page.mouse.wheel(0, 300);
+  await page.evaluate(() => window.scrollBy({ top: 300, behavior: 'instant' }));
   await show.click();
   await expect(first).toContainText('二つめの新しい投稿');
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);

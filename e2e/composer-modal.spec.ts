@@ -93,7 +93,7 @@ test('送ったあと、下の中央に「ポストを送信しました」と�
   const rect = (await toast.boundingBox())!;
   expect(Math.abs(rect.x + rect.width / 2 - viewport.width / 2)).toBeLessThan(200);
   expect(rect.y).toBeGreaterThan(viewport.height / 2);
-  await page.getByRole('link', { name: '表示' }).click();
+  await page.getByRole('link', { name: '表示', exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`/${me.username}/status/\\d+$`));
   await expect(page.getByRole('article', { name: '投稿の本体' })).toContainText('モーダルから投稿');
 });

@@ -71,7 +71,7 @@ test('ヘッダーは高さ 53px で半透明、スクロールしてもヘッ�
     filler.style.height = '4000px';
     el.append(filler);
   });
-  await page.mouse.wheel(0, 2000);
+  await page.evaluate(() => window.scrollTo({ top: 2000, behavior: 'instant' }));
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(1000);
   expect((await header.boundingBox())!.y).toBe(0);
   expect((await leftNav(page).boundingBox())!.y).toBeLessThanOrEqual(0 + 1);
