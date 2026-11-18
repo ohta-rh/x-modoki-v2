@@ -186,7 +186,8 @@ for (const path of files) {
       if (images.length > 12) fail(path, 'a test report may hold at most 12 screenshots');
 
       const isPbiReport = /^issue-\d{4}-/.test(name);
-      const at = (heading) => body.indexOf(`\n${heading}\n`);
+      // Headings inside code are examples too: look for sections in the prose only.
+      const at = (heading) => `\n${prose}`.indexOf(`\n${heading}\n`);
       const present = REPORT_SECTIONS.filter((section) => at(section) >= 0);
       for (const section of REPORT_SECTIONS) {
         const optional = section === '## コードレビュー' && !isPbiReport;
@@ -201,7 +202,7 @@ for (const path of files) {
       }
       if (tdd >= 0) {
         const start = at('## 自動のテスト');
-        const next = body.indexOf('\n## ', start + 1);
+        const next = `\n${prose}`.indexOf('\n## ', start + 1);
         if (start < 0 || tdd < start || (next >= 0 && tdd > next)) {
           fail(path, '"### TDD の記録" must sit under "## 自動のテスト"');
         }

@@ -277,6 +277,101 @@ rejects(
   /broken link "nope\.md"/,
 );
 
-test('the script header states which checks it performs', () => {
-  assert.match(readFileSync(script, 'utf8'), /--root/);
-});
+// --- every remaining "Checked by the script" claim in documentation.md section 4 --------------
+const adr = 'docs/adr/0001-first.md';
+const readme = 'docs/adr/README.md';
+const swap = (path, from, to) => (f) => {
+  assert.ok(f[path].includes(from), `fixture ${path} has no "${from}"`);
+  f[path] = f[path].replace(from, to);
+};
+
+rejects('a type not listed in docs/index.md is rejected', swap(overview, 'type: Architecture', 'type: Unknown'), /not listed in docs\/index\.md/);
+rejects('a title that differs from the H1 is rejected', swap(overview, '# Overview', '# Something else'), /H1 must equal/);
+rejects('a missing required key is rejected', swap(overview, 'status: stable\n', ''), /missing `status`/);
+rejects('tags that are not a list are rejected', swap(overview, 'tags: [x]', 'tags: x'), /`tags` must be a YAML list/);
+rejects('an unknown status is rejected', swap(overview, 'status: stable', 'status: final'), /is not draft \| stable \| deprecated/);
+rejects(
+  'frontmatter in a directory index.md is rejected',
+  (f) => {
+    f['docs/architecture/index.md'] = `---\ntype: Reference\n---\n${f['docs/architecture/index.md']}`;
+  },
+  /must not have frontmatter/,
+);
+rejects('an extra key in the root index frontmatter is rejected', swap('docs/index.md', 'okf_version: "0.2"', 'okf_version: "0.2"\ntype: Reference'), /exactly `okf_version`/);
+rejects('a log heading that is not a date is rejected', swap('docs/log.md', '## 2026-11-17', '## Nov 17'), /is not YYYY-MM-DD/);
+rejects('an index description that differs from the document is rejected', swap('docs/architecture/index.md', '全体の説明。', '別の説明。'), /differs from that document/);
+rejects(
+  'a bundle-absolute link is rejected',
+  (f) => {
+    f[overview] += '\n[x](/adr/0001-first.md)\n';
+  },
+  /bundle-absolute link/,
+);
+rejects(
+  'a badly named ADR file is rejected',
+  (f) => {
+    f['docs/adr/0001-First.md'] = f[adr];
+    f[adr] = null;
+    f[readme] = f[readme].replace('0001-first.md', '0001-First.md');
+    f['docs/log.md'] = f['docs/log.md'].replace('0001-first.md', '0001-First.md');
+  },
+  /must be named NNNN-kebab-title\.md/,
+);
+rejects('an ADR title without its number is rejected', (f) => {
+  f[adr] = f[adr].replaceAll('ADR-0001: First', 'First');
+}, /title must start with "ADR-0001: "/);
+rejects('an ADR missing a section is rejected', swap(adr, '## 結果\n', ''), /missing section "## 結果"/);
+rejects(
+  'a task list in an ADR is rejected',
+  (f) => {
+    f[adr] += '\n- [ ] やること\n';
+  },
+  /must not contain a task list/,
+);
+rejects('an ADR status that differs in README is rejected', swap(readme, '| 採用 |', '| 提案 |'), /status in docs\/adr\/README\.md differs/);
+rejects('an ADR missing from README is rejected', swap(readme, '| [0001](0001-first.md) | First | 採用 |\n', ''), /is not listed in docs\/adr\/README\.md/);
+rejects(
+  'a gap in ADR numbers is rejected',
+  (f) => {
+    f['docs/adr/0003-third.md'] = f[adr].replaceAll('0001', '0003');
+    f[readme] += '| [0003](0003-third.md) | Third | 採用 |\n';
+    f['docs/log.md'] = f['docs/log.md'].replace('[ADR-0001]', '[ADR-0003](adr/0003-third.md)、[ADR-0001]');
+  },
+  /must be sequential \(expected 0002\)/,
+);
+rejects(
+  'a test report title without the prefix is rejected',
+  (f) => {
+    f[report] = f[report].replaceAll('試験レポート: サンプル', 'サンプル');
+    f['docs/test-reports/index.md'] = f['docs/test-reports/index.md'].replace('試験レポート: サンプル', 'サンプル');
+  },
+  /title must start with "試験レポート: "/,
+);
+rejects('a test report that docs/log.md does not link is rejected', swap('docs/log.md', `、[report](test-reports/${REPORT}.md)`, ''), /issue-0007-sample\.md: is not linked from docs\/log\.md/);
+rejects('a test report missing a section is rejected', swap(report, '## 環境\n\n', ''), /missing section "## 環境"/);
+rejects(
+  'evidence larger than 300KB is rejected',
+  (f) => {
+    f[`docs/test-reports/evidence/${REPORT}/a-375.jpg`] = 'x'.repeat(301 * 1024);
+  },
+  /larger than 300KB/,
+);
+rejects(
+  'more than 12 screenshots are rejected',
+  (f) => {
+    f[report] = reportBody(Array.from({ length: 13 }, () => `![s](evidence/${REPORT}/a-375.jpg)`).join('\n'));
+  },
+  /at most 12 screenshots/,
+);
+
+// --- second review, finding 2 ---------------------------------------------------------------
+rejects(
+  'a section heading that only appears inside a code fence does not count',
+  swap(report, '## 環境\n', '```\n## 環境\n```\n'),
+  /missing section "## 環境"/,
+);
+rejects(
+  'a TDD record that only appears inside a code fence does not count',
+  swap(report, '### TDD の記録\n', '```\n### TDD の記録\n```\n'),
+  /TDD の記録/,
+);
