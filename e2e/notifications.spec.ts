@@ -105,3 +105,19 @@ test('未読の数は 30 秒ごとに確かめる（時計を進める）', asyn
   await authorPage.clock.fastForward('00:31');
   await expect(notificationsLink(authorPage)).toHaveAccessibleName('通知 未読 1 件');
 });
+
+test('375px では、下のタブの「通知」に未読の数が出る', async ({ browser }) => {
+  const authorPage = await (
+    await browser.newContext({ viewport: { width: 375, height: 800 } })
+  ).newPage();
+  const author = await signUp(authorPage);
+  await postFromHome(authorPage, '小さな画面の投稿');
+  await likeFrom(browser, author.username, '小さな画面の投稿');
+  await authorPage.reload();
+  const tab = authorPage
+    .getByRole('navigation', { name: '下のタブ' })
+    .getByRole('link', { name: /^通知/ });
+  await expect(tab).toBeVisible();
+  await expect(tab).toHaveAccessibleName('通知 未読 1 件');
+  await expect(tab).toContainText('1');
+});
