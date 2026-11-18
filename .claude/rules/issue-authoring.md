@@ -53,6 +53,9 @@ from a symptom gets fixed at the symptom and comes back.
 - [ ] The implementer can start from the issue alone, without the conversation that
       produced it.
 - [ ] Small enough to land as one PR; otherwise split.
+- [ ] Assigned to a GitHub milestone (ADR-0019), and the acceptance criteria include
+      "CI is green" and "coverage stays at 100%" (`.claude/rules/quality-gates.md`), with the
+      tests to add named in the 検証 section.
 
 ## 4. Templates
 

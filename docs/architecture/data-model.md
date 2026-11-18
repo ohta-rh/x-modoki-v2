@@ -9,7 +9,7 @@ status: stable
 # データモデル
 
 - 決定: [ADR-0006](../adr/0006-postgresql-drizzle.md)、[ADR-0015](../adr/0015-timeline-fan-out-on-read.md)、[ADR-0016](../adr/0016-time-ordered-64bit-post-ids.md)、[ADR-0007](../adr/0007-better-auth-db-sessions.md)
-- 正本は `src/server/db/schema/` の TypeScript。この文書は表の関係と意図を示す
+- 正本は `src/shared/db/schema/` の TypeScript。この文書は表の関係と意図を示す
 
 ## 1. 表の関係
 
@@ -81,9 +81,9 @@ verifications（Better Auth）     rate_limits
 | | `owner_id` | `text` | 送った人 |
 | | `key` | `text` | ストレージのキー。一意 |
 | | `mime` | `text` | |
-| | `width` / `height` | `integer` | 変換のあとに入る |
+| | `width` / `height` | `integer` | ブラウザが申告し、サーバーが置かれた画像から確かめた値 |
 | | `alt` | `text` | 代替テキスト。1,000 文字まで |
-| | `status` | `text` | `pending`（送る前）/ `ready`（変換が済んだ） |
+| | `status` | `text` | `pending`（送る前）/ `ready`（確かめて、投稿に結びついた） |
 | | `created_at` | `timestamptz` | |
 | `post_media` | `post_id` | `id64` | |
 | | `media_id` | `id64` | 一意（1 つの画像は 1 つの投稿だけに付く） |

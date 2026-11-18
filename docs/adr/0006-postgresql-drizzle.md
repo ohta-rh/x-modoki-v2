@@ -8,7 +8,7 @@ status: stable
 
 # ADR-0006: データは PostgreSQL に置き、Drizzle ORM 0.45 系で読み書きする
 
-- ステータス: 採用
+- ステータス: 採用（接続の持ち方を ADR-0017 で置き換え）
 - 日付: 2026-11-18
 - 決定者: エージェント（委任された判断）
 - 関連: [バックエンド技術選定](../research/backend.md)、[データモデル](../architecture/data-model.md)、ADR-0012、ADR-0015、ADR-0016

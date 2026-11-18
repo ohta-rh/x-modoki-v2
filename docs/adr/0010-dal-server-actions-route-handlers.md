@@ -8,7 +8,7 @@ status: stable
 
 # ADR-0010: 読み書きはデータアクセス層に集め、変更は Server Action、続きの読み込みは Route Handler で行う
 
-- ステータス: 採用
+- ステータス: 採用（ファイルの置き場所を ADR-0022 で置き換え）
 - 日付: 2026-11-18
 - 決定者: エージェント（委任された判断）
 - 関連: [Next.js と周辺ツールチェーンの現状](../research/nextjs.md)、[アプリケーションの構造](../architecture/application-structure.md)、ADR-0004

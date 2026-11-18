@@ -72,6 +72,10 @@ The global rule `~/.claude/rules/adr.md` applies; these are the local convention
 
 ## 4. Before committing a documentation change
 
+Run `node scripts/check-docs.mjs` (also `pnpm docs:check`, and the first CI gate). It must exit 0.
+It checks the list below mechanically; when a new documentation rule is added here, add the
+check to that script in the same commit.
+
 - [ ] Every non-reserved `.md` under `docs/` has frontmatter with a non-empty `type`.
 - [ ] Every relative link resolves to an existing file.
 - [ ] The directory's `index.md` (or `docs/adr/README.md`) and `docs/log.md` are updated.

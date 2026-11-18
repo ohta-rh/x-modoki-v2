@@ -17,7 +17,8 @@ x-modoki は、X（x.com）の Web 版の見た目と操作を可能な限り再
 
 - 作る機能と作らない機能: [機能の範囲](scope.md)
 - 見た目と操作: [UI/UX 仕様](ui-ux.md)（[ADR-0009](../adr/0009-mimic-x-ui-with-own-brand.md)）
-- 想定する規模: 数十人から数千人。インスタンスは 1 つ
+- 想定する規模: 数十人から数千人
+- 進め方: 最初のマイルストーンは「ローカルで全部が動く」。Cloudflare への配備はその次（[ADR-0019](../adr/0019-first-milestone-runs-locally.md)）
 
 ## 2. 全体の構成
 
@@ -25,35 +26,40 @@ x-modoki は、X（x.com）の Web 版の見た目と操作を可能な限り再
  ブラウザ
    │  HTTPS
    ▼
- Caddy（HTTPS・逆プロキシ）
+ Cloudflare（HTTPS・静的なファイル）
    │
    ▼
-┌───────────────────────── Next.js 16.4（コンテナ 1 つ）─────────────────────────┐
+┌──────────── Next.js 16.4（本番は Cloudflare Workers、ローカルは next dev）────────────┐
 │ proxy.ts              ログインしていなければログインへ送る（粗い門だけ）       │
 │                                                                                │
-│ app/（ルート）                                                                 │
+│ app/（ルーティングだけ。src/_pages と src/_app を呼ぶ）                              │
 │   Server Component ──────────────┐   最初の画面を描く                          │
 │   Server Action（'use server'）──┤   変更                                      │
 │   Route Handler（GET /api/…）───┤   続きの読み込み・新着の確認・署名つき URL  │
 │                                  ▼                                             │
-│ features/*/data.ts    データアクセス層（server-only・認可・DTO）               │
+│ entities/*/api, features/*/api   データアクセス層（server-only・認可・DTO）          │
 │                                  │                                             │
-│ server/               Drizzle / Better Auth / S3Client / 回数の制限            │
+│ shared/               db / auth / storage / api（回数の制限）                        │
 └──────────────┬───────────────────┬─────────────────────────────────────────────┘
                ▼                   ▼
-        PostgreSQL            S3 互換のストレージ ◀── ブラウザが署名つき URL で直接 PUT
+        PostgreSQL            S3 互換のストレージ ◀── ブラウザが変換した画像を、署名つき URL で直接 PUT
    （データ・セッション・      （本番 Cloudflare R2 /
      回数の制限）               ローカル Garage）
+   本番は Neon を Hyperdrive で、
+   ローカルは Docker
 ```
 
 | 部分 | 役割 | 決定 |
 |---|---|---|
 | Next.js 16.4（App Router） | 画面・変更・API の全部 | [ADR-0004](../adr/0004-nextjs-16-all-in-one-app.md) |
-| データアクセス層 | データベースの読み書きと認可の唯一の場所 | [ADR-0010](../adr/0010-dal-server-actions-route-handlers.md) |
+| Feature-Sliced Design | `src/` の層（`_app`・`_pages`・`widgets`・`features`・`entities`・`shared`）と依存の向き | [ADR-0022](../adr/0022-feature-sliced-design.md) |
+| データアクセス層 | データベースの読み書きと認可の唯一の場所（各スライスの `api`） | [ADR-0010](../adr/0010-dal-server-actions-route-handlers.md) |
 | PostgreSQL と Drizzle | データ・セッション・検索 | [ADR-0006](../adr/0006-postgresql-drizzle.md) |
 | Better Auth | 登録・ログイン・セッション | [ADR-0007](../adr/0007-better-auth-db-sessions.md) |
 | S3 互換のストレージ | 画像 | [ADR-0008](../adr/0008-s3-compatible-media-storage.md) |
-| Docker Compose と Caddy | ローカルと本番の実行環境 | [ADR-0012](../adr/0012-single-container-docker-compose.md) |
+| Cloudflare Workers と OpenNext | 本番の実行環境（マイルストーン 2） | [ADR-0017](../adr/0017-cloudflare-workers-opennext.md) |
+| Docker Compose | ローカルと CI の PostgreSQL とストレージ | [ADR-0019](../adr/0019-first-milestone-runs-locally.md) |
+| GitHub Actions | 全部の確認とカバレッジ 100% | [ADR-0020](../adr/0020-ci-required-github-actions.md)、[ADR-0021](../adr/0021-coverage-100-percent.md) |
 
 詳しい構造は [アプリケーションの構造](application-structure.md)、版は [技術スタック](tech-stack.md)。
 
@@ -80,6 +86,7 @@ x-modoki は、X（x.com）の Web 版の見た目と操作を可能な限り再
 
 ```
 ブラウザ                    Next.js                         ストレージ      PostgreSQL
+  │ ブラウザで画像を縮めて WebP にする                           │               │
   │ POST /api/uploads/presign  │ ログイン・枚数・種類・大きさ    │               │
   │───────────────────────────▶│ ・回数の制限を確かめる          │               │
   │◀── 署名つき URL と キー ───│ media（結びつく前）を作る──────────────────────▶│
@@ -90,7 +97,8 @@ x-modoki は、X（x.com）の Web 版の見た目と操作を可能な限り再
   │                            │  1 つのトランザクションで       │               │
   │                            │  posts・post_media・hashtags・  │               │
   │                            │  mentions・notifications を書く─────────────────▶│
-  │                            │ sharp で WebP を作って置く─────▶│               │
+  │                            │ 置かれた画像の先頭のバイトで    │               │
+  │                            │ 種類と縦横を確かめる───────────▶│               │
   │◀── 新しい投稿の DTO ───────│                                 │               │
   │ タイムラインの先頭に足す。「ポストを送信しました」を出す                     │
 ```
@@ -130,6 +138,11 @@ x-modoki は、X（x.com）の Web 版の見た目と操作を可能な限り再
 | 投稿の ID は外では文字列 | [ADR-0016](../adr/0016-time-ordered-64bit-post-ids.md) |
 | 通知の行は元の操作と同じトランザクションで書く | [ADR-0011](../adr/0011-polling-and-after-no-queue.md) |
 | X の名前・ロゴ・素材・実在の投稿を使わない | [ADR-0009](../adr/0009-mimic-x-ui-with-own-brand.md) |
+| Workers で動かないもの（ネイティブのモジュール、`fs` への書き込み、リクエストをまたぐ変数と接続）をサーバーのコードに入れない | [ADR-0017](../adr/0017-cloudflare-workers-opennext.md) |
+| コードは Feature-Sliced Design の層で分け、下の層だけを読む | [ADR-0022](../adr/0022-feature-sliced-design.md) |
+| 非同期の Server Component はルートの `app/` の中だけに書き、判断を持たせない | [ADR-0021](../adr/0021-coverage-100-percent.md)、[ADR-0022](../adr/0022-feature-sliced-design.md) |
+| EPIC の子 issue は 1 件ずつ、確認と CI を通して閉じる | [ADR-0023](../adr/0023-delivery-loop-one-pbi-at-a-time.md) |
+| CI が通り、カバレッジが 100% でなければ完了としない | [ADR-0020](../adr/0020-ci-required-github-actions.md)、[ADR-0021](../adr/0021-coverage-100-percent.md) |
 | 決めたら ADR を書く。文書は OKF の形で `docs/` に置く | [ADR-0001](../adr/0001-record-architecture-decisions.md)、[ADR-0002](../adr/0002-docs-as-okf-bundle.md) |
 
 ## 5. リスクと対策
@@ -144,7 +157,10 @@ x-modoki は、X（x.com）の Web 版の見た目と操作を可能な限り再
 | `pg_trgm` は 2 文字以下の語に弱い | 低 | ハッシュタグは完全一致の表で引く。足りなくなったら PGroonga を検討する |
 | X の UI の値の多くが近似 | 低 | 値と確度を [UI/UX 仕様](ui-ux.md) に書き、見た目で調整する |
 | 見た目が X に似ていることを指摘される | 中 | 名前・ロゴ・素材は自前。関係が無い旨を表示する。公開の前にアクセントの色を見直す |
-| 1 台の VPS が止まるとアプリが止まる | 低 | 学習用として受け入れる。`pg_dump` を 1 日に 1 回 R2 に置く |
+| OpenNext の上で Cache Components と `proxy.ts` が動くか確かめていない | 高 | マイルストーン 2 の最初の PBI で確かめる。`proxy.ts` が動かなければレイアウトへ移し、`'use cache'` が動かなければキャッシュをやめる（[ADR-0017](../adr/0017-cloudflare-workers-opennext.md)） |
+| Cloudflare は vinext を勧めていて、OpenNext の保守が細る恐れがある | 中 | OpenNext の版を固定する。保守が止まったら ADR で次を決める |
+| Workers で動かないコードが、マイルストーン 1 の間に入る | 中 | 入れないものの一覧（[環境と配備](environments.md) の 8 節）を lint とレビューで守る |
+| カバレッジ 100% のために、意味の薄いテストが増える | 低 | 書けない分岐は消す。外すものは [ADR-0021](../adr/0021-coverage-100-percent.md) の 4 種類だけ |
 
 ## 6. あとで考えること
 
@@ -154,4 +170,5 @@ x-modoki は、X（x.com）の Web 版の見た目と操作を可能な限り再
 - メールの確認、Google と GitHub でのログイン、パスキー
 - PGroonga による日本語の検索
 - TypeScript 7、Drizzle 1.0 への移行
-- 複数のインスタンスと共有のキャッシュ
+- Cloudflare Images での幅ごとの画像
+- 配備の自動化

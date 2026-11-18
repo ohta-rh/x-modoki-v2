@@ -1,0 +1,33 @@
+# CI is mandatory (ADR-0020). A change is done only when this workflow is green on its commit.
+#
+# Until the app scaffold exists, the only gate that can run is the documentation check.
+# The scaffold PBI adds the remaining six gates, in this order, without removing this one:
+#   typecheck -> lint (ESLint + Steiger) -> format:check -> test --coverage (100%) -> build -> test:e2e
+# Never add `continue-on-error`, skip a gate, or lower a threshold to get green
+# (.claude/rules/quality-gates.md).
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    name: docs (OKF bundle, links, ADR status)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - run: node scripts/check-docs.mjs

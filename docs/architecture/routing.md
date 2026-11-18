@@ -8,7 +8,7 @@ status: stable
 
 # ルーティング
 
-- 決定: [ADR-0004](../adr/0004-nextjs-16-all-in-one-app.md)、[ADR-0009](../adr/0009-mimic-x-ui-with-own-brand.md)
+- 決定: [ADR-0004](../adr/0004-nextjs-16-all-in-one-app.md)、[ADR-0009](../adr/0009-mimic-x-ui-with-own-brand.md)、[ADR-0022](../adr/0022-feature-sliced-design.md)
 - URL の形は X の Web 版に合わせる（出典: [X の Web UI/UX 調査](../research/x-uiux.md)）
 
 ## 1. URL の一覧
@@ -40,7 +40,7 @@ status: stable
 ## 2. ディレクトリの形
 
 ```
-src/app/
+app/                                   リポジトリのルート。各ファイルは src/_pages と src/_app を呼ぶだけ
 ├── layout.tsx                         <html data-theme>、フォント、Provider
 ├── page.tsx                           /（入口）
 ├── not-found.tsx / error.tsx
@@ -99,6 +99,7 @@ API の一覧は [アプリケーションの構造](application-structure.md) �
 
 | 規則 | 理由 |
 |---|---|
+| `app/` のファイルに中身を書かない。`page.tsx` は `_pages` の関数でデータを集めて同期のコンポーネントへ渡すだけ、`route.ts` は `_app/api-routes` を書き出すだけ | ルーティングと中身を分ける（[ADR-0022](../adr/0022-feature-sliced-design.md)） |
 | `@modal` のスロットに `default.tsx` を置く | Next.js 16 では、無いとビルドが失敗する |
 | モーダルのルートは、重ねる版（`@modal/(.)…`）と、直接開いたときの版（通常の `page.tsx`）の両方を作る。中身の部品は同じものを使う | 再読み込みと URL の共有で同じ内容が出る |
 | モーダルを閉じるのは `router.back()` | 前の画面のスクロールの位置が残る |

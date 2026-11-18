@@ -3,12 +3,12 @@ type: ADR
 title: "ADR-0012: `output: 'standalone'` のコンテナ 1 つで動かし、ローカルも本番も Docker Compose で同じ構成にする"
 description: "Next.js を `output: 'standalone'` のコンテナ 1 つにし、PostgreSQL と S3 互換のストレージとともに Docker Compose で動かし、本番は 1 台の VPS に置く。"
 tags: [deployment, infrastructure]
-status: stable
+status: deprecated
 ---
 
 # ADR-0012: `output: 'standalone'` のコンテナ 1 つで動かし、ローカルも本番も Docker Compose で同じ構成にする
 
-- ステータス: 採用
+- ステータス: 置き換え: ADR-0017
 - 日付: 2026-11-18
 - 決定者: エージェント（委任された判断）
 - 関連: [バックエンド技術選定](../research/backend.md)、[環境と配備](../architecture/environments.md)、ADR-0004、ADR-0008

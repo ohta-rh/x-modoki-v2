@@ -20,6 +20,7 @@ status: stable
 | 言語 | TypeScript | 6.0.x（7 は使わない） | [ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md) |
 | lint | ESLint と `eslint-config-next` | 10.15.x / 16.4.x | [ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md) |
 | 整形 | Prettier と `prettier-plugin-tailwindcss` | 3.10.x | [ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md) |
+| 構造のリンター | Steiger と `@feature-sliced/steiger-plugin`（Feature-Sliced Design） | 0.10.x / 0.8.x | [ADR-0022](../adr/0022-feature-sliced-design.md) |
 
 ## 2. アプリ
 
@@ -47,17 +48,20 @@ status: stable
 | 認証 | `better-auth`（Drizzle のアダプター、`username` のプラグイン） | 1.7.x | [ADR-0007](../adr/0007-better-auth-db-sessions.md) |
 | 画像の置き場所 | Cloudflare R2（本番）/ Garage（ローカル） | — | [ADR-0008](../adr/0008-s3-compatible-media-storage.md) |
 | ストレージのクライアント | `@aws-sdk/client-s3` と `@aws-sdk/s3-request-presigner` | 3.x | [ADR-0008](../adr/0008-s3-compatible-media-storage.md) |
-| 画像の変換 | `sharp` | 0.35.x | [ADR-0008](../adr/0008-s3-compatible-media-storage.md) |
-| 逆プロキシ | Caddy | 2 | [ADR-0012](../adr/0012-single-container-docker-compose.md) |
-| 実行の形 | Docker Compose、`output: 'standalone'` | — | [ADR-0012](../adr/0012-single-container-docker-compose.md) |
+| 画像の変換 | ブラウザの `createImageBitmap` と `OffscreenCanvas`（ライブラリ無し） | — | [ADR-0018](../adr/0018-resize-images-in-browser.md) |
+| 本番の実行環境 | Cloudflare Workers と `@opennextjs/cloudflare`・`wrangler` | 1.20.x / 4.x | [ADR-0017](../adr/0017-cloudflare-workers-opennext.md) |
+| 本番のデータベース | Neon（PostgreSQL）を Cloudflare Hyperdrive でつなぐ | — | [ADR-0017](../adr/0017-cloudflare-workers-opennext.md) |
+| ローカルと CI | Docker Compose（PostgreSQL と Garage） | — | [ADR-0019](../adr/0019-first-milestone-runs-locally.md) |
+| CI | GitHub Actions | — | [ADR-0020](../adr/0020-ci-required-github-actions.md) |
 
-PostgreSQL の 18 と Caddy の 2 は、イメージのタグを実装のときに確かめて固定する。
+PostgreSQL の 18 は、イメージのタグを実装のときに確かめて固定する。`@opennextjs/cloudflare` と `wrangler` を入れるのはマイルストーン 2。
 
 ## 4. テスト
 
 | 役割 | 選んだもの | 版 | 決定 |
 |---|---|---|---|
 | 単体・データアクセス層 | Vitest と `@vitejs/plugin-react` | 5.1.x / 6.3.x | [ADR-0013](../adr/0013-vitest-playwright-testing.md) |
+| カバレッジ（しきい値 100%） | `@vitest/coverage-v8` | 5.1.x | [ADR-0021](../adr/0021-coverage-100-percent.md) |
 | コンポーネント | `@testing-library/react`・`@testing-library/dom`・`@testing-library/user-event`・jsdom | 16.3.x / 10.4.x / 14.6.x / 31.x | [ADR-0013](../adr/0013-vitest-playwright-testing.md) |
 | 画面を通したテスト | `@playwright/test` | 1.65.x | [ADR-0013](../adr/0013-vitest-playwright-testing.md) |
 
@@ -70,6 +74,9 @@ PostgreSQL の 18 と Caddy の 2 は、イメージのタグを実装のとき�
 | Prisma、Drizzle 1.0 の RC | SQL を直接書く場面が多い。正式版ではない | [ADR-0006](../adr/0006-postgresql-drizzle.md) |
 | Auth.js、Clerk、Lucia | 保守だけの状態、外のサービスへの依存、非推奨 | [ADR-0007](../adr/0007-better-auth-db-sessions.md) |
 | MinIO、Vercel Blob、`next/image` の最適化 | 保守の終了、ホスティングへの依存、費用と負荷 | [ADR-0008](../adr/0008-s3-compatible-media-storage.md) |
+| vinext | Next.js そのものではない | [ADR-0017](../adr/0017-cloudflare-workers-opennext.md) |
+| `sharp`、VPS と Caddy、`output: 'standalone'` | Workers で動かない・本番を Cloudflare にした | [ADR-0017](../adr/0017-cloudflare-workers-opennext.md)、[ADR-0018](../adr/0018-resize-images-in-browser.md) |
+| Cloudflare D1 | PostgreSQL のトランザクションと検索を使う | [ADR-0017](../adr/0017-cloudflare-workers-opennext.md) |
 | WebSocket、Server-Sent Events、ジョブのキュー | 今の要件には要らない | [ADR-0011](../adr/0011-polling-and-after-no-queue.md) |
 | MUI などの見た目が決まった部品、CSS-in-JS | 見た目を 1px の単位で決めたい | [ADR-0014](../adr/0014-tailwind-shadcn-base-ui.md) |
 | Jest、Cypress | Vitest と Playwright で足りる | [ADR-0013](../adr/0013-vitest-playwright-testing.md) |
@@ -77,12 +84,15 @@ PostgreSQL の 18 と Caddy の 2 は、イメージのタグを実装のとき�
 
 ## 6. 月の費用の見積もり（USD）
 
-料金は 2026-11-18 に各社の料金のページで確認した値。出典は [バックエンド技術選定](../research/backend.md)。
+料金は 2026-11-18 に各社の料金のページで確認した値。出典は [Cloudflare Workers で動かす方法の調査](../research/cloudflare.md) と [バックエンド技術選定](../research/backend.md)。
 
 | 構成 | 内訳 | 月の費用 |
 |---|---|---|
 | ローカルの開発 | Docker Compose だけ | $0 |
-| **本番（採用）** | VPS 1 台 約 $6〜7（€5.49。性能は未確認）、Cloudflare R2 は 10GB まで $0 | **約 $6〜7** |
+| CI | GitHub Actions（公開のリポジトリは無料） | $0 |
+| **本番（採用）** | Cloudflare Workers Paid $5（Hyperdrive を含む）、Neon Free $0、Cloudflare R2 は 10GB まで $0 | **約 $5** |
+| 参考: Workers Free | 1 リクエストの CPU が 10 ミリ秒までで、サーバーで描くページには足りない見込み（測っていない） | $0 |
+| 参考: VPS 1 台と Docker Compose | 約 $6〜7（€5.49。性能は未確認） | 約 $6〜7 |
 | 参考: Vercel Hobby と Neon Free と R2 | 全部 $0。非商用に限られる | $0 |
 | 参考: Vercel Pro と Neon Launch と R2 | Vercel $20、Neon 約 $0〜15、R2 $0〜1 | 約 $20〜36 |
 | 参考: Fly.io と自分で動かす PostgreSQL | 1GB の機械 $6.70 が 2 つと、ボリューム | 約 $14 |

@@ -2,96 +2,151 @@
 type: Architecture
 title: "アプリケーションの構造"
 description: "ディレクトリの分け方、層の依存の向き、読み取り・変更・キャッシュ・認可の書き方、サーバーのインターフェースの一覧を示す。"
-tags: [architecture, structure, security]
+tags: [architecture, structure, security, fsd]
 status: stable
 ---
 
 # アプリケーションの構造
 
-- 決定: [ADR-0010](../adr/0010-dal-server-actions-route-handlers.md)、[ADR-0004](../adr/0004-nextjs-16-all-in-one-app.md)
+- 決定: [ADR-0022](../adr/0022-feature-sliced-design.md)（Feature-Sliced Design）、[ADR-0010](../adr/0010-dal-server-actions-route-handlers.md)（データアクセス層）、[ADR-0017](../adr/0017-cloudflare-workers-opennext.md)、[ADR-0021](../adr/0021-coverage-100-percent.md)
 
 ## 1. ディレクトリ
 
 ```
 .
-├── docker-compose.yml          ローカルの PostgreSQL と Garage
-├── next.config.ts              cacheComponents / partialPrefetching / typedRoutes / output: 'standalone'
+├── app/                        Next.js のルーティングだけ（中身は _pages と _app を呼ぶ）
+├── proxy.ts                    ログインしていなければログインへ送る
+├── next.config.ts              cacheComponents / partialPrefetching / typedRoutes
+├── steiger.config.ts           FSD のリンターの設定
+├── vitest.config.ts            カバレッジのしきい値（100%）と、外すものの一覧
 ├── drizzle.config.ts
 ├── drizzle/                    マイグレーションの SQL（drizzle-kit generate が作る）
+├── docker-compose.yml          ローカルの PostgreSQL と Garage
 ├── e2e/                        Playwright のテスト
+├── scripts/                    check-docs.mjs など
+├── .github/workflows/ci.yml    CI（7 つの確認）
 ├── docs/                       OKF のバンドル
-└── src/
-    ├── proxy.ts                ログインしていなければログインへ送る
-    ├── env.ts                  環境変数の検証（t3-env と Zod）
-    ├── app/                    ルートだけ。中身は features を呼ぶ
-    ├── features/               機能ごと
+└── src/                        Feature-Sliced Design の層だけ
+    ├── _app/
+    │   ├── providers/          TanStack Query・テーマの Provider
+    │   ├── styles/             Tailwind の入口とテーマの変数
+    │   └── api-routes/         Route Handler の実装
+    ├── _pages/
+    │   └── <page>/
+    │       ├── ui/             その画面の同期のコンポーネント
+    │       ├── api/            その画面のデータを集める関数（server-only）
+    │       ├── index.ts
+    │       └── index.server.ts
+    ├── widgets/
+    │   └── <widget>/{ui,model,lib}/ と index.ts
+    ├── features/
     │   └── <feature>/
-    │       ├── data.ts         データアクセス層（import 'server-only'）
-    │       ├── actions.ts      Server Action（'use server'）
-    │       ├── schema.ts       Zod のスキーマ（サーバーとクライアントで共有）
-    │       ├── types.ts        DTO の型
-    │       ├── components/     その機能の部品
-    │       └── hooks/          その機能のクライアントのフック
-    ├── components/
-    │   ├── ui/                 shadcn/ui から取り込んだ部品
-    │   └── layout/             3 カラムの骨格、ナビ、ヘッダー
-    ├── server/                 サーバーだけ（import 'server-only'）
-    │   ├── db/                 Drizzle のクライアントとスキーマ（schema/）
-    │   ├── auth.ts             Better Auth の設定
-    │   ├── session.ts          今のユーザーを得る（React の cache()）
-    │   ├── storage.ts          S3Client と署名つき URL
-    │   └── rate-limit.ts       回数の制限
-    ├── lib/                    どこからでも使える純粋な関数（ID、文字数、時刻と数の整形）
-    └── styles/                 Tailwind の入口とテーマの変数
+    │       ├── ui/             その操作の部品（ボタン・フォーム）
+    │       ├── api/            変更の問い合わせ（server-only）と actions.ts（'use server'）
+    │       ├── model/          Zod のスキーマ、クライアントの状態
+    │       └── index.ts
+    ├── entities/
+    │   └── <entity>/
+    │       ├── ui/             その実体の表示
+    │       ├── api/            読み取りの問い合わせ（server-only）
+    │       ├── model/          DTO の型、Zod のスキーマ
+    │       ├── @x/             ほかの実体へ見せる型
+    │       ├── index.ts
+    │       └── index.server.ts
+    └── shared/
+        ├── ui/                 業務を知らない部品。ui/kit/ は shadcn/ui から取り込んだもの
+        ├── lib/                純粋な関数（ID、文字数、時刻と数の整形）
+        ├── config/             env.ts（環境変数の検証）、ルートの定数
+        ├── db/                 getDb()（リクエストごとに接続を作る）と schema/
+        ├── auth/               Better Auth の設定と、今のユーザーを得る関数
+        ├── storage/            S3Client と署名つき URL
+        └── api/                Server Action の戻り値の型、エラーの種類、回数の制限
 ```
 
-機能（`features/`）: `auth`、`posts`、`timeline`、`engagement`（いいね・リポスト・ブックマーク）、`profiles`、`follows`、`notifications`、`search`、`media`、`settings`。
+### スライスの一覧
+
+| 層 | スライス |
+|---|---|
+| `_pages` | `landing`、`sign-in`、`sign-up`、`home`、`explore`、`search`、`notifications`、`bookmarks`、`profile`、`follow-list`、`post-detail`、`photo-viewer`、`compose`、`settings` |
+| `widgets` | `app-shell`（3 カラムの骨格とナビ）、`right-sidebar`、`timeline-feed`、`post-thread`、`composer-modal`、`profile-header`、`notification-list`、`search-results`、`trends`、`who-to-follow`、`keyboard-shortcuts` |
+| `features` | `auth`、`post-compose`、`post-delete`、`post-pin`、`post-like`、`post-repost`、`post-bookmark`、`post-view-count`、`user-follow`、`profile-edit`、`media-upload`、`notifications-read`、`timeline-new-posts`、`search-box`、`display-settings` |
+| `entities` | `user`、`post`、`media`、`notification`、`hashtag` |
 
 ## 2. 層と依存の向き
 
 ```
-app/  ──▶  features/*/components ──▶ components/ui, lib
-  │              │
-  │              └──▶ features/*/actions.ts ──▶ features/*/data.ts ──▶ server/ ──▶ PostgreSQL・ストレージ
-  └──────────────────────────────────────────▶ features/*/data.ts
+app/ ──▶ _app, _pages ──▶ widgets ──▶ features ──▶ entities ──▶ shared
+                                                      │
+                                                      └─ 実体の間は @x だけ
 ```
 
 | 規則 | 理由 |
 |---|---|
-| `app/` はルートの定義だけを持つ。問い合わせと表示の中身は `features/` に書く | ルートの形と機能を分ける |
-| `server/db` を読んでよいのは `features/*/data.ts` と `server/` だけ | 認可を通らない読み書きを作らない |
-| `process.env` を読んでよいのは `src/env.ts` だけ | 検証していない値を使わない |
-| ある機能が別の機能を使うときは、その機能の `data.ts`・`types.ts`・`components/` の公開している名前だけを使う | 機能の中の作りを変えやすくする |
-| `lib/` は React とサーバーのどちらにも頼らない | どこからでも使え、単体で試せる |
-| `'use client'` は葉の部品に付ける。ページとレイアウトは Server Component | クライアントへ送る量を小さくする |
+| あるスライスが読めるのは、厳密に下の層だけ。同じ層のスライスを読まない | 依存の向きを 1 つにする |
+| スライスの外からは、`index.ts`（サーバーだけのものは `index.server.ts`）だけを読む | スライスの中の作りを変えやすくする |
+| 実体の間の参照は `entities/<A>/@x/<B>.ts` だけ | 例外を 1 つの形に閉じ込める |
+| `src/` の直下に、6 つの層のほかのフォルダを作らない | 置き場所を迷わせない |
+| ルートの `app/` が読めるのは `_pages` と `_app` だけ | ルーティングと中身を分ける |
+| `@/shared/db` を読めるのは、`api` セグメントと `shared/db`・`shared/auth` だけ | 認可を通らない読み書きを作らない |
+| `process.env` を読めるのは `src/shared/config/env.ts` だけ | 検証していない値を使わない |
+| 非同期の Server Component は、ルートの `app/` の `page.tsx`・`layout.tsx`・`default.tsx` だけに書く。`src/` のコンポーネントは全部、同期にする | Vitest で測れないファイルに判断を置かない（[ADR-0021](../adr/0021-coverage-100-percent.md)） |
+| `'use client'` は葉の部品に付ける。クライアントのファイルから `index.server` を読まない | クライアントへ送る量を小さくし、サーバーのコードを漏らさない |
+| モジュールの一番上で、接続・プール・リクエストをまたぐ値を作らない | Cloudflare Workers で動かない（[ADR-0017](../adr/0017-cloudflare-workers-opennext.md)） |
 
-ESLint の `no-restricted-imports` で、上の 2 行目と 3 行目を守らせる。
+Steiger（`fsd` の推奨の設定）と ESLint の `no-restricted-imports` が、`pnpm lint` でこれを守らせる。`sharp` と `node:fs` への書き込みをサーバーのコードから使うことも禁じる。
+
+### ルートの `app/` のファイルの形
+
+```tsx
+// app/(main)/home/page.tsx
+import { Suspense } from 'react';
+import { HomePage, HomePageSkeleton } from '@/_pages/home';
+import { loadHomePage } from '@/_pages/home/index.server';
+
+async function Content() {
+  return <HomePage {...(await loadHomePage())} />;
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<HomePageSkeleton />}>
+      <Content />
+    </Suspense>
+  );
+}
+```
+
+```ts
+// app/api/timeline/following/route.ts
+export { getFollowingTimeline as GET } from '@/_app/api-routes';
+```
 
 ## 3. データアクセス層の書き方
 
-全ての関数が、同じ順で行う。
+データアクセス層は、`entities/*/api/`（読み取り）と `features/*/api/`（変更）と `_pages/*/api/`（画面のデータを集める関数）。全ての関数が、同じ順で行う。
 
-1. `getSession()`（`server/session.ts`）で今のユーザーを得る。ログインが要る関数は、いなければ `UnauthorizedError` を投げる
-2. その操作をしてよいかを確かめる（自分の投稿か、ブロックされていないか）。だめなら `ForbiddenError` を投げる
-3. Drizzle で読む・書く。複数の表を書くときは 1 つのトランザクションにする
+1. `getSession()`（`shared/auth`）で今のユーザーを得る。ログインが要る関数は、いなければ `UnauthorizedError` を投げる
+2. その操作をしてよいかを確かめる（自分の投稿か、など）。だめなら `ForbiddenError` を投げる
+3. `getDb()` で読む・書く。複数の表を書くときは 1 つのトランザクションにする
 4. DTO にして返す。`bigint` の ID は文字列にする。パスワードのハッシュ・メールアドレス・内部の列を入れない
 
-| 種類 | 名前の形 | 例 |
-|---|---|---|
-| 読み取り | `get…` / `list…` | `listHomeTimeline({ cursor })`、`getPost(id)`、`getProfile(username)` |
-| 変更 | 動詞 | `createPost(input)`、`likePost(postId)`、`followUser(userId)` |
+| 種類 | 場所 | 名前の形 | 例 |
+|---|---|---|---|
+| 読み取り | `entities/*/api/` | `get…` / `list…` | `listFollowingTimeline({ cursor })`、`getPost(id)`、`getProfile(username)` |
+| 変更 | `features/*/api/` | 動詞 | `createPost(input)`、`likePost(postId)`、`followUser(userId)` |
+| 画面のデータ | `_pages/*/api/` | `load…Page` | `loadHomePage()`、`loadProfilePage(username)` |
 
 ## 4. 読み取り・変更・キャッシュ
 
 | 場面 | やり方 |
 |---|---|
-| ページの最初の描画 | Server Component がデータアクセス層を呼ぶ。リクエストごとに変わる部分は `<Suspense>` で包む |
+| ページの最初の描画 | `app/` の `page.tsx` が `_pages` の `load…Page()` を呼び、同期の画面のコンポーネントへ渡す。`<Suspense>` で包む |
 | 一覧の続き | Route Handler（GET）を `useInfiniteQuery` から呼ぶ。最初のページは `initialData` で渡す |
 | 新着と未読の確認 | Route Handler（GET）を `useQuery` の `refetchInterval`（30 秒）で呼ぶ（[ADR-0011](../adr/0011-polling-and-after-no-queue.md)） |
-| 変更 | Server Action。Zod で確かめ、データアクセス層を呼び、結果の DTO を返す |
+| 変更 | Server Action（`features/*/api/actions.ts`）。Zod で確かめ、変更の関数を呼び、結果の DTO を返す |
 | 誰が見ても同じ読み取り | `'use cache'`・`cacheLife('minutes')`・`cacheTag(…)`。対象はトレンドとおすすめのユーザーだけ |
 | ユーザーごとに違う読み取り | キャッシュしない |
-| 変更のあとの描き直し | Server Component が描いた部分は `updateTag()` か `refresh()`。一覧は TanStack Query のキャッシュを書き換える |
+| 変更のあとの描き直し | サーバーが描いた部分は `updateTag()` か `refresh()`。一覧は TanStack Query のキャッシュを書き換える |
 
 エラーの扱い:
 
@@ -104,24 +159,31 @@ ESLint の `no-restricted-imports` で、上の 2 行目と 3 行目を守らせ
 | 回数の制限 | `{ ok: false, code: 'RATE_LIMITED' }` | 429 |
 | 成功 | `{ ok: true, data }` | 200 |
 
-Server Action は例外を投げずに、上の形で返す。想定していない例外だけを投げ、`error.tsx` で受ける。
+Server Action は例外を投げずに、上の形で返す。想定していない例外だけを投げ、`error.tsx` で受ける。型は `shared/api` に置く。
 
 ## 5. サーバーのインターフェース
 
 ### Server Action
 
-| 機能 | 関数 |
+| スライス | 関数 |
 |---|---|
-| `posts` | `createPost`、`deletePost`、`pinPost` |
-| `engagement` | `likePost`、`unlikePost`、`repost`、`undoRepost`、`bookmarkPost`、`unbookmarkPost` |
-| `follows` | `followUser`、`unfollowUser` |
-| `profiles` | `updateProfile` |
-| `notifications` | `markNotificationsRead` |
-| `settings` | `updateDisplaySettings`（テーマとアクセント） |
+| `features/post-compose` | `createPost` |
+| `features/post-delete` | `deletePost` |
+| `features/post-pin` | `pinPost`、`unpinPost` |
+| `features/post-like` | `likePost`、`unlikePost` |
+| `features/post-repost` | `repost`、`undoRepost` |
+| `features/post-bookmark` | `bookmarkPost`、`unbookmarkPost`、`clearBookmarks` |
+| `features/user-follow` | `followUser`、`unfollowUser` |
+| `features/profile-edit` | `updateProfile` |
+| `features/media-upload` | `attachMedia`（置かれた画像を確かめる） |
+| `features/notifications-read` | `markNotificationsRead` |
+| `features/display-settings` | `updateDisplaySettings`（テーマとアクセント） |
 
-登録・ログイン・ログアウトは、Better Auth のクライアントが `/api/auth/*` を呼ぶ。
+登録・ログイン・ログアウトは、`features/auth` の Better Auth のクライアントが `/api/auth/*` を呼ぶ。
 
 ### Route Handler
+
+実装は `src/_app/api-routes/`。`app/api/**/route.ts` は書き出すだけ。
 
 | メソッドとパス | 役割 |
 |---|---|
@@ -129,12 +191,14 @@ Server Action は例外を投げずに、上の形で返す。想定していな
 | `GET /api/timeline/for-you?cursor=` | 「おすすめ」の続き |
 | `GET /api/timeline/following/new-count?since=` | 新しい投稿の数 |
 | `GET /api/users/{username}/posts?tab=&cursor=` | プロフィールの各タブの続き |
+| `GET /api/users/{username}/follows?type=&cursor=` | フォロー中とフォロワーの続き |
 | `GET /api/posts/{id}/replies?cursor=` | 返信の続き |
 | `GET /api/search?q=&f=&cursor=` | 検索の結果の続き |
 | `GET /api/notifications?tab=&cursor=` | 通知の続き |
 | `GET /api/notifications/unread-count` | 未読の数 |
 | `GET /api/bookmarks?cursor=` | ブックマークの続き |
 | `POST /api/uploads/presign` | 画像の署名つき URL を出す |
+| `POST /api/posts/{id}/view` | 表示の回数を足す（`after()` で書く） |
 | `GET / POST /api/auth/[...all]` | Better Auth |
 | `POST /api/cron/cleanup-media` | 結びつかなかった画像を消す（秘密の値で守る） |
 | `GET /api/health` | 動いていることの確認（データベースに 1 回問い合わせる） |
@@ -167,11 +231,11 @@ Server Action は例外を投げずに、上の形で返す。想定していな
 
 | 規則 | 場所 |
 |---|---|
-| 認証と認可は、Server Action と Route Handler のたびにデータアクセス層で行う。`proxy.ts` の確認に頼らない | `features/*/data.ts` |
-| 入力は全部 Zod で確かめる。ルートの引数（`username`・`postId`）も確かめる | `features/*/schema.ts` |
-| クライアントへ渡すのは DTO だけ | `features/*/types.ts` |
-| セッションの cookie は HttpOnly・Secure・SameSite=Lax | `server/auth.ts` |
-| 投稿・フォロー・画像の署名・ログインに回数の制限を付ける | `server/rate-limit.ts` |
-| 本文は文字として出す。HTML として出さない。リンクは `twitter-text` で取り出して、`http` と `https` だけを許す | `features/posts/components/` |
-| 画像は種類と大きさを署名の前に確かめ、サーバーで作り直したものだけを出す | `features/media/` |
-| 秘密の値は環境変数だけに置き、`src/env.ts` で検証する。`NEXT_PUBLIC_` を付けるのは公開してよい値だけ | `src/env.ts` |
+| 認証と認可は、Server Action と Route Handler のたびに `api` セグメントで行う。`proxy.ts` の確認に頼らない | `entities/*/api`、`features/*/api` |
+| 入力は全部 Zod で確かめる。ルートの引数（`username`・`postId`）も確かめる | 各スライスの `model` |
+| クライアントへ渡すのは DTO だけ | 各スライスの `model` |
+| セッションの cookie は HttpOnly・Secure・SameSite=Lax | `shared/auth` |
+| 投稿・フォロー・画像の署名・ログインに回数の制限を付ける | `shared/api` |
+| 本文は文字として出す。HTML として出さない。リンクは `twitter-text` で取り出して、`http` と `https` だけを許す | `entities/post/ui` |
+| 画像は種類と大きさを署名の前に確かめ、置かれたあとに先頭のバイトで種類と縦横を確かめる。アプリとは別のドメインから出す（[ADR-0018](../adr/0018-resize-images-in-browser.md)） | `features/media-upload` |
+| 秘密の値は環境変数だけに置き、`env.ts` で検証する。`NEXT_PUBLIC_` を付けるのは公開してよい値だけ | `shared/config` |
