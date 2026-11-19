@@ -177,6 +177,8 @@ html {
   font-family: var(--font-sans);
   background: var(--bg);
   color: var(--text);
+  /* What Tab brings into view stops below the sticky 53px header, not under it (#86). */
+  scroll-padding-top: 53px;
 }
 
 /* A post brought into view (j / k, #29) stops below the sticky header of the column: 53px, plus the
@@ -190,6 +192,8 @@ main article {
 @media (max-width: 639px) {
   html {
     overscroll-behavior-y: contain;
+    /* …and above the tab bar and the floating post button: 136px, as main's padding (#65, #86). */
+    scroll-padding-bottom: 136px;
   }
 }
 

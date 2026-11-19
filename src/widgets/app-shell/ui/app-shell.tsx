@@ -7,6 +7,7 @@ import type { ReactNode } from 'react';
 import { COMPOSE_PATH } from '@/shared/config';
 import { SiteFooter } from '@/shared/ui/site-footer';
 import type { Account } from './account-menu';
+import { MobileAccountDrawer } from './mobile-account-drawer';
 import { LeftNav } from './left-nav';
 import { TabBar } from './tab-bar';
 
@@ -52,6 +53,7 @@ export function AppShell({
       <aside className="sticky top-0 hidden h-screen w-[350px] shrink-0 overflow-y-auto pl-8 lg:block">
         {sidebar}
       </aside>
+      {account && signOut ? <MobileAccountDrawer account={account} signOut={signOut} /> : null}
       <div className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-[var(--header-bg)] backdrop-blur-[12px] sm:hidden">
         <TabBar currentPath={currentPath} unread={unread} />
       </div>

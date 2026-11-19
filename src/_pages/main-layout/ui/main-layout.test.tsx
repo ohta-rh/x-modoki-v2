@@ -62,7 +62,12 @@ describe('MainLayout', () => {
         name: /^通知/,
       }),
     ).toHaveAccessibleName('通知 未読 3 件');
-    expect(screen.getByRole('button', { name: /アカウントのメニュー/ })).toHaveTextContent('@taro');
+    // The left column's menu; the same-named drawer button is for below 640px (#85).
+    expect(
+      within(screen.getByTestId('left-column')).getByRole('button', {
+        name: /アカウントのメニュー/,
+      }),
+    ).toHaveTextContent('@taro');
     expect(within(screen.getByRole('main')).getByText('ページ')).toBeInTheDocument();
     expect(screen.getByRole('dialog')).toHaveTextContent('モーダル');
     expect(within(screen.getByRole('complementary')).getByRole('contentinfo')).toBeInTheDocument();

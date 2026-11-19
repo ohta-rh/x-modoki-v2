@@ -36,6 +36,21 @@ describe('AppShell（ui-ux.md の 2 節）', () => {
     expect(screen.getByTestId('left-column')).toHaveClass('sticky', 'h-screen', 'overflow-y-auto');
   });
 
+  it('ログインしていれば、640px 未満のヘッダーの左に、アカウントの引き出しのボタンを出す（#85）', () => {
+    const { unmount } = render(<AppShell>中身</AppShell>);
+    expect(document.querySelector('[data-mobile-account]')).toBeNull();
+    unmount();
+    render(
+      <AppShell
+        account={{ name: 'サンプル', username: 'taro', image: null }}
+        signOut={async () => undefined}
+      >
+        中身
+      </AppShell>,
+    );
+    expect(document.querySelector('[data-mobile-account]')).toHaveClass('sm:hidden');
+  });
+
   it('今いるパスと今の人を、左ナビと下のタブに渡す', () => {
     render(
       <AppShell
@@ -45,7 +60,12 @@ describe('AppShell（ui-ux.md の 2 節）', () => {
         中身
       </AppShell>,
     );
-    expect(screen.getByRole('button', { name: /アカウントのメニュー/ })).toHaveTextContent('@taro');
+    // The left column's menu (the drawer's button is the same name, shown only below 640px).
+    expect(
+      within(screen.getByTestId('left-column')).getByRole('button', {
+        name: /アカウントのメニュー/,
+      }),
+    ).toHaveTextContent('@taro');
     expect(screen.getByRole('link', { name: 'プロフィール' })).toHaveAttribute('href', '/taro');
     const nav = screen.getByRole('navigation', { name: 'メインのメニュー' });
     expect(within(nav).getByRole('link', { name: '話題を検索' })).toHaveAttribute(

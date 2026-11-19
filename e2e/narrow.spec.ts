@@ -312,3 +312,58 @@ test.describe('低い画面の左の列（#83）', () => {
     });
   }
 });
+
+// FR-AUTH-07: ログアウト（640px 未満、ui-ux.md の 2 節のヘッダーのアバターの引き出し）
+test.describe('640px 未満のアカウントの引き出し（#85）', () => {
+  test.use({ viewport: { width: 375, height: 667 } });
+
+  test('640px 未満でも、ヘッダーのアバターの引き出しからプロフィール・ブックマーク・設定・ログアウトへ行ける（#85）', async ({
+    page,
+  }) => {
+    const me = await signUp(page);
+    await page.goto('/home');
+    const open = page.getByRole('button', { name: /のアカウントのメニュー$/ });
+    for (const [name, path] of [
+      ['プロフィール', `/${me.username}`],
+      ['ブックマーク', '/i/bookmarks'],
+      ['設定', '/settings'],
+    ] as const) {
+      await open.click();
+      const drawer = page.getByRole('dialog', { name: 'アカウント' });
+      await expect(drawer).toContainText(`@${me.username}`);
+      await drawer.getByRole('link', { name }).click();
+      await expect(page).toHaveURL(new RegExp(`${path}$`));
+      await expect(drawer).toHaveCount(0);
+    }
+    await open.click();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog', { name: 'アカウント' })).toHaveCount(0);
+    await expect(open).toBeFocused();
+    await open.click();
+    await page
+      .getByRole('dialog', { name: 'アカウント' })
+      .getByRole('button', { name: 'ログアウト' })
+      .click();
+    await expect(page).toHaveURL(/\/$/);
+  });
+});
+
+// NFR-A11Y: フォーカスが隠れない（WCAG 2.2 の 2.4.11、#86）
+test.describe('狭く低い画面のフォーカス（#86）', () => {
+  test.use({ hasTouch: false });
+
+  test('狭く低い画面でも、Tab のフォーカスは固定の部品の下に隠れない（#86）', async ({ page }) => {
+    const me = await signUp(page);
+    await page.setViewportSize({ width: 427, height: 267 });
+    await page.goto(`/${me.username}`);
+    const edit = page.getByRole('link', { name: 'プロフィールを編集' });
+    for (let i = 0; i < 40; i += 1) {
+      await page.keyboard.press('Tab');
+      if (await edit.evaluate((element) => element === document.activeElement)) break;
+    }
+    await expect(edit).toBeFocused();
+    const bar = await page.getByRole('navigation', { name: '下のタブ' }).boundingBox();
+    const box = await edit.boundingBox();
+    expect(box!.y + box!.height, 'above the tab bar').toBeLessThanOrEqual(bar!.y);
+  });
+});
