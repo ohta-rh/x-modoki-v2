@@ -60,6 +60,7 @@ describe('一覧のリポストと引用（#22）', () => {
       id: quote.id.toString(),
       author: { username: 'author', name: '書いた人', avatarUrl: null },
       text: '引用',
+      links: [],
       createdAt: quote.createdAt.toISOString(),
       quotesAnother: true,
     });
@@ -133,5 +134,29 @@ describe('一覧のリポストと引用（#22）', () => {
         alt: '二',
       },
     ]);
+  });
+
+  // NFR-PERF-05: 本文のリンクはサーバーで見つける（クライアントに twitter-text を送らない）
+  it('本文の URL・#タグ・@名前の位置と行き先を links で返す。引用された投稿も（#32）', async () => {
+    const author = await makeUser();
+    const text = 'これ #タグ を見て https://example.com/a @Someone です';
+    const original = await makePost({ id: at(1), authorId: author.id, text });
+    await makePost({ id: at(2), authorId: author.id, text: 'リンクなし', quoteOfId: original.id });
+    signInAs(author);
+    const result = await getTimeline('for-you', null);
+    if (!result.ok) throw new Error('expected ok');
+    const [quote, plain] = result.page.items;
+    const span = (value: string) => ({
+      start: text.indexOf(value),
+      end: text.indexOf(value) + value.length,
+    });
+    const links = [
+      { type: 'hashtag', ...span('#タグ'), href: `/search?q=${encodeURIComponent('#タグ')}` },
+      { type: 'url', ...span('https://example.com/a'), href: 'https://example.com/a' },
+      { type: 'mention', ...span('@Someone'), href: '/someone' },
+    ];
+    expect(plain.links).toEqual(links);
+    expect(quote.links).toEqual([]);
+    expect(quote.quoted).toMatchObject({ text, links });
   });
 });

@@ -1,7 +1,7 @@
 'use client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { type ReactNode, useState } from 'react';
-import { Toaster } from '@/shared/ui/kit';
+import { Toaster } from '@/shared/ui/toast';
 
 /**
  * One QueryClient per browser tab; lists stay fresh for 30 seconds (ADR-0011). The toaster shows
@@ -13,7 +13,8 @@ export function QueryProvider({ children }: { children: ReactNode }) {
   );
   return (
     <QueryClientProvider client={client}>
-      <Toaster>{children}</Toaster>
+      {children}
+      <Toaster />
     </QueryClientProvider>
   );
 }

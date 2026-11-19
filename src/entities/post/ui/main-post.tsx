@@ -51,7 +51,7 @@ export function MainPost({
         </p>
       ) : null}
       <div className="mt-3">
-        <PostText text={post.text} size="lg" />
+        <PostText text={post.text} links={post.links} size="lg" />
         <PostMedia media={post.media} photos={`/${post.author.username}/status/${post.id}`} />
         {post.quoted ? <QuotedCard quoted={post.quoted} now={now} /> : null}
       </div>

@@ -14,7 +14,8 @@ import {
   subscribeDraft,
 } from '@/features/post-compose';
 import { Button } from '@/shared/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogTitle, toast } from '@/shared/ui/kit';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/shared/ui/kit';
+import { toast } from '@/shared/ui/toast';
 import { COMPOSE_PATH } from '@/shared/config';
 
 type Action = (

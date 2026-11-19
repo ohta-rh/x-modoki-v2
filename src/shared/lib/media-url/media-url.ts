@@ -1,4 +1,4 @@
-import { env } from '@/shared/config';
+import { env } from '@/shared/config/index.server';
 
 /** The public URL of a stored image (served from another origin: NFR-SEC-07), or null. */
 export const mediaUrl = (key: string | null): string | null =>

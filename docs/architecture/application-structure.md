@@ -88,9 +88,10 @@ app/ ──▶ _app, _pages ──▶ widgets ──▶ features ──▶ entit
 | `src/` の直下に、6 つの層のほかのフォルダを作らない | 置き場所を迷わせない |
 | ルートの `app/` が読めるのは `_pages` と `_app` だけ | ルーティングと中身を分ける |
 | `@/shared/db` を読めるのは、`api` セグメントと `shared/db`・`shared/auth` だけ | 認可を通らない読み書きを作らない |
-| `process.env` を読めるのは `src/shared/config/env.ts` だけ | 検証していない値を使わない |
+| `process.env` を読めるのは `src/shared/config/env.ts` だけ。`env` は `@/shared/config/index.server` からだけ読む（[ADR-0059](../adr/0059-load-popups-and-parsers-on-first-use.md)） | 検証していない値を使わない。検証の仕組みをブラウザに送らない |
 | 非同期の Server Component は、ルートの `app/` の `page.tsx`・`layout.tsx`・`default.tsx` だけに書く。`not-found.tsx` も同じ薄い殻で、`_pages` の画面を出すだけ（[ADR-0039](../adr/0039-not-found-route-file-is-a-thin-shell.md)）。`src/` のコンポーネントは全部、同期にする | Vitest で測れないファイルに判断を置かない（[ADR-0021](../adr/0021-coverage-100-percent.md)） |
 | `'use client'` は葉の部品に付ける。クライアントのファイルから `index.server` を読まない | クライアントへ送る量を小さくし、サーバーのコードを漏らさない |
+| 開くまで要らないメニュー・ダイアログ・ホバーカード・トーストは、`@/shared/ui/dropdown-menu`・`dialog`・`toast` を通して使うときに読む。投稿の解析（twitter-text）は `@/shared/lib/text-parse` に置き、ブラウザでは使うときに読む（[ADR-0059](../adr/0059-load-popups-and-parsers-on-first-use.md)） | 最初に送る JavaScript を 200KB（gzip）以下に保つ |
 | モジュールの一番上で、接続・プール・リクエストをまたぐ値を作らない | Cloudflare Workers で動かない（[ADR-0017](../adr/0017-cloudflare-workers-opennext.md)） |
 
 Steiger（`fsd` の推奨の設定。止めた 2 つの決まりは [ADR-0030](../adr/0030-fsd-lint-exceptions-and-own-layer-check.md)）、ESLint の `no-restricted-imports` とローカルの決まり `local/no-server-import-in-client`、`scripts/check-src-layers.mjs` が、`pnpm lint` でこれを守らせる。`sharp` と `node:fs` への書き込みをサーバーのコードから使うことも禁じる。

@@ -13,6 +13,7 @@ const quoted = {
   id: '7',
   author: { username: 'hana', name: '花', avatarUrl: null },
   text: '引用された本文',
+  links: [],
   createdAt: '2026-11-18T02:00:00.000Z',
   quotesAnother: false,
 };
@@ -58,6 +59,7 @@ describe('PostCard のリポストと引用（#22）', () => {
     id: '1',
     author: { username: 'taro', name: '太郎', avatarUrl: null },
     text: '意見',
+    links: [],
     createdAt: '2026-11-18T02:59:00.000Z',
     media: [],
     counts: { replies: 0, reposts: 0, likes: 0, bookmarks: 0, views: 0 },
@@ -93,6 +95,7 @@ describe('PostCard の固定（#23）', () => {
           id: '1',
           author: { username: 'taro', name: '太郎', avatarUrl: null },
           text: '固定した投稿',
+          links: [],
           createdAt: '2026-11-18T02:59:00.000Z',
           media: [],
           counts: { replies: 0, reposts: 0, likes: 0, bookmarks: 0, views: 0 },

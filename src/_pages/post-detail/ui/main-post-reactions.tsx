@@ -6,7 +6,7 @@ import { startTransition, useOptimistic } from 'react';
 import type { Post } from '@/entities/post';
 import { BookmarkButton, type BookmarkActionResult } from '@/features/post-bookmark';
 import { LikeButton, type ReactionActionResult } from '@/features/post-like';
-import { toast } from '@/shared/ui/kit';
+import { toast } from '@/shared/ui/toast';
 import { updatePostInCaches } from '@/widgets/timeline-feed';
 
 type Props = {

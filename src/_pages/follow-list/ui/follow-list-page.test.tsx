@@ -4,7 +4,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type { FollowUser, Profile } from '@/entities/user';
-import { toast } from '@/shared/ui/kit';
+import { toast } from '@/shared/ui/toast';
 import { FollowListPage } from './follow-list-page';
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));

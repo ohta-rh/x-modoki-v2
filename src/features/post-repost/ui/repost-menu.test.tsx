@@ -14,7 +14,8 @@ describe('RepostMenu（#22）', () => {
     await userEvent.click(button);
     await userEvent.click(await screen.findByRole('menuitem', { name: 'リポスト' }));
     expect(onToggle).toHaveBeenCalledTimes(1);
-    await userEvent.click(button);
+    // The first press swapped in the real menu button (#32): press the one on screen now.
+    await userEvent.click(screen.getByRole('button', { name: 'リポスト' }));
     await userEvent.click(await screen.findByRole('menuitem', { name: '引用' }));
     expect(onQuote).toHaveBeenCalledTimes(1);
   });

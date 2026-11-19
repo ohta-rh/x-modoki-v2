@@ -19,6 +19,7 @@ const post = (id: number): Post => ({
   id: String(id),
   author: { username: 'taro', name: '太郎', avatarUrl: null },
   text: `投稿 ${id}`,
+  links: [],
   createdAt: '2026-11-18T03:00:00.000Z',
   media: [],
   counts: { replies: 0, reposts: 0, likes: 0, bookmarks: 0, views: 0 },

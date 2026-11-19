@@ -49,6 +49,17 @@ describe('PostMedia（#25、ui-ux.md の 5 節）', () => {
     expect(screen.getByTestId('post-media').querySelectorAll('img')).toHaveLength(4);
   });
 
+  // NFR-PERF-01: LCP（一覧の上の画像はすぐ読む）
+  it('eager なら遅らせずに高い優先度で読み、そうでなければ遅らせて読む（#32）', () => {
+    const { unmount } = render(<PostMedia media={[image(1)]} eager />);
+    expect(screen.getByRole('img')).toHaveAttribute('loading', 'eager');
+    expect(screen.getByRole('img')).toHaveAttribute('fetchpriority', 'high');
+    unmount();
+    show([image(1)]);
+    expect(screen.getByRole('img')).toHaveAttribute('loading', 'lazy');
+    expect(screen.getByRole('img')).not.toHaveAttribute('fetchpriority');
+  });
+
   it('画像が無ければ何も出さない', () => {
     const { container } = show([]);
     expect(container).toBeEmptyDOMElement();
@@ -60,6 +71,7 @@ describe('カードと詳細の画像（#25）', () => {
     id: '1',
     author: { username: 'taro', name: '太郎', avatarUrl: null },
     text: '写真',
+    links: [],
     createdAt: '2026-11-18T03:00:00.000Z',
     media: [image(1)],
     counts: { replies: 0, reposts: 0, likes: 0, bookmarks: 0, views: 0 },

@@ -8,7 +8,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/shared/ui/kit';
+} from '@/shared/ui/dropdown-menu';
 
 type Props = { reposted: boolean; count: number; onToggle: () => void; onQuote: () => void };
 

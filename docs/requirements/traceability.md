@@ -34,8 +34,8 @@ status: stable
 | FR-AUTH-07 | #18 | `e2e/auth.spec.ts` › ログアウトすると / へ戻り、ユーザー名でもメールアドレスでも入り直せる |
 | FR-AUTH-08 | #18 | `src/features/account-access/api/auth-flows.test.ts` › NFR-SEC-05: ログインも同じ IP から 1 分に 11 回目は RATE_LIMITED |
 | FR-POST-01 | #19 | `e2e/home-timeline.spec.ts` › 投稿すると、タイムラインの先頭に出る |
-| FR-POST-02 | #19 | `src/shared/lib/text/measure-post.test.ts` › 日本語は 2 なので、実質 140 文字 |
-| FR-POST-03 | #19 | `src/shared/lib/text/measure-post.test.ts` › 空や空白だけの本文 %j は投稿できない |
+| FR-POST-02 | #19 | `src/shared/lib/text-parse/measure-post.test.ts` › 日本語は 2 なので、実質 140 文字 |
+| FR-POST-03 | #19 | `src/shared/lib/text-parse/measure-post.test.ts` › 空や空白だけの本文 %j は投稿できない |
 | FR-POST-04 | #19 | `src/features/post-compose/ui/compose-box.test.tsx` › 残り 20 で輪が黄色になって数字が出て、0 未満で赤と負の数になり、押せない |
 | FR-POST-05 | #25 | `e2e/media.spec.ts` › 画像を付けて投稿すると、カードに画像が出る |
 | FR-POST-06 | #25 | `e2e/media.spec.ts` › 画像を選ぶ欄は 4 つの形式だけを受け付け、画像でないファイルと 5MB を超える GIF は送れない（#30） |
@@ -130,12 +130,12 @@ status: stable
 | NFR-A11Y-06 | #17・#31 | `e2e/a11y.spec.ts` › ${theme}: ルーティングの全部の画面に、WCAG 2.2 の A と AA の違反が無い（#31） |
 | NFR-A11Y-07 | #21 | `e2e/reduced-motion.spec.ts` › 動きを減らす設定のとき、モーダルの出入りもリンクの色の遷移も動かない |
 | NFR-A11Y-08 | #31 | `e2e/a11y.spec.ts` › ${theme}: ルーティングの全部の画面に、WCAG 2.2 の A と AA の違反が無い（#31） |
-| NFR-PERF-01 | #32 | #32 で確かめる |
-| NFR-PERF-02 | #32 | #32 で確かめる |
-| NFR-PERF-03 | #32 | #32 で確かめる |
-| NFR-PERF-04 | #32 | #32 で確かめる |
-| NFR-PERF-05 | #32 | #32 で確かめる |
-| NFR-PERF-06 | #32 | #32 で確かめる |
+| NFR-PERF-01 | #32 | `scripts/perf.test.mjs` › 予算は LCP 2.5 秒・CLS 0.1・TBT 200 ミリ秒 |
+| NFR-PERF-02 | #32 | `scripts/perf.test.mjs` › 予算は LCP 2.5 秒・CLS 0.1・TBT 200 ミリ秒 |
+| NFR-PERF-03 | #32 | `scripts/perf.test.mjs` › 予算は LCP 2.5 秒・CLS 0.1・TBT 200 ミリ秒 |
+| NFR-PERF-04 | #32 | `src/_pages/home/api/load-home-page.test.ts` › ホームの最初の 1 ページの問い合わせは 6 回以下で、投稿が 20 件でも 40 件でも同じ回数（#32） |
+| NFR-PERF-05 | #32 | `e2e/performance.spec.ts` › ログインした /home が最初に送る JavaScript は、gzip で 200KB 以下 |
+| NFR-PERF-06 | #32 | `src/entities/post/api/get-timeline.test.ts` › 投稿が 10 万件あり、フォローした 1 人の投稿がまばらでも、1 ページを索引で 50 ミリ秒以下で読む |
 | NFR-PERF-07 | #26・#28 | `src/entities/notification/ui/unread-badge.test.tsx` › 30 秒ごとに確かめて数を変える。タブが見えていない間は確かめない |
 | NFR-COMPAT-01 | #15 | `scripts/quality-gates.test.ts` › 画面のテストは Chromium・Firefox・WebKit の 3 つで流す |
 | NFR-COMPAT-02 | #17・#31 | `e2e/narrow.spec.ts` › 幅 360px で、ルーティングの全部の画面が横にはみ出さない（#31） |
@@ -145,7 +145,7 @@ status: stable
 | NFR-SEC-03 | #18〜#29・#33 | #33 で確かめる |
 | NFR-SEC-04 | #18 | `src/shared/auth/auth.test.ts` › NFR-SEC-04: 本番（https の URL）では、セッションの cookie に Secure が付く。手元の http では付かない（#30） |
 | NFR-SEC-05 | #18・#19・#24・#25 | `src/shared/api/rate-limit.test.ts` › 区切りの中で limit 回までは通し、limit + 1 回目で止める |
-| NFR-SEC-06 | #19 | `src/shared/lib/text/tokenize-post.test.ts` › http と https の URL だけをリンクにする（スキームの無いもの、javascript: は文字のまま） |
+| NFR-SEC-06 | #19 | `src/shared/lib/text-parse/find-links.test.ts` › http と https の URL だけをリンクにする（スキームの無いもの、javascript: は文字のまま） |
 | NFR-SEC-07 | #25 | `src/features/post-compose/api/create-post.test.ts` › 他人の画像・無い画像・置かれていない画像・申告と違う中身（PNG を WebP と偽る、縦横の違い）・使用済みは拒み、何も書かない |
 | NFR-SEC-08 | #15・#33 | #33 で確かめる |
 | NFR-SEC-09 | #33 | #33 で確かめる |

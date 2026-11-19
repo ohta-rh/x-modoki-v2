@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createPortal } from 'react-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { findLinks } from '@/shared/lib/text-parse';
 import type { Post } from '../model/types';
 import { PostCard } from './post-card';
 
@@ -13,6 +14,7 @@ const post: Post = {
   id: '123',
   author: { username: 'taro', name: '太郎', avatarUrl: null },
   text: '本文 #タグ',
+  links: findLinks('本文 #タグ'),
   createdAt: '2026-11-18T02:59:00.000Z',
   media: [],
   counts: { replies: 0, reposts: 0, likes: 0, bookmarks: 0, views: 0 },

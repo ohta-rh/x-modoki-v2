@@ -43,7 +43,7 @@ export function QuotedCard({ quoted, now }: { quoted: QuotedPost; now: Date }) {
           {relativeTime(new Date(quoted.createdAt), now)}
         </time>
       </div>
-      <PostText text={quoted.text} />
+      <PostText text={quoted.text} links={quoted.links} />
       {quoted.quotesAnother ? (
         <Link href={detail} className="text-body text-brand hover:underline">
           ポストを表示

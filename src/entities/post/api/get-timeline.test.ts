@@ -1,6 +1,8 @@
 import { makeFollow, makeLike, makePost, makeUser } from '@test/factories';
-import { setupTestDb } from '@test/db';
+import { setupTestDb, testDb } from '@test/db';
 import { currentSession, signInAs, signOut } from '@test/session';
+import { sql } from 'drizzle-orm';
+import { Client } from 'pg';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { newId } from '@/shared/lib/id';
 import { getTimeline } from './get-timeline';
@@ -122,6 +124,7 @@ describe('getTimeline（data-model.md の 4 節、ADR-0015）', () => {
       id: at(1).toString(),
       author: { username: 'sample_01', name: 'サンプル', avatarUrl: null },
       text: 'こんにちは',
+      links: [],
       createdAt: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
       media: [],
       counts: { replies: 0, reposts: 0, likes: 1, bookmarks: 0, views: 0 },
@@ -164,4 +167,34 @@ describe('getTimeline（data-model.md の 4 節、ADR-0015）', () => {
     expect(newest).toBeGreaterThanOrEqual(before);
     expect(newest).toBeLessThanOrEqual(newId({ now: Date.now() + 1, random: 0 }));
   });
+});
+
+describe('「フォロー中」の問い合わせの速さ（#32）', () => {
+  // NFR-PERF-06: 投稿が 10 万件あっても、フォロー中の 1 ページは索引で 50 ミリ秒以下
+  it('投稿が 10 万件あり、フォローした 1 人の投稿がまばらでも、1 ページを索引で 50 ミリ秒以下で読む', async () => {
+    const me = await makeUser();
+    const friend = await makeUser();
+    const others = await makeUser();
+    await makeFollow(me.id, friend.id);
+    // 100,000 posts, one in a thousand by the person followed: the page skips ~20,000 rows.
+    await testDb().execute(sql`
+      insert into posts (id, author_id, text)
+      select ${T0}::bigint * 4194304 + g, case when g % 1000 = 0 then ${friend.id} else ${others.id} end, '投稿 ' || g
+      from generate_series(1, 100000) g`);
+    await testDb().execute(sql`analyze posts`);
+    signInAs(me);
+    const sent = vi.spyOn(Client.prototype, 'query');
+    const result = await getTimeline('following', null);
+    if (!result.ok) throw new Error('expected ok');
+    expect(result.page.items).toHaveLength(20);
+    // Drizzle passes the statement as { text } and its values as the second argument.
+    const [{ text }, values] = sent.mock.calls[0] as unknown as [{ text: string }, unknown[]];
+    sent.mockRestore();
+    const { rows } = await testDb().$client.query(`explain (analyze, format json) ${text}`, values);
+    const [{ Plan: plan, 'Execution Time': ms }] = rows[0]['QUERY PLAN'];
+    const scans =
+      JSON.stringify(plan).match(/"Node Type":"[^"]+","[^}]*?"Relation Name":"posts"/g) ?? [];
+    expect(scans.some((scan) => scan.includes('Seq Scan'))).toBe(false);
+    expect(ms).toBeLessThanOrEqual(50);
+  }, 60_000);
 });

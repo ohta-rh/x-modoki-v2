@@ -9,7 +9,7 @@ import {
   resolveShortcut,
   type ShortcutAction,
 } from '@/shared/config';
-import { Dialog, DialogContent, DialogTitle } from '@/shared/ui/kit';
+import { Dialog, DialogContent, DialogTitle } from '@/shared/ui/dialog';
 
 /** Keys typed into a field are the field's. */
 const typing = (target: EventTarget | null) =>

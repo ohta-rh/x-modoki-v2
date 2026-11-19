@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { MouseEvent, ReactNode } from 'react';
 import { compactCount, relativeTime } from '@/shared/lib/format';
-import { truncateLines } from '@/shared/lib/text';
+import { type PostLink, truncateLines } from '@/shared/lib/text';
 import { UserHoverCard } from '@/entities/user/@x/post';
 import { Avatar } from '@/shared/ui/avatar';
 import type { Post } from '../model/types';
@@ -36,6 +36,8 @@ type Props = {
   bookmark?: ReactNode;
   /** The repost menu; without it the repost count is shown as text (#22). */
   repost?: ReactNode;
+  /** Near the top of a list: its images are read at once (#32). */
+  eager?: boolean;
 };
 
 /** True when the click started on something with its own action: a link or a button. */
@@ -43,11 +45,13 @@ const ownAction = (event: MouseEvent) =>
   (event.target as HTMLElement).closest('a, button') !== null;
 
 /** A long body is cut to its first lines in a list, with 「さらに表示」 to the post (#28). */
-function ListText({ text, href }: { text: string; href: string }) {
+function ListText({ text, links, href }: { text: string; links: PostLink[]; href: string }) {
   const shown = truncateLines(text);
+  // The cut falls between lines, and no link spans a line break: a link is wholly shown or cut.
+  const shownLinks = links.filter((link) => link.end <= shown.text.length);
   return (
     <>
-      <PostText text={shown.text} />
+      <PostText text={shown.text} links={shownLinks} />
       {shown.truncated ? (
         <Link href={href as Route} className="text-body text-brand hover:underline">
           さらに表示
@@ -70,6 +74,7 @@ export function PostCard({
   like,
   bookmark,
   repost,
+  eager = false,
 }: Props) {
   const router = useRouter();
   const detail = `/${post.author.username}/status/${post.id}` as Route;
@@ -142,8 +147,16 @@ export function PostCard({
             </Link>
           </p>
         ) : null}
-        <ListText text={post.text} href={`/${post.author.username}/status/${post.id}`} />
-        <PostMedia media={post.media} photos={`/${post.author.username}/status/${post.id}`} />
+        <ListText
+          text={post.text}
+          links={post.links}
+          href={`/${post.author.username}/status/${post.id}`}
+        />
+        <PostMedia
+          media={post.media}
+          photos={`/${post.author.username}/status/${post.id}`}
+          eager={eager}
+        />
         {post.quoted ? <QuotedCard quoted={post.quoted} now={now} /> : null}
         <div
           role="group"

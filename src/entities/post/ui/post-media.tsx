@@ -7,6 +7,8 @@ type Props = {
   media: Post['media'];
   /** The post's URL: each image then opens the viewer at `{photos}/photo/{n}` (#25). */
   photos?: string;
+  /** Near the top of a list: read at once and first, it is likely the page's largest paint (#32). */
+  eager?: boolean;
 };
 
 const GRID = [
@@ -20,7 +22,7 @@ const GRID = [
  * A post's images (#25, ui-ux.md 5): one keeps its own ratio; two side by side; three as one large
  * on the left and two small on the right; four in a 2×2 grid. 16px corners, 2px gaps.
  */
-export function PostMedia({ media, photos }: Props) {
+export function PostMedia({ media, photos, eager = false }: Props) {
   if (media.length === 0) return null;
   return (
     <div
@@ -39,7 +41,8 @@ export function PostMedia({ media, photos }: Props) {
             alt={image.alt}
             width={image.width}
             height={image.height}
-            loading="lazy"
+            loading={eager ? 'eager' : 'lazy'}
+            fetchPriority={eager ? 'high' : undefined}
             className="size-full object-cover"
           />
         );

@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { Post } from '@/entities/post';
-import { toast } from '@/shared/ui/kit';
+import { toast } from '@/shared/ui/toast';
 import { describe, expect, it, vi } from 'vitest';
 import { PostDetailPage, PostPhotoModal } from './post-detail-page';
 
@@ -47,6 +47,7 @@ describe('PostDetailPage', () => {
               id: '1',
               author: { username: 'taro', name: '太郎', avatarUrl: null },
               text: '本文',
+              links: [],
               createdAt: '2026-11-18T03:00:00.000Z',
               media: [],
               counts: { replies: 0, reposts: 0, likes: 0, bookmarks: 0, views: 0 },
@@ -79,6 +80,7 @@ describe('PostDetailPage', () => {
       id: '2',
       author: { username: 'hana', name: '花', avatarUrl: null },
       text: '返信',
+      links: [],
       createdAt: '2026-11-18T03:00:00.000Z',
       media: [],
       counts: { replies: 0, reposts: 0, likes: 0, bookmarks: 0, views: 0 },
@@ -114,6 +116,7 @@ const make = (id: string, text: string): Post => ({
   id,
   author: { username: 'taro', name: '太郎', avatarUrl: null },
   text,
+  links: [],
   createdAt: '2026-11-18T03:00:00.000Z',
   media: [],
   counts: { replies: 0, reposts: 0, likes: 2, bookmarks: 0, views: 0 },
@@ -294,6 +297,7 @@ describe('画像のビューア（#25）', () => {
       id: '1',
       author: { username: 'taro', name: '太郎', avatarUrl: null },
       text: '写真の投稿',
+      links: [],
       createdAt: '2026-11-18T03:00:00.000Z',
       media: [image(1), image(2)],
       counts: { replies: 0, reposts: 0, likes: 0, bookmarks: 0, views: 0 },

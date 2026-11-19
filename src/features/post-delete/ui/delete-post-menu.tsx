@@ -3,16 +3,13 @@
 import { Ellipsis, Trash2 } from 'lucide-react';
 import { type ReactNode, useState, useTransition } from 'react';
 import { Button } from '@/shared/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/shared/ui/dialog';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/shared/ui/kit';
+} from '@/shared/ui/dropdown-menu';
 import type { DeletePostActionResult } from '../model/types';
 
 type Props = {

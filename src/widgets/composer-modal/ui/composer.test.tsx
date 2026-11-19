@@ -6,7 +6,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { Toaster } from '@/shared/ui/kit';
+import { Toaster } from '@/shared/ui/toast';
 import { ComposerDialog, ComposerScreen } from './composer';
 
 type Action = Parameters<typeof ComposerDialog>[0]['action'];
@@ -17,7 +17,8 @@ function wrap(children: ReactNode) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return (
     <QueryClientProvider client={client}>
-      <Toaster>{children}</Toaster>
+      {children}
+      <Toaster />
     </QueryClientProvider>
   );
 }

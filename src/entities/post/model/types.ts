@@ -1,10 +1,13 @@
 import type { UserSummary } from '@/entities/user/@x/post';
+import type { PostLink } from '@/shared/lib/text';
 
 /** The post DTO of every list (docs/architecture/application-structure.md 5). IDs are strings. */
 export type Post = {
   id: string;
   author: UserSummary;
   text: string;
+  /** The links in `text`, found on the server so the browser needs no parser (#32). */
+  links: PostLink[];
   createdAt: string;
   media: { url: string; width: number; height: number; alt: string }[];
   counts: { replies: number; reposts: number; likes: number; bookmarks: number; views: number };
@@ -21,7 +24,14 @@ export type Post = {
  * a 「ポストを表示」 link); a deleted one is only a mark.
  */
 export type QuotedPost =
-  | { id: string; author: UserSummary; text: string; createdAt: string; quotesAnother: boolean }
+  | {
+      id: string;
+      author: UserSummary;
+      text: string;
+      links: PostLink[];
+      createdAt: string;
+      quotesAnother: boolean;
+    }
   | { id: string; deleted: true };
 
 export type PostPage = {

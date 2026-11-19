@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Post } from '@/entities/post';
-import { toast } from '@/shared/ui/kit';
+import { toast } from '@/shared/ui/toast';
 import { updatePostInCaches } from './update-post-in-caches';
 
 type Kind = 'like' | 'bookmark' | 'repost';

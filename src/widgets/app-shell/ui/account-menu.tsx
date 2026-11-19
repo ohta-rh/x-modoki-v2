@@ -7,7 +7,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/shared/ui/kit';
+} from '@/shared/ui/dropdown-menu';
 
 export type Account = { name: string; username: string; image: string | null };
 

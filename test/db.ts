@@ -3,11 +3,12 @@
 import { sql } from 'drizzle-orm';
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import { afterAll, beforeEach } from 'vitest';
+import { afterAll, beforeEach, vi } from 'vitest';
 import * as schema from '@/shared/db/schema';
 import { workerDatabaseName, withDatabase } from './db-names';
 
-export type TestDb = NodePgDatabase<typeof schema>;
+/** Drizzle over the worker's pool; `$client` is the pool, for statements Drizzle cannot build (EXPLAIN). */
+export type TestDb = NodePgDatabase<typeof schema> & { $client: Pool };
 
 let pool: Pool | undefined;
 let db: TestDb | undefined;
@@ -60,5 +61,20 @@ export async function failingAtCommit<T>(table: 'likes' | 'follows', run: () => 
     return await run();
   } finally {
     await testDb().execute(sql`DROP TRIGGER ${name} ON ${target}; DROP FUNCTION ${name}();`);
+  }
+}
+
+/**
+ * How many statements `run` sends to PostgreSQL through the app's pools (#32): every query goes
+ * through pg's Client.prototype.query, the test's own included, so only what `run` sends counts.
+ */
+export async function countQueries(run: () => Promise<unknown>): Promise<number> {
+  const { Client } = await import('pg');
+  const spy = vi.spyOn(Client.prototype, 'query');
+  try {
+    await run();
+    return spy.mock.calls.length;
+  } finally {
+    spy.mockRestore();
   }
 }

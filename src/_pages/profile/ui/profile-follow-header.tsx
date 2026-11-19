@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { startTransition, useOptimistic } from 'react';
 import type { Profile } from '@/entities/user';
 import { type FollowActionResult, FollowButton } from '@/features/user-follow';
-import { toast } from '@/shared/ui/kit';
+import { toast } from '@/shared/ui/toast';
 import { ProfileHeader } from '@/widgets/profile-header';
 
 type Props = {

@@ -26,6 +26,7 @@ const post: Post = {
   id: '1',
   author: { username: 'taro', name: '太郎', avatarUrl: null },
   text: '投稿',
+  links: [],
   createdAt: '2026-11-19T00:00:00.000Z',
   media: [],
   counts: { replies: 1, reposts: 1, likes: 1, bookmarks: 0, views: 1 },

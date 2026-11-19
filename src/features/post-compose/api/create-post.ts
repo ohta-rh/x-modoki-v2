@@ -17,7 +17,7 @@ import {
 } from '@/shared/db';
 import { newId as defaultNewId, toIdString } from '@/shared/lib/id';
 import { removeObject } from '@/shared/storage';
-import { measurePost } from '@/shared/lib/text';
+import { measurePost } from '@/shared/lib/text-parse';
 
 export type CreatePostResult =
   | { ok: true; id: string }

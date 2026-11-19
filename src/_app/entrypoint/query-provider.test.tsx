@@ -2,7 +2,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { act, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { toast } from '@/shared/ui/kit';
+import { toast } from '@/shared/ui/toast';
 import { QueryProvider } from './query-provider';
 
 function Probe() {

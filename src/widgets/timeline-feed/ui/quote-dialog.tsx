@@ -2,7 +2,7 @@
 
 import { type Post, QuotedCard } from '@/entities/post';
 import { ComposeBox, type CreatePostActionResult } from '@/features/post-compose';
-import { Dialog, DialogContent, DialogTitle } from '@/shared/ui/kit';
+import { Dialog, DialogContent, DialogTitle } from '@/shared/ui/dialog';
 
 type Props = {
   /** The post being quoted; null renders nothing. */
@@ -33,6 +33,7 @@ export function QuoteDialog({ post, now, action, onClose, onPosted }: Props) {
               id: post.id,
               author: post.author,
               text: post.text,
+              links: post.links,
               createdAt: post.createdAt,
               quotesAnother: post.quoted !== null,
             }}

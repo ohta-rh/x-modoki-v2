@@ -7,7 +7,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/shared/ui/kit';
+} from '@/shared/ui/dropdown-menu';
 import { UnreadBadge } from '@/entities/notification';
 import { Logo } from '@/shared/ui/logo';
 import { type Account, AccountMenu } from './account-menu';

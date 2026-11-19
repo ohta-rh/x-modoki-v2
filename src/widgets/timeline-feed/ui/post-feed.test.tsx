@@ -7,7 +7,7 @@ import { renderToString } from 'react-dom/server';
 import { act } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Post } from '@/entities/post';
-import { toast } from '@/shared/ui/kit';
+import { toast } from '@/shared/ui/toast';
 import type { ReactionAction } from '../lib/use-reaction';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { PostFeed } from './post-feed';
@@ -24,6 +24,7 @@ const post = (id: number, isAuthor: boolean): Post => ({
   id: String(id),
   author: { username: 'taro', name: '太郎', avatarUrl: null },
   text: `投稿 ${id}`,
+  links: [],
   createdAt: '2026-11-18T03:00:00.000Z',
   media: [],
   counts: { replies: 0, reposts: 0, likes: 0, bookmarks: 0, views: 0 },
@@ -382,5 +383,28 @@ describe('PostFeed の高さの無い窓（#60 review 2）', () => {
       ),
     ).not.toThrow();
     vi.restoreAllMocks();
+  });
+});
+
+describe('PostFeed の画像の読み方（#32）', () => {
+  // NFR-PERF-01: LCP（一覧の上の画像はすぐ読む）
+  it('上から 2 行の画像はすぐ読み、3 行目からは遅らせて読む', () => {
+    const withImage = (id: number): Post => ({
+      ...post(id, false),
+      media: [{ url: `https://media.test/${id}.webp`, width: 600, height: 400, alt: `画像 ${id}` }],
+    });
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <PostFeed
+          queryKey={['eager']}
+          endpoint="/api/eager"
+          firstPage={{ items: [withImage(1), withImage(2), withImage(3)], nextCursor: null }}
+          now="2026-11-18T03:00:00.000Z"
+        />
+      </QueryClientProvider>,
+    );
+    expect(
+      [1, 2, 3].map((n) => screen.getByRole('img', { name: `画像 ${n}` }).getAttribute('loading')),
+    ).toEqual(['eager', 'eager', 'lazy']);
   });
 });

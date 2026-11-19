@@ -3,7 +3,7 @@ import { APIError } from 'better-auth/api';
 import { headers } from 'next/headers';
 import { clientIp, hitRateLimit } from '@/shared/api/index.server';
 import { getAuth } from '@/shared/auth/index.server';
-import { env } from '@/shared/config';
+import { env } from '@/shared/config/index.server';
 import type { SignInInput, SignUpInput } from '../model/schema';
 
 export type AuthResult =

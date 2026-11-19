@@ -2,7 +2,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { toast } from '@/shared/ui/kit';
+import { toast } from '@/shared/ui/toast';
 import { describe, expect, it, vi } from 'vitest';
 import type { Post } from '@/entities/post';
 import type { Profile } from '@/entities/user';
@@ -51,6 +51,7 @@ const post: Post = {
   id: '1',
   author: { username: 'hanako', name: '花子', avatarUrl: null },
   text: '本文',
+  links: [],
   createdAt: '2026-11-18T03:00:00.000Z',
   media: [],
   counts: { replies: 0, reposts: 0, likes: 0, bookmarks: 0, views: 0 },

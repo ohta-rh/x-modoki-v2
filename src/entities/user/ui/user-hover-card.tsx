@@ -1,74 +1,52 @@
 'use client';
 
-import { PreviewCard } from '@base-ui/react/preview-card';
 import type { Route } from 'next';
 import Link from 'next/link';
-import { type ReactNode, useEffect, useState } from 'react';
-import { Avatar } from '@/shared/ui/avatar';
-import type { Profile } from '../model/types';
+import { type ComponentType, useRef, useState } from 'react';
+import type { Props } from './user-hover-card-live';
 
-type Props = {
-  username: string;
-  name: string;
-  /** The link's accessible name. */
-  label?: string;
-  className?: string;
-  children: ReactNode;
-};
+type Live = ComponentType<Props & { defaultOpen?: boolean }>;
 
-async function fetchProfile(username: string): Promise<Profile> {
-  const response = await fetch(`/api/users/${username}`);
-  if (!response.ok) throw new Error(`profile ${response.status}`);
-  return response.json();
+// The card (Base UI) arrives with the first hover, not with every page (#32, ADR-0059).
+let live: Live | null = null;
+let loading: Promise<Live> | null = null;
+
+function load(): Promise<Live> {
+  loading ??= import('./user-hover-card-live').then((module) => (live = module.UserHoverCardLive));
+  return loading;
 }
 
+/** How long a pointer rests on a name before its card opens (#23, as on X). */
+const DELAY_MS = 500;
+
 /**
- * A link to a profile that, after about half a second of hover, shows a small card of the user
- * (#23, as on X). The profile is read only when the card opens.
+ * A link to a profile that, after about half a second of hover, shows a small card of the user.
+ * Until someone hovers a name it is a plain link; the card's parts load on the first hover.
  */
-export function UserHoverCard({ username, name, label, className, children }: Props) {
-  const [open, setOpen] = useState(false);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  useEffect(() => {
-    if (!open || profile) return;
-    // A card that cannot be read stays with the name only; nothing else depends on it.
-    fetchProfile(username).then(setProfile, () => undefined);
-  }, [open, profile, username]);
-  const href = `/${username}` as Route;
+export function UserHoverCard(props: Props) {
+  const [Card, setCard] = useState<Live | null>(() => live);
+  // Swapped in by a rested pointer: the card opens at once. Already loaded: it opens on hover.
+  const [rested, setRested] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  if (Card) return <Card {...props} defaultOpen={rested} />;
+  const { username, label, className, children } = props;
   return (
-    <PreviewCard.Root open={open} onOpenChange={setOpen}>
-      <PreviewCard.Trigger
-        delay={500}
-        render={<Link href={href} aria-label={label} className={className} />}
-      >
-        {children}
-      </PreviewCard.Trigger>
-      <PreviewCard.Portal>
-        <PreviewCard.Positioner sideOffset={8} className="z-50">
-          <PreviewCard.Popup
-            role="dialog"
-            aria-label={`${name} のプロフィールのカード`}
-            className="w-72 rounded-card bg-bg p-4 text-body shadow-lg ring-1 ring-line"
-          >
-            <Avatar name={name} src={profile?.avatarUrl ?? null} size={64} />
-            <p className="mt-2 font-bold">{name}</p>
-            <p className="text-text-muted">@{username}</p>
-            {profile ? (
-              <>
-                {profile.bio ? <p className="mt-2">{profile.bio}</p> : null}
-                <p className="mt-2 flex gap-4 text-text-muted">
-                  <span>
-                    <span className="font-bold text-text">{profile.followingCount}</span> フォロー中
-                  </span>
-                  <span>
-                    <span className="font-bold text-text">{profile.followersCount}</span> フォロワー
-                  </span>
-                </p>
-              </>
-            ) : null}
-          </PreviewCard.Popup>
-        </PreviewCard.Positioner>
-      </PreviewCard.Portal>
-    </PreviewCard.Root>
+    <Link
+      href={`/${username}` as Route}
+      aria-label={label}
+      className={className}
+      onPointerEnter={() => {
+        void load();
+        timer.current = setTimeout(() => {
+          void load().then((loaded) => {
+            setRested(true);
+            setCard(() => loaded);
+          });
+        }, DELAY_MS);
+      }}
+      onPointerLeave={() => clearTimeout(timer.current)}
+    >
+      {children}
+    </Link>
   );
 }

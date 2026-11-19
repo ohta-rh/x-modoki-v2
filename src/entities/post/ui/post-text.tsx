@@ -1,16 +1,21 @@
 import Link from 'next/link';
 import type { Route } from 'next';
-import { tokenizePost } from '@/shared/lib/text';
+import { type PostLink, splitText } from '@/shared/lib/text';
 
 const linkClass = 'text-brand hover:underline';
 
-/** A post's body: plain text that React escapes, with http(s) URLs, #tags and @names as links. */
-export function PostText({ text, size = 'md' }: { text: string; size?: 'md' | 'lg' }) {
+type Props = { text: string; links: PostLink[]; size?: 'md' | 'lg' };
+
+/**
+ * A post's body: plain text that React escapes, with the http(s) URLs, #tags and @names the server
+ * found (`links`) as links. The browser does not parse the text itself (#32).
+ */
+export function PostText({ text, links, size = 'md' }: Props) {
   return (
     <p
       className={`${size === 'lg' ? 'text-body-lg' : 'text-body'} break-words whitespace-pre-wrap`}
     >
-      {tokenizePost(text).map((token, index) => {
+      {splitText(text, links).map((token, index) => {
         if (token.type === 'text') return token.value;
         if (token.type === 'url') {
           return (

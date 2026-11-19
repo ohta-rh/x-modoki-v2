@@ -3,7 +3,7 @@ import { setupTestDb, testDb } from '@test/db';
 import { makeUpload } from '@test/uploads';
 import { eq } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
-import { env } from '@/shared/config';
+import { env } from '@/shared/config/index.server';
 import { media } from '@/shared/db';
 import { readHead } from '@/shared/storage';
 import { cleanupMedia } from './cleanup-media';

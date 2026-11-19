@@ -1,4 +1,3 @@
-export { env } from './env';
 export {
   COMPOSE_PATH,
   LOGIN_PATH,

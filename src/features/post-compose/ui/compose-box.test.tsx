@@ -18,9 +18,11 @@ describe('ComposeBox（ui-ux.md の 7 節）', () => {
   });
 
   // FR-POST-04: 文字数の輪
-  it('残り 20 で輪が黄色になって数字が出て、0 未満で赤と負の数になり、押せない', () => {
+  it('残り 20 で輪が黄色になって数字が出て、0 未満で赤と負の数になり、押せない', async () => {
     render(<ComposeBox action={ok()} />);
     fireEvent.change(box(), { target: { value: 'a'.repeat(259) } });
+    // The parser that weighs a post arrives after the first keystroke (#32).
+    await waitFor(() => expect(button()).toBeEnabled());
     expect(screen.queryByTestId('remaining')).toBeNull();
     expect(screen.getByTestId('ring')).toHaveAttribute('data-state', 'normal');
     fireEvent.change(box(), { target: { value: 'a'.repeat(260) } });

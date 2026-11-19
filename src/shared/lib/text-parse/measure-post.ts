@@ -1,6 +1,5 @@
 import twitterText from 'twitter-text';
-
-export const MAX_WEIGHTED_LENGTH = 280;
+import { MAX_WEIGHTED_LENGTH } from '@/shared/lib/text';
 
 export type PostMeasure = { weighted: number; remaining: number; postable: boolean };
 

@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { tokenizePost } from './tokenize-post';
+import { splitText } from '@/shared/lib/text';
+import { findLinks } from './find-links';
 
-describe('tokenizePost（NFR-SEC-06、T-05・T-06）', () => {
+/** What a post shows: its text split at the links found for it. */
+const tokenizePost = (text: string) => splitText(text, findLinks(text));
+
+describe('findLinks と splitText（NFR-SEC-06、T-05・T-06）', () => {
   it('URL・@ユーザー名・#ハッシュタグを、行き先つきの部品に分ける', () => {
     expect(tokenizePost('見て https://example.com/a #テスト @Taro です')).toEqual([
       { type: 'text', value: '見て ' },

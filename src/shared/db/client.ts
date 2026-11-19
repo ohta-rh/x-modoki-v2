@@ -2,7 +2,7 @@ import 'server-only';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool, type PoolClient } from 'pg';
 import { cache } from 'react';
-import { env } from '@/shared/config';
+import { env } from '@/shared/config/index.server';
 import * as schema from './schema';
 
 /**

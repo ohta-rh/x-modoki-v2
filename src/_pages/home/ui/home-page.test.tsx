@@ -67,6 +67,7 @@ describe('HomePage（ui-ux.md の 6 節）', () => {
                 id: '1',
                 author: { username: 'taro', name: '太郎', avatarUrl: null },
                 text: '自分の投稿',
+                links: [],
                 createdAt: '2026-11-18T03:00:00.000Z',
                 media: [],
                 counts: { replies: 0, reposts: 0, likes: 0, bookmarks: 0, views: 0 },

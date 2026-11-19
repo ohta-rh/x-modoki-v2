@@ -1,7 +1,8 @@
 'use client';
 
 import { type ReactNode, useEffect, useRef, useState, useTransition } from 'react';
-import { MAX_WEIGHTED_LENGTH, measurePost } from '@/shared/lib/text';
+import { MAX_WEIGHTED_LENGTH } from '@/shared/lib/text';
+import type { PostMeasure } from '@/shared/lib/text-parse';
 import { Button } from '@/shared/ui/button';
 import type { CreatePostActionResult } from '../model/types';
 
@@ -35,6 +36,18 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 const RING_COLOR = { normal: 'var(--accent)', warning: '#ffd400', over: 'var(--danger)' } as const;
 
 /** The inline composer at the top of /home (docs/architecture/ui-ux.md 7). */
+const UNMEASURED: PostMeasure = { weighted: 0, remaining: MAX_WEIGHTED_LENGTH, postable: false };
+
+/** Loads the parser once per box and hands its measure to `setMeasure`. */
+function startLoading(
+  loading: { current: boolean },
+  setMeasure: (measure: () => (text: string) => PostMeasure) => void,
+) {
+  if (loading.current) return;
+  loading.current = true;
+  void import('@/shared/lib/text-parse').then((parse) => setMeasure(() => parse.measurePost));
+}
+
 export function ComposeBox({
   action,
   attachments,
@@ -54,14 +67,20 @@ export function ComposeBox({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const ref = useRef<HTMLTextAreaElement>(null);
+  // The parser that weighs a post is loaded when someone starts to write, not with the page (#32).
+  const [measure, setMeasure] = useState<((text: string) => PostMeasure) | null>(null);
+  const loading = useRef(false);
+  const loadMeasure = () => startLoading(loading, setMeasure);
   // Text typed before hydration is in the DOM but not in state (#47): take it in once mounted.
   useEffect(() => {
     const typed = ref.current!.value;
     if (typed === '') return;
+    startLoading(loading, setMeasure);
     setTextState(typed);
     ref.current!.style.height = `${ref.current!.scrollHeight}px`;
   }, []);
-  const { weighted, remaining, postable: textPostable } = measurePost(text);
+  // Until the parser is here nothing is postable; it arrives before a person finishes a word.
+  const { weighted, remaining, postable: textPostable } = measure?.(text) ?? UNMEASURED;
   // Images alone may be posted (#25); nothing is sent while one is still uploading.
   const count = attachments?.count ?? 0;
   const postable = (textPostable || (text === '' && count > 0)) && (attachments?.ready ?? true);
@@ -96,7 +115,9 @@ export function ComposeBox({
         autoFocus={autoFocus}
         rows={1}
         value={text}
+        onFocus={loadMeasure}
         onChange={(event) => {
+          loadMeasure();
           setText(event.target.value);
           // Reset first: scrollHeight never drops below the current height, so the box could not shrink.
           event.target.style.height = 'auto';

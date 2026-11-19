@@ -1,7 +1,8 @@
 'use client';
 
 import { Pin } from 'lucide-react';
-import { DropdownMenuItem, toast } from '@/shared/ui/kit';
+import { DropdownMenuItem } from '@/shared/ui/dropdown-menu';
+import { toast } from '@/shared/ui/toast';
 import type { SetPinActionResult } from '../model/types';
 
 type Props = {

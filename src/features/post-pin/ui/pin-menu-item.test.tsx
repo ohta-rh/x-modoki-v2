@@ -2,8 +2,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/shared/ui/kit';
-import { toast } from '@/shared/ui/kit';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/shared/ui/dropdown-menu';
+import { toast } from '@/shared/ui/toast';
 import { PinMenuItem } from './pin-menu-item';
 
 const open = async (item: React.ReactNode) => {

@@ -7,7 +7,8 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { connection } from 'next/server';
 import { cache } from 'react';
-import { env, isAllowedUsername, LOGIN_PATH } from '@/shared/config';
+import { isAllowedUsername, LOGIN_PATH } from '@/shared/config';
+import { env } from '@/shared/config/index.server';
 import { getDb, schema } from '@/shared/db';
 
 /** Better Auth for this request (ADR-0007; the settings verified in #10). */

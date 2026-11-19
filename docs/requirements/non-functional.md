@@ -29,11 +29,11 @@ status: stable
 
 | ID | 基準 | 確かめ方 | 満たす PBI |
 |---|---|---|---|
-| NFR-PERF-01 | `/home`・`/{username}`・`/{username}/status/{id}`・`/search`・`/notifications` の LCP が 2.5 秒以下（Lighthouse のモバイルの設定、ローカルの本番ビルド） | 計測 | #32 |
+| NFR-PERF-01 | `/home`・`/{username}`・`/{username}/status/{id}`・`/search`・`/notifications` の LCP が 2.5 秒以下（Lighthouse のモバイルの設定、ローカルの本番ビルド） | 計測（`node scripts/perf.mjs`。回線と CPU の条件を実際にかけ、3 回の中央の値。[ADR-0058](../adr/0058-measure-speed-with-applied-throttling.md)） | #32 |
 | NFR-PERF-02 | 同じ 5 つの画面の CLS が 0.1 以下 | 計測 | #32 |
 | NFR-PERF-03 | 同じ 5 つの画面の INP が 200 ミリ秒以下（Lighthouse の実験室の測り方では TBT 200 ミリ秒以下を代わりに使う） | 計測 | #32 |
 | NFR-PERF-04 | `/home` の最初の描画で流れる問い合わせが 6 回以下で、投稿が 20 件でも 40 件でも同じ回数 | DAL | #32 |
-| NFR-PERF-05 | `/home` の最初に送る JavaScript が 200KB（gzip）以下 | 計測（`next build` の出力） | #32 |
+| NFR-PERF-05 | `/home` の最初に送る JavaScript が 200KB（gzip）以下 | e2e（`e2e/performance.spec.ts`。Next.js 16 の `next build` は量を出さない。[ADR-0059](../adr/0059-load-popups-and-parsers-on-first-use.md)） | #32 |
 | NFR-PERF-06 | 投稿が 10 万件あるデータベースで、「フォロー中」の 1 ページの問い合わせが 50 ミリ秒以下で、索引を使う | 計測（`EXPLAIN ANALYZE`） | #32 |
 | NFR-PERF-07 | 新着と未読の確認の GET は 30 秒に 1 回で、タブが見えていない間は送らない | 画面 | #26・#28 |
 

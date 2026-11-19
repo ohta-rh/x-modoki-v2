@@ -7,6 +7,7 @@ const post = (id: string, likes = 0): Post => ({
   id,
   author: { username: 'taro', name: '太郎', avatarUrl: null },
   text: id,
+  links: [],
   createdAt: '2026-11-18T03:00:00.000Z',
   media: [],
   counts: { replies: 0, reposts: 0, likes, bookmarks: 0, views: 0 },

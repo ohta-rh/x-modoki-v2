@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import type { FollowListType, FollowPage, FollowUser } from '@/entities/user';
 import { type FollowActionResult, FollowButton } from '@/features/user-follow';
-import { toast } from '@/shared/ui/kit';
+import { toast } from '@/shared/ui/toast';
 import { Avatar } from '@/shared/ui/avatar';
 import { Spinner } from '@/shared/ui/spinner';
 

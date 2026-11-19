@@ -1,6 +1,6 @@
 import 'server-only';
 import { and, eq, inArray, lt } from 'drizzle-orm';
-import { env } from '@/shared/config';
+import { env } from '@/shared/config/index.server';
 import { getDb, media } from '@/shared/db';
 import { removeObject } from '@/shared/storage';
 

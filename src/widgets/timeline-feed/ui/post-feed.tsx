@@ -145,6 +145,8 @@ export function PostFeed({
             <PostCard
               post={posts[row.index]}
               now={date}
+              // The top rows' images are likely the largest paint: read at once (#32).
+              eager={row.index < 2}
               like={
                 likeAction ? (
                   <LikeButton

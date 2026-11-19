@@ -56,7 +56,15 @@ src/
   mutation, return `{ ok, … }`. No business logic in the action file itself.
 - Route Handlers: implement in `src/_app/api-routes/`; `app/api/**/route.ts` only re-exports
   (`export { getTimeline as GET } from '@/_app/api-routes'`).
-- `process.env` is read only in `src/shared/config/env.ts`.
+- `process.env` is read only in `src/shared/config/env.ts`, and `env` is imported only from
+  `@/shared/config/index.server` (ADR-0059): through `@/shared/config` it shipped the validator
+  (zod) to every browser.
+- **Keep the first JavaScript under 200KB gzip (ADR-0059, `e2e/performance.spec.ts`).** Menus,
+  closed dialogs, hover cards and toasts go through `@/shared/ui/dropdown-menu`, `dialog`, `toast`
+  (loaded on first use), never `@/shared/ui/kit` or Base UI directly from a component on screen at
+  load. Parsing a post (twitter-text) lives in `@/shared/lib/text-parse`; the browser loads it with
+  `import()` when needed. If the budget test fails, find what grew with `next analyze`; never
+  raise the budget.
 
 ## 4. Next.js route files are a thin shell (ADR-0021)
 

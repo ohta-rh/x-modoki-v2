@@ -3,6 +3,7 @@ import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { getDb, media, postMedia, posts, user } from '@/shared/db';
 import { toIdString } from '@/shared/lib/id';
 import { mediaUrl } from '@/shared/lib/media-url';
+import { findLinks } from '@/shared/lib/text-parse';
 import type { Post, QuotedPost } from '../model/types';
 
 const FALSE = sql<boolean>`false`;
@@ -56,6 +57,7 @@ function toPost(row: Row, viewerId: string | null, extra: Extra): Post {
     id: toIdString(post.id),
     author: summary(author),
     text: post.text,
+    links: findLinks(post.text),
     createdAt: post.createdAt.toISOString(),
     media: extra.media,
     counts: {
@@ -119,6 +121,7 @@ export async function toPosts(rows: Row[], viewerId: string | null): Promise<Pos
             id: toIdString(post.id),
             author: summary(author),
             text: post.text,
+            links: findLinks(post.text),
             createdAt: post.createdAt.toISOString(),
             quotesAnother: post.quoteOfId !== null,
           },
