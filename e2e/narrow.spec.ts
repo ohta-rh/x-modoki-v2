@@ -372,6 +372,12 @@ test.describe('640px 未満のアカウントの引き出し（#85）', () => {
       .getByRole('button', { name: 'ログアウト' })
       .click();
     await expect(page).toHaveURL(/\/$/);
+    // Signed out, a public page's header has no avatar and no room for one (review 2).
+    await expect(page.getByRole('link', { name: 'アカウントを作成' })).toBeVisible();
+    await page.goto(`/${me.username}`);
+    const title = page.getByRole('heading', { level: 1 });
+    await expect(title).toBeVisible();
+    expect((await title.boundingBox())!.x).toBeLessThan(24);
   });
 });
 

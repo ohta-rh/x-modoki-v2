@@ -39,6 +39,7 @@ describe('AppShell（ui-ux.md の 2 節）', () => {
   it('ログインしていれば、640px 未満のヘッダーの左に、アカウントの引き出しのボタンを出す（#85）', () => {
     const { unmount } = render(<AppShell>中身</AppShell>);
     expect(document.querySelector('[data-mobile-account]')).toBeNull();
+    expect(document.querySelector('[data-signed-in]')).toBeNull();
     unmount();
     render(
       <AppShell
@@ -49,6 +50,8 @@ describe('AppShell（ui-ux.md の 2 節）', () => {
       </AppShell>,
     );
     expect(document.querySelector('[data-mobile-account]')).toHaveClass('sm:hidden');
+    // The headers below make room for it only then (review 2).
+    expect(document.querySelector('[data-signed-in]')).toHaveClass('group/shell');
   });
 
   it('今いるパスと今の人を、左ナビと下のタブに渡す', () => {

@@ -35,7 +35,11 @@ export function AppShell({
   const settings = currentPath === '/settings' || currentPath.startsWith('/settings/');
   const floating = !(currentPath === COMPOSE_PATH || settings);
   return (
-    <div className="flex min-h-screen justify-center">
+    <div
+      // Signed in, the headers below 640px make room for the account avatar (#85).
+      data-signed-in={account ? '' : undefined}
+      className="group/shell flex min-h-screen justify-center"
+    >
       <div
         data-testid="left-column"
         // Pinned to the top; what does not fit (a low or zoomed screen) scrolls inside it (#83, as #58).

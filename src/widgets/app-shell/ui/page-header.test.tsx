@@ -9,8 +9,12 @@ describe('PageHeader（#74）', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveClass('min-w-0', 'truncate');
   });
 
-  it('640px 未満では、左のアカウントのボタンの分の余白を取る（#85）', () => {
+  it('640px 未満では、ログインしていて左のアカウントのボタンがあるときだけ、その分の余白を取る（#85 のレビュー 2）', () => {
     render(<PageHeader title="ホーム" />);
-    expect(screen.getByRole('banner')).toHaveClass('pl-14', 'sm:pl-4');
+    expect(screen.getByRole('banner')).toHaveClass(
+      'px-4',
+      'group-data-signed-in/shell:pl-14',
+      'sm:group-data-signed-in/shell:pl-4',
+    );
   });
 });
