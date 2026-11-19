@@ -65,6 +65,15 @@ header { display: grid; gap: 12px; }
 section { display: grid; gap: 16px; }
 main > *, section > * { min-width: 0; }
 
+.mapwrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+.map { display: block; width: 100%; min-width: 760px; height: auto; font-family: var(--sans); }
+.map .t-h { font-size: 17px; font-weight: 700; }
+.map .t-n { font-size: 13.5px; font-weight: 500; fill: var(--ink); }
+.map .t-c { font-size: 15px; font-weight: 700; fill: var(--ink); }
+.map .t-s { font-size: 11.5px; fill: var(--ink); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+
 /* The four layers */
 .stack { display: grid; gap: 0; }
 .layer { display: grid; grid-template-columns: 150px 1fr; gap: 20px; padding: 18px 20px; background: var(--panel); border: 1px solid var(--line); border-left: 5px solid var(--c); }
@@ -151,6 +160,65 @@ footer { color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
       <span>単体のテスト <b>1,123</b> · 画面のテスト <b>387</b></span>
     </div>
   </header>
+
+  <section aria-labelledby="s-map">
+    <h2 id="s-map">全体図</h2>
+    <div class="mapwrap">
+<svg class="map" viewBox="0 0 1000 610" role="img" aria-labelledby="map-t map-d">
+<title id="map-t">x-modoki のハーネスの全体図</title><desc id="map-d">決まりを読んで PBI の 1 周に入り、関所を通って記録に残し、振り返りで決まりへ戻る。アカウント・支払い・秘密の値・マージはユーザーのもの。下で機械全体のゲートがいつでも効く。</desc>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker><marker id="ahr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--stop)"/></marker></defs>
+<path d="M367.4,225.3 A170,170 0 0 1 379.9,195.2" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M450.2,124.9 A170,170 0 0 1 480.3,112.4" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M579.7,112.4 A170,170 0 0 1 609.8,124.9" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M680.1,195.2 A170,170 0 0 1 692.6,225.3" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M692.6,324.7 A170,170 0 0 1 680.1,354.8" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M609.8,425.1 A170,170 0 0 1 579.7,437.6" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M480.3,437.6 A170,170 0 0 1 450.2,425.1" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M379.9,354.8 A170,170 0 0 1 367.4,324.7" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M629,374 Q570,275 544,165" fill="none" stroke="var(--stop)" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ahr)"/>
+<text x="588" y="315" class="t-s" fill="var(--stop)">指摘 → 直す</text>
+<path d="M524,407 Q500,285 518,165" fill="none" stroke="var(--stop)" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ahr)"/>
+<text x="438" y="347" class="t-s" fill="var(--stop)">赤い CI → 直す</text>
+<text x="502" y="253" text-anchor="middle" class="t-c">PBI を 1 件ずつ</text>
+<text x="502" y="275" text-anchor="middle" class="t-s" fill="var(--muted)">見つけたバグも</text>
+<text x="502" y="291" text-anchor="middle" class="t-s" fill="var(--muted)">この輪の中で直す</text>
+<g><rect x="292" y="251" width="136" height="48" rx="7" fill="var(--tint-rule)" stroke="var(--rule)" stroke-width="1.5"/>
+<text x="360" y="271" text-anchor="middle" class="t-n">選ぶ・読む</text><text x="360" y="289" text-anchor="middle" class="t-s" fill="var(--muted)">issue と ADR</text></g>
+<g><rect x="342" y="131" width="136" height="48" rx="7" fill="var(--tint-loop)" stroke="var(--loop)" stroke-width="1.5"/>
+<text x="410" y="151" text-anchor="middle" class="t-n">テストを先に</text><text x="410" y="169" text-anchor="middle" class="t-s" fill="var(--muted)">Playwright で赤</text></g>
+<g><rect x="462" y="81" width="136" height="48" rx="7" fill="var(--tint-loop)" stroke="var(--loop)" stroke-width="1.5"/>
+<text x="530" y="101" text-anchor="middle" class="t-n">TDD で作る</text><text x="530" y="119" text-anchor="middle" class="t-s" fill="var(--muted)">赤 → 緑 → 整理</text></g>
+<g><rect x="582" y="131" width="136" height="48" rx="7" fill="var(--tint-gate)" stroke="var(--gate)" stroke-width="1.5"/>
+<text x="650" y="151" text-anchor="middle" class="t-n">pnpm verify</text><text x="650" y="169" text-anchor="middle" class="t-s" fill="var(--muted)">7 つ・約 10 分</text></g>
+<g><rect x="632" y="251" width="136" height="48" rx="7" fill="var(--tint-gate)" stroke="var(--gate)" stroke-width="1.5"/>
+<text x="700" y="271" text-anchor="middle" class="t-n">Chrome で見る</text><text x="700" y="289" text-anchor="middle" class="t-s" fill="var(--muted)">3 幅 + 640×400</text></g>
+<g><rect x="582" y="371" width="136" height="48" rx="7" fill="var(--tint-gate)" stroke="var(--gate)" stroke-width="1.5"/>
+<text x="650" y="391" text-anchor="middle" class="t-n">独立レビュー</text><text x="650" y="409" text-anchor="middle" class="t-s" fill="var(--muted)">opus・差分だけ</text></g>
+<g><rect x="462" y="421" width="136" height="48" rx="7" fill="var(--tint-gate)" stroke="var(--gate)" stroke-width="1.5"/>
+<text x="530" y="441" text-anchor="middle" class="t-n">push と CI</text><text x="530" y="459" text-anchor="middle" class="t-s" fill="var(--muted)">8 つ + clone・約 20 分</text></g>
+<g><rect x="342" y="371" width="136" height="48" rx="7" fill="var(--tint-record)" stroke="var(--record)" stroke-width="1.5"/>
+<text x="410" y="391" text-anchor="middle" class="t-n">レポート・閉じる</text><text x="410" y="409" text-anchor="middle" class="t-s" fill="var(--muted)">写真・TDD の記録</text></g>
+<rect x="634" y="486" width="112" height="24" rx="12" fill="var(--tint-gate)" stroke="var(--gate)"/><text x="690" y="502" text-anchor="middle" class="t-s" fill="var(--gate)">commit: フック 1 秒</text>
+<rect x="20" y="40" width="215" height="200" rx="8" fill="var(--panel)" stroke="var(--rule)" stroke-width="1.5"/><rect x="20" y="40" width="6" height="200" rx="3" fill="var(--rule)"/><text x="40" y="70" class="t-h" fill="var(--rule)">決まり</text><text x="40" y="96" class="t-s">CLAUDE.md（入口）</text><text x="40" y="117" class="t-s">.claude/rules/ の 9 ファイル</text><text x="40" y="138" class="t-s">issue・FSD・品質・TDD</text><text x="40" y="159" class="t-s">レビュー・バグ・完了の定義</text><text x="40" y="180" class="t-s">ループ・文書と ADR</text><text x="40" y="201" class="t-s">.claude/agents/code-reviewer</text>
+<rect x="20" y="330" width="215" height="165" rx="8" fill="var(--panel)" stroke="var(--record)" stroke-width="1.5"/><rect x="20" y="330" width="6" height="165" rx="3" fill="var(--record)"/><text x="40" y="360" class="t-h" fill="var(--record)">記録</text><text x="40" y="386" class="t-s">ADR 72（書き換えず置き換え）</text><text x="40" y="407" class="t-s">試験レポート 83（写真つき）</text><text x="40" y="428" class="t-s">issue を閉じる根拠のコメント</text><text x="40" y="449" class="t-s">振り返り（retrospective-m1）</text>
+<path d="M235,190 Q250,215 290,267" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/><text x="248" y="176" class="t-s" fill="var(--muted)">読んだとおりに</text>
+<path d="M342,401 Q300,425 237,420" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/><text x="250" y="458" class="t-s" fill="var(--muted)">通ったら残す</text>
+<path d="M127,328 L127,244" fill="none" stroke="var(--record)" stroke-width="1.8" marker-end="url(#ah)"/><text x="137" y="292" class="t-s" fill="var(--record)">振り返り → 決まりへ</text>
+<rect x="800" y="40" width="180" height="455" rx="10" fill="none" stroke="var(--stop)" stroke-width="1.4" stroke-dasharray="6 5"/>
+<text x="890" y="70" text-anchor="middle" class="t-h" fill="var(--stop)">ユーザーのもの</text>
+<text x="890" y="108" text-anchor="middle" class="t-n">アカウント</text>
+<text x="890" y="138" text-anchor="middle" class="t-n">支払い</text>
+<text x="890" y="168" text-anchor="middle" class="t-n">秘密の値</text>
+<text x="890" y="198" text-anchor="middle" class="t-n">マージ</text>
+<text x="890" y="228" text-anchor="middle" class="t-n">リリースの公開</text>
+<text x="890" y="258" text-anchor="middle" class="t-n">確認を弱める判断</text>
+<text x="890" y="300" text-anchor="middle" class="t-s" fill="var(--muted)">ここに当たる PBI は</text><text x="890" y="318" text-anchor="middle" class="t-s" fill="var(--muted)">blocked で待つ。</text><text x="890" y="344" text-anchor="middle" class="t-s" fill="var(--muted)">それ以外は聞かずに</text><text x="890" y="362" text-anchor="middle" class="t-s" fill="var(--muted)">決めて ADR に残す</text>
+<path d="M770,245 L795,195" fill="none" stroke="var(--stop)" stroke-width="1.2" stroke-dasharray="3 4" marker-end="url(#ahr)"/>
+<rect x="20" y="530" width="960" height="58" rx="8" fill="var(--tint-gate)" stroke="var(--gate)"/><text x="40" y="555" class="t-n" fill="var(--gate)">機械全体のゲート（いつでも効く）</text><text x="40" y="577" class="t-s">リポジトリの外の validate-bash と permissions.deny が、強制の push・rm -rf・秘密の値に触る操作を、許可の確認より前に止める</text>
+</svg>
+    </div>
+    <div class="legend"><span><i style="background:var(--rule)"></i>決まり</span><span><i style="background:var(--loop)"></i>作る</span><span><i style="background:var(--gate)"></i>関所（機械と、人の代わりの目）</span><span><i style="background:var(--record)"></i>記録</span><span><i style="background:var(--stop)"></i>戻る・ユーザーのもの</span></div>
+  </section>
 
   <section aria-labelledby="s-layers">
     <h2 id="s-layers">全体: 4 つの層</h2>
