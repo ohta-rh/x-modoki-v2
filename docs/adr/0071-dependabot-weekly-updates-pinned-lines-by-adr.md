@@ -1,7 +1,7 @@
 ---
 type: ADR
 title: "ADR-0071: 依存の更新は Dependabot が週に 1 回 PR にし、ADR が固定した系列は ADR でだけ上げる"
-description: "Dependabot で npm と GitHub Actions を週に 1 回調べ、パッチとマイナーは 1 つの PR にまとめ、メジャーは 1 つずつにし、ADR が版の系列を固定した Next.js 16・TypeScript 6.0・Node.js 24・Drizzle 0.45 は更新の PR を作らない。"
+description: "Dependabot で npm と GitHub Actions を週に 1 回調べ、パッチとマイナーは 1 つの PR にまとめ、メジャーは 1 つずつにし、ADR が版の系列を固定した Next.js 16.4・React 19.3・TypeScript 6.0・Node.js 24・Drizzle 0.45 は、系列を外れる更新の PR を作らない。"
 tags: [process, dependencies, security]
 status: stable
 ---
@@ -17,14 +17,14 @@ status: stable
 
 - 依存の版は `package.json` で固定してあるが、新しい版と脆弱性を知らせる仕組みが無い（`.github/dependabot.yml` が無い、2026-11-20）
 - Next.js は月ごとにセキュリティのリリースがあり、ADR-0004 は「パッチは出たら上げる」と決めている
-- ADR が版の系列を固定したものがある: Next.js 16.4 系（ADR-0004）、TypeScript 6.0 系と Node.js 24（ADR-0005）、Drizzle ORM 0.45 系と drizzle-kit 0.31 系（ADR-0006）
+- ADR が版の系列を固定したものがある: Next.js 16.4 系と React 19.3 系（ADR-0004）、TypeScript 6.0 系と Node.js 24（ADR-0005）、Drizzle ORM 0.45 系と drizzle-kit 0.31 系（ADR-0006）
 - #37 は、外のサービスが要らない Dependabot を選ぶと決めている
 
 ## 決定
 
 - `.github/dependabot.yml` で、npm と GitHub Actions を週に 1 回調べる
 - パッチとマイナーは、生態系ごとに 1 つの PR（`minor-and-patch` のグループ）にまとめる。メジャーはグループに入れず、1 つずつの PR にする
-- ADR が固定した系列は、それを外れる更新の PR を作らない。`next` と `@types/node` はメジャーを、`typescript`・`drizzle-orm`・`drizzle-kit` はメジャーとマイナーを無視する。設定のそれぞれに、理由の ADR の番号を注で書く
+- ADR が固定した系列は、それを外れる更新の PR を作らない。`@types/node` はメジャーを、`next`・`react`・`react-dom`・`@types/react`・`@types/react-dom`・`typescript`・`drizzle-orm`・`drizzle-kit` はメジャーとマイナーを無視する（系列がマイナーで決まっているため）。設定のそれぞれに、理由の ADR の番号を注で書く
 - PR の扱い: パッチとマイナーの PR は、CI が緑で、Chrome でアプリを見て問題が無ければ取り込む。メジャーは ADR を書いてから取り込む。固定した系列を動かすときは、その ADR を置き換える ADR を書き、設定の無視を外す
 - 自動のマージはしない
 

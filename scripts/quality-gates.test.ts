@@ -89,17 +89,29 @@ describe('品質の確認の設定（#30）', () => {
         ),
       );
     }
-    expect(config).toMatch(/update-types: \[minor, patch\]/);
-    // Each pinned line names the ADR that pinned it.
-    for (const [name, adr] of [
-      ['next', 'ADR-0004'],
-      ['typescript', 'ADR-0005'],
-      ['@types/node', 'ADR-0005'],
-      ['drizzle-orm', 'ADR-0006'],
-      ['drizzle-kit', 'ADR-0006'],
-    ]) {
-      expect(config).toMatch(
-        new RegExp(`# ${adr}[^\\n]*\\n\\s+- dependency-name: '?${name.replace('/', '\\/')}'?\\n`),
+    // One group per ecosystem.
+    expect(config.match(/update-types: \[minor, patch\]/g)).toHaveLength(2);
+    // Each pinned line names the ADR that pinned it, and ignores what would leave the line.
+    const major = "'version-update:semver-major'";
+    const minor = "'version-update:semver-minor'";
+    for (const [name, adr, types] of [
+      ['next', 'ADR-0004', [major, minor]],
+      ['react', 'ADR-0004', [major, minor]],
+      ['react-dom', 'ADR-0004', [major, minor]],
+      ['@types/react', 'ADR-0004', [major, minor]],
+      ['@types/react-dom', 'ADR-0004', [major, minor]],
+      ['typescript', 'ADR-0005', [major, minor]],
+      ['@types/node', 'ADR-0005', [major]],
+      ['drizzle-orm', 'ADR-0006', [major, minor]],
+      ['drizzle-kit', 'ADR-0006', [major, minor]],
+    ] as const) {
+      const quoted = name.startsWith('@') ? `'${name}'` : name;
+      expect(config, name).toContain(
+        `- dependency-name: ${quoted}\n        update-types: [${types.join(', ')}]`,
+      );
+      const at = config.indexOf(`- dependency-name: ${quoted}\n`);
+      expect(config.slice(0, at).trimEnd().split('\n').at(-1), name).toMatch(
+        new RegExp(`# ${adr}`),
       );
     }
   });
@@ -108,6 +120,9 @@ describe('品質の確認の設定（#30）', () => {
     const ci = readFileSync('.github/workflows/ci.yml', 'utf8');
     expect(ci).toMatch(
       /- name: 8\. Dependency audit[^\n]*\n\s+run: pnpm audit --prod --audit-level high$/m,
+    );
+    expect(ci.indexOf('- name: 8. Dependency audit')).toBeLessThan(
+      ci.indexOf('- name: 1. Documentation'),
     );
   });
 
