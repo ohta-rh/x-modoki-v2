@@ -53,7 +53,16 @@ test.describe('JavaScript を読み込み終える前', () => {
       await route.continue();
     });
     await page.goto('/home?tab=following', { waitUntil: 'commit' });
-    await expect(page.getByRole('article').first()).toBeVisible();
+    // React reveals the streamed list in a requestAnimationFrame, which WebKit stops sending to a
+    // still-loading page on a busy machine (#61's finding). The reveal itself is React's, not under
+    // test: if it is still queued, run the same function React queued ($RV over $RB).
+    await expect(async () => {
+      await page.evaluate(() => {
+        const react = window as unknown as { $RB?: unknown[]; $RV?: (batch: unknown[]) => void };
+        if (react.$RB?.length && react.$RV) react.$RV(react.$RB);
+      });
+      await expect(page.getByRole('article').first()).toBeVisible({ timeout: 1_000 });
+    }).toPass();
     await page.evaluate(() => window.scrollTo({ top: 400, behavior: 'instant' }));
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(400);
     const hydrated = () =>
