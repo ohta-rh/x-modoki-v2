@@ -2,6 +2,7 @@
 
 ## 2026-11-20
 
+* **New**: [#38 の試験レポート](test-reports/issue-0038-operations-guide.md)。
 * **New**: [困ったときの手順](guides/operations.md)（7 つの場面、データベースの保存と戻しを実際に流した記録、スキーマの変更の決まり。#38）。
 * **New**: [#37 の試験レポート](test-reports/issue-0037-dependabot-and-audit.md)。
 * **New**: [ADR-0070](adr/0070-ci-has-eight-gates-with-the-dependency-audit.md)（CI の確認を 8 つにし、依存の監査を最初に動かす。ADR-0020 を置き換え）、[ADR-0071](adr/0071-dependabot-weekly-updates-pinned-lines-by-adr.md)（Dependabot と更新の PR の扱い）。要件の NFR-MAINT-02 を 8 つの確認にし、全体像・技術の一覧の CI の決定の出典を ADR-0070 にした。[環境と配備](architecture/environments.md)の CI の表と、[ローカルで動かす](guides/local-development.md)を合わせた（#37）。
