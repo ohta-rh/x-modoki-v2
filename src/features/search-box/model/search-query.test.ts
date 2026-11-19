@@ -17,6 +17,11 @@ describe('searchQuery（#27、#66）', () => {
     expect(searchQuery('が'.repeat(MAX_QUERY_LENGTH + 1))).toBeNull();
   });
 
+  it('U+0000 は除く（PostgreSQL が受け付けず、検索の画面が誤りになっていた、#89）', () => {
+    expect(searchQuery('a\u0000b')).toBe('ab');
+    expect(searchQuery('\u0000')).toBeNull();
+  });
+
   it('f は live・user・media だけを読み、ほかは「話題」', () => {
     expect(['live', 'user', 'media', 'x', null].map(searchFilter)).toEqual([
       'live',

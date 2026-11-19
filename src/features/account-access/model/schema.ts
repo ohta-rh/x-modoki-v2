@@ -1,11 +1,12 @@
 import { z } from 'zod';
 import { RESERVED_USERNAMES, USERNAME_PATTERN } from '@/shared/config';
+import { cleanText } from '@/shared/lib/text';
 
 export const signUpSchema = z
   .object({
     name: z
       .string()
-      .trim()
+      .overwrite(cleanText)
       .min(1, '名前を入れてください')
       .max(50, '名前は 50 文字までにしてください'),
     username: z
@@ -31,7 +32,7 @@ export const signUpSchema = z
 export type SignUpInput = z.output<typeof signUpSchema>;
 
 export const signInSchema = z
-  .object({ identifier: z.string().trim().min(1), password: z.string().min(1) })
+  .object({ identifier: z.string().overwrite(cleanText).min(1), password: z.string().min(1) })
   .transform(({ identifier, password }) =>
     identifier.includes('@')
       ? { kind: 'email' as const, email: identifier.toLowerCase(), password }

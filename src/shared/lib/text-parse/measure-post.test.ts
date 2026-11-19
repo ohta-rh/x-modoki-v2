@@ -34,6 +34,10 @@ describe('measurePost（ui-ux.md の 5 節、FR-POST）', () => {
     expect(measurePost(text).postable).toBe(false);
   });
 
+  it('U+0000 は保存しないので、重みに数えない（#89）', () => {
+    expect(measurePost('ab\u0000c').weighted).toBe(measurePost('abc').weighted);
+  });
+
   it('前後の空白と改行は、保存しないので重みに数えない（#67）', () => {
     expect(measurePost('\n\n  abc  \n\n').weighted).toBe(3);
     expect(measurePost(' '.repeat(10) + 'a'.repeat(280)).postable).toBe(true);

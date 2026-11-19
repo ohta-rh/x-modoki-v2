@@ -13,6 +13,8 @@ type Item = { key: string; previewUrl: string; id: string | null; alt: string; f
  * The images chosen for a post (#25): each is prepared and uploaded as soon as it is picked, so
  * posting only sends the media ids and their alternative texts.
  */
+const UPLOAD_FAILED = '画像を送れませんでした';
+
 export function useImageAttachments() {
   const [items, setItems] = useState<Item[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -36,17 +38,21 @@ export function useImageAttachments() {
           (id) => update(key, { id }),
           () => {
             update(key, { failed: true });
-            setError('画像を送れませんでした');
+            setError(UPLOAD_FAILED);
           },
         );
     }
   };
-  const remove = (key: string) =>
+  const remove = (key: string) => {
     setItems((current) => {
       // Removal comes from a rendered preview, so its item is there.
       URL.revokeObjectURL(current.find((item) => item.key === key)!.previewUrl);
       return current.filter((item) => item.key !== key);
     });
+    // The failure's message goes with the last image that failed (#90).
+    const failedLeft = items.some((item) => item.key !== key && item.failed);
+    setError((message) => (message === UPLOAD_FAILED && !failedLeft ? null : message));
+  };
   return {
     items,
     error,

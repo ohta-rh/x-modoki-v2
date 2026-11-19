@@ -74,3 +74,22 @@ test('1024px 以上で、右サイドバーに検索の欄・トレンド・お�
   await expect(aside.getByRole('region', { name: 'おすすめユーザー' })).toBeVisible();
   await expect(aside.getByText('X Corp. とは関係の無い学習用のアプリ')).toBeVisible();
 });
+
+test('U+0000 を含む検索の語でも、誤りの画面にならない。投稿からは U+0000 を除いて保存する（#89）', async ({
+  page,
+}) => {
+  await signUp(page);
+  // Only U+0000 is an empty word: like any empty search, the explore screen.
+  for (const [q, heading] of [
+    ['%00', '話題を検索'],
+    ['a%00b', '「ab」の検索結果'],
+  ]) {
+    await page.goto(`/search?q=${q}`);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(heading);
+    await expect(page.getByText('問題が起きました')).toHaveCount(0);
+  }
+  await page.goto('/home?tab=following');
+  await page.getByRole('textbox', { name: '投稿の本文' }).fill('見えない\u0000文字');
+  await page.getByRole('button', { name: 'ポストする' }).click();
+  await expect(page.getByRole('article').first()).toContainText('見えない文字');
+});

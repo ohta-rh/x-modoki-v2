@@ -90,6 +90,19 @@ describe('ImageAttachments（#25）', () => {
     expect(latest!.media).toEqual([]);
   });
 
+  it('送れなかった画像を外すと、送れなかった画像が残っていなければ文言も消え、残っていれば残る（#90）', async () => {
+    uploadImage
+      .mockRejectedValueOnce(new Error('upload 403'))
+      .mockRejectedValueOnce(new Error('403'));
+    render(<Harness />);
+    await userEvent.upload(screen.getByLabelText('画像を追加'), [png(1), png(2)]);
+    expect(await screen.findByRole('alert')).toHaveTextContent('画像を送れませんでした');
+    await userEvent.click(screen.getByRole('button', { name: '1 枚目を外す' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('画像を送れませんでした');
+    await userEvent.click(screen.getByRole('button', { name: '1 枚目を外す' }));
+    await waitFor(() => expect(screen.queryByRole('alert')).toBeNull());
+  });
+
   it('ハイドレーションの前に選んだ画像も、受け取る（#47 と同じ）', async () => {
     const { renderToString } = await import('react-dom/server');
     const { hydrateRoot } = await import('react-dom/client');

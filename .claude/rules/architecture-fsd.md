@@ -61,6 +61,10 @@ src/
   (`action={…}`, `sendAction`), whose own call is then checked. A redirect rejects the promise too and is not a failure: a hand-written `.catch` calls
   `unstable_rethrow(error)` first (`settle` does). Name Server Action props `action`, `…Action` or `signOut`, and nothing else so —
   `local/settle-server-actions` finds them by name (found twice: #70, #82).
+- **Text a person typed goes through `cleanText` (`@/shared/lib/text`) before it is stored or
+  searched (#66, #67, #89):** it drops U+0000 (PostgreSQL's `text` refuses it), puts it in NFC and
+  trims it. A Zod field uses `.overwrite(cleanText)`. Found three times as separate places did
+  this by hand.
 - **Text a person typed wraps or truncates (#74, #80):** names, bios, places, URLs, hashtags and
   any line that quotes them get `break-words` / `break-all` or `truncate` (with `min-w-0` inside a
   flex row). A new place that shows such text is added to the 320px sweep in `e2e/narrow.spec.ts`

@@ -111,8 +111,11 @@ test('オフラインのログイン・登録・ログアウトは知らせて�
 
   await signUp(page);
   await page.getByRole('button', { name: /のアカウントのメニュー$/ }).click();
+  // The menu loads on first use (ADR-0059): cut the network once it is open.
+  const signOut = page.getByRole('menuitem', { name: /からログアウト$/ });
+  await expect(signOut).toBeVisible();
   await context.setOffline(true);
-  await page.getByRole('menuitem', { name: /からログアウト$/ }).click();
+  await signOut.click();
   // The toast, by its heading (the form's own message is a paragraph).
   await expect(page.getByRole('heading', { name: offline })).toBeVisible();
   await expect(page).toHaveURL(/\/home$/);

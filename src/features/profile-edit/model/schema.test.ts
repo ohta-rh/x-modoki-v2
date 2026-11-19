@@ -39,6 +39,10 @@ describe('profileSchema（#23）', () => {
     ]);
   });
 
+  it('U+0000 は除く（PostgreSQL が受け付けない、#89）', () => {
+    expect(profileSchema.parse({ ...valid, bio: '猫\u0000が好き' }).bio).toBe('猫が好き');
+  });
+
   it('前後の空白は取り除く', () => {
     const result = profileSchema.parse({ ...valid, name: '  花子  ', website: ' https://x.test ' });
     expect(result).toMatchObject({ name: '花子', website: 'https://x.test' });

@@ -1,10 +1,11 @@
 import { z } from 'zod';
+import { cleanText } from '@/shared/lib/text';
 
 const ID = /^[1-9][0-9]*$/;
 const HTTP = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
 
 /** Text as stored and searched: NFC like posts (#66), trimmed. */
-const text = () => z.string().normalize('NFC').trim();
+const text = () => z.string().overwrite(cleanText);
 
 /** What the profile editor may change (#23): lengths as on X; links only http(s) (no javascript:). */
 export const profileSchema = z.object({

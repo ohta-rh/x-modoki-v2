@@ -18,6 +18,7 @@ import {
 import { newId as defaultNewId, toIdString } from '@/shared/lib/id';
 import { removeObject } from '@/shared/storage';
 import { measurePost } from '@/shared/lib/text-parse';
+import { cleanText } from '@/shared/lib/text';
 
 export type CreatePostResult =
   | { ok: true; id: string }
@@ -61,7 +62,7 @@ export async function createPost(
   const viewer = await getSession();
   if (!viewer) return { ok: false, error: 'UNAUTHORIZED' };
   // Spaces and line breaks around the body are not kept, as on X (#67).
-  const body = text.normalize('NFC').trim();
+  const body = cleanText(text);
   // A post may be images alone (#25); otherwise its text must be postable.
   const textOk = measurePost(body).postable || (body === '' && items.length > 0);
   const mediaOk = items.length <= MAX_MEDIA && items.every((item) => item.alt.length <= MAX_ALT);

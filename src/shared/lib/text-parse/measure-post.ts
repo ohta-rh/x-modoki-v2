@@ -1,5 +1,6 @@
 import twitterText from 'twitter-text';
 import { MAX_WEIGHTED_LENGTH } from '@/shared/lib/text';
+import { cleanText } from '../text';
 
 export type PostMeasure = { weighted: number; remaining: number; postable: boolean };
 
@@ -10,7 +11,7 @@ export type PostMeasure = { weighted: number; remaining: number; postable: boole
  */
 export function measurePost(text: string): PostMeasure {
   // As stored: NFC, without the spaces and line breaks around it (#67).
-  const stored = text.normalize('NFC').trim();
+  const stored = cleanText(text);
   const { weightedLength } = twitterText.parseTweet(stored);
   const remaining = MAX_WEIGHTED_LENGTH - weightedLength;
   return { weighted: weightedLength, remaining, postable: stored.length > 0 && remaining >= 0 };

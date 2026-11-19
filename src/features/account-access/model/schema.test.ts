@@ -91,6 +91,19 @@ describe('signInSchema', () => {
     });
   });
 
+  it('名前とログインの識別子から U+0000 を除く（PostgreSQL が受け付けない、#89）', () => {
+    const up = signUpSchema.parse({
+      name: '花\u0000子',
+      username: 'hana_01',
+      email: 'h@example.test',
+      password: 'correct-horse',
+    });
+    expect(up.name).toBe('花子');
+    expect(signInSchema.parse({ identifier: 'hana\u0000_01', password: 'x' })).toMatchObject({
+      username: 'hana_01',
+    });
+  });
+
   it('空の入力を拒む', () => {
     expect(signInSchema.safeParse({ identifier: '', password: '' }).success).toBe(false);
   });

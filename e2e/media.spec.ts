@@ -59,3 +59,14 @@ test('画像を選ぶ欄は 4 つの形式だけを受け付け、画像でな�
     ).toBeVisible();
   }
 });
+
+test('送れなかった画像を外すと、「画像を送れませんでした」も消える（#90）', async ({ page }) => {
+  await signUp(page);
+  await page.goto('/home?tab=following');
+  // The storage refuses the upload.
+  await page.route('http://localhost:3900/**', (route) => route.abort());
+  await page.getByLabel('画像を追加').setInputFiles(await pngFile(page, 300, 200));
+  await expect(page.getByText('画像を送れませんでした')).toBeVisible();
+  await page.getByRole('button', { name: '1 枚目を外す' }).click();
+  await expect(page.getByText('画像を送れませんでした')).toHaveCount(0);
+});

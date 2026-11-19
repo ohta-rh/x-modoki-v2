@@ -37,6 +37,13 @@ describe('createPost（FR-POST、NFR-SEC-01・02・05）', () => {
     expect(row.text).toBe('前の行\n  次の行');
   });
 
+  it('U+0000 は除いて保存する（PostgreSQL が受け付けず、500 になっていた、#89）', async () => {
+    signInAs(await makeUser());
+    expect(await createPost('見えない\u0000文字')).toMatchObject({ ok: true });
+    const [row] = await testDb().select().from(posts);
+    expect(row.text).toBe('見えない文字');
+  });
+
   // AUTHZ: createPost UNAUTHORIZED
   it('ログインが無ければ UNAUTHORIZED で、何も書かない', async () => {
     expect(await createPost('こんにちは')).toEqual({ ok: false, error: 'UNAUTHORIZED' });
