@@ -31,7 +31,8 @@ export function AppShell({
   const currentPath = usePathname();
   // The compose and settings screens have their own action at the bottom right: the floating
   // button would sit on it, and X does not show it there either (#65).
-  const floating = !(currentPath === COMPOSE_PATH || currentPath.startsWith('/settings'));
+  const settings = currentPath === '/settings' || currentPath.startsWith('/settings/');
+  const floating = !(currentPath === COMPOSE_PATH || settings);
   return (
     <div className="flex min-h-screen justify-center">
       <div

@@ -29,9 +29,14 @@ describe('profileSchema（#23）', () => {
       name: 'か\u3099',
       bio: 'e\u0301',
       location: 'ハ\u309A',
-      website: '',
+      website: 'https://ex.test/か\u3099',
     });
-    expect([parsed.name, parsed.bio, parsed.location]).toEqual(['が', 'é', 'パ']);
+    expect([parsed.name, parsed.bio, parsed.location, parsed.website]).toEqual([
+      'が',
+      'é',
+      'パ',
+      'https://ex.test/が',
+    ]);
   });
 
   it('前後の空白は取り除く', () => {

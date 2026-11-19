@@ -74,9 +74,13 @@ describe('右下の投稿ボタンと、メインの下の余白（#65）', () =
       expect(floating(), path).toHaveLength(0);
       unmount();
     }
-    at.path = '/home';
-    render(<AppShell>中身</AppShell>);
-    expect(floating()).toHaveLength(1);
+    // A user may be named settings_fan: their profile keeps the button (review 1 of #65).
+    for (const path of ['/home', '/settings_fan', '/settings_fan/status/1']) {
+      at.path = path;
+      const { unmount } = render(<AppShell>中身</AppShell>);
+      expect(floating(), path).toHaveLength(1);
+      unmount();
+    }
     at.path = '/explore';
   });
 
