@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-19
+* **New**: [ローカルで動かす](guides/index.md)の手順書、[ADR-0068](adr/0068-seed-people-sign-in-with-a-published-dev-password.md)（シードの人は公開した開発用のパスワードで入れる）、[ADR-0069](adr/0069-ci-runs-the-local-guide-on-a-fresh-clone.md)（CI がまっさらな clone で手順書を流す）。[環境と配備](architecture/environments.md)の「コードが入る前の設計」の注を外し、コマンドの表を `package.json` に合わせた（#35）。
 * **New**: [#34 の試験レポート](test-reports/issue-0034-exploratory-testing.md)。[探索的テストの記録](research/exploratory-m1.md)に 9 巡目（新しい不具合 0 件）とまとめを足した。
 * **New**: #89・#90 の試験レポート（#34 の探索的テストの 8 巡目で見つけた 2 件のバグ: [#89](test-reports/issue-0089-nul-in-typed-text.md)、[#90](test-reports/issue-0090-failed-image-message.md)）。
 * **New**: #87・#88 の試験レポート（#34 の探索的テストの 6 巡目で見つけた 2 件のバグ: [#87](test-reports/issue-0087-drawer-closes-when-wide.md)、[#88](test-reports/issue-0088-profile-image-retry.md)）。[探索的テストの記録](research/exploratory-m1.md)に 7 巡目を足した。

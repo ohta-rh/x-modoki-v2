@@ -5,6 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import playwright from '../playwright.config';
+import { guideCommands } from './lib/guide-commands.mjs';
 import vitestConfig from '../vitest.config';
 
 /**
@@ -59,6 +60,24 @@ describe('品質の確認の設定（#30）', () => {
     expect(order.every((at) => at >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
     expect(ci).not.toMatch(/^\s*continue-on-error:/m);
+  });
+
+  it('CI は、まっさらなランナーで手順書の「最初の準備」をそのまま流し、シードの人で /home に入る（#35、ADR-0069）', () => {
+    const guide = readFileSync('docs/guides/local-development.md', 'utf8');
+    const setup = guideCommands(guide, '1. 最初の準備');
+    expect(setup).toMatch(/pnpm install[\s\S]*setup-local\.sh[\s\S]*db:migrate[\s\S]*db:seed/);
+    expect(guideCommands(guide, '2. 毎日の起動')).toMatch(/pnpm dev/);
+    const ci = readFileSync('.github/workflows/ci.yml', 'utf8');
+    const job = ci.slice(ci.indexOf('\n  fresh-clone:'));
+    expect(job).toMatch(/^\n  fresh-clone:/);
+    expect(job).toContain(
+      'node scripts/guide-commands.mjs docs/guides/local-development.md "1. 最初の準備"',
+    );
+    expect(job).toContain(
+      'node scripts/guide-commands.mjs docs/guides/local-development.md "2. 毎日の起動"',
+    );
+    expect(job).toContain('sample01');
+    expect(job).not.toMatch(/^\s*continue-on-error:/m);
   });
 
   // NFR-SEC-11: 本番の依存に、高と重大の脆弱性が無い

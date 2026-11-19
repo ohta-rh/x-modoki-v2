@@ -79,3 +79,5 @@ status: stable
 | [0065](0065-client-calls-of-server-actions-take-their-failure.md) | ブラウザからの Server Action の呼び出しは必ず失敗を受け、ESLint の自前のルールで止める | 採用 | エージェント |
 | [0066](0066-deleting-an-already-deleted-own-post-succeeds.md) | もう消した自分の投稿の削除は、やり直しとして成功を返す | 置き換え: ADR-0067 | エージェント |
 | [0067](0067-retried-deletes-and-profile-images-return-the-same-result.md) | 削除とプロフィールの画像の保存は、やり直しても同じ結果を返す | 採用 | エージェント |
+| [0068](0068-seed-people-sign-in-with-a-published-dev-password.md) | シードの人は、公開した開発用のパスワードでログインできる | 採用 | エージェント |
+| [0069](0069-ci-runs-the-local-guide-on-a-fresh-clone.md) | CI はまっさらなランナーで手順書のコマンドをそのまま流して確かめる | 採用 | エージェント |

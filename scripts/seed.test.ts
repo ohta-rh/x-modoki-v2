@@ -2,8 +2,9 @@ import { testDb, setupTestDb } from '@test/db';
 import { workerDatabaseName, withDatabase } from '@test/db-names';
 import { count, eq, sql } from 'drizzle-orm';
 import { describe, expect, it, vi } from 'vitest';
-import { follows, likes, posts, user } from '../src/shared/db/schema/index.ts';
-import { seed } from './seed.ts';
+import { verifyPassword } from 'better-auth/crypto';
+import { account, follows, likes, posts, user } from '../src/shared/db/schema/index.ts';
+import { SEED_PASSWORD, seed } from './seed.ts';
 
 setupTestDb();
 
@@ -27,6 +28,17 @@ describe('seed', () => {
       expect(row.name).toMatch(/^サンプル \d{2}$/);
       expect(row.email).toMatch(/^sample\d{2}@example\.test$/);
     }
+  });
+
+  it('どの人も、公開した開発用のパスワードでログインできる（Better Auth の credential のアカウント、#35）', async () => {
+    await seed(testDb(), vi.fn());
+    const rows = await testDb().select().from(account);
+    expect(rows).toHaveLength(20);
+    const [sample01] = await testDb().select().from(user).where(eq(user.username, 'sample01'));
+    const own = rows.find((row) => row.userId === sample01.id)!;
+    expect(own).toMatchObject({ providerId: 'credential', accountId: sample01.id });
+    expect(await verifyPassword({ hash: own.password!, password: SEED_PASSWORD })).toBe(true);
+    expect(await verifyPassword({ hash: own.password!, password: 'wrong-password' })).toBe(false);
   });
 
   it('数の列が、実際の行の数と合う', async () => {

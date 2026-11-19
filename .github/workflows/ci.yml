@@ -92,3 +92,56 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 14
+
+  # A fresh runner is a fresh clone: run the guide's own commands, read from the guide, then sign in
+  # as a seed person and open /home (#35, ADR-0069). Nothing here is copied from the guide.
+  fresh-clone:
+    name: fresh clone (the local guide)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - name: The guide's 1. 最初の準備
+        run: |
+          node scripts/guide-commands.mjs docs/guides/local-development.md "1. 最初の準備" > "$RUNNER_TEMP/setup.sh"
+          cat "$RUNNER_TEMP/setup.sh"
+          sh -e "$RUNNER_TEMP/setup.sh"
+      - name: The guide's 2. 毎日の起動
+        run: |
+          node scripts/guide-commands.mjs docs/guides/local-development.md "2. 毎日の起動" > "$RUNNER_TEMP/start.sh"
+          cat "$RUNNER_TEMP/start.sh"
+          nohup sh -e "$RUNNER_TEMP/start.sh" > "$RUNNER_TEMP/app.log" 2>&1 &
+          for i in $(seq 1 120); do curl -sf -o /dev/null http://localhost:3000/ && exit 0; sleep 1; done
+          tail -50 "$RUNNER_TEMP/app.log"; exit 1
+      # Through the sign-in screen: Better Auth's own sign-in endpoints are closed to outside calls
+      # (T-09, T-10). In the Playwright image, as steps 5 and 7 of verify (ADR-0046).
+      - name: Sign in as sample01 and open /home
+        run: |
+          cat > fresh-clone-check.mjs <<'JS'
+          import { chromium } from 'playwright';
+          const base = 'http://localhost:3000';
+          const browser = await chromium.launch();
+          const page = await browser.newPage();
+          await page.goto(`${base}/i/flow/login`);
+          await page.getByLabel('ユーザー名またはメールアドレス').fill('sample01');
+          await page.getByLabel('パスワード').fill('sample-password');
+          await page.getByRole('button', { name: 'ログイン' }).click();
+          await page.waitForURL(`${base}/home`, { timeout: 60_000 });
+          await page.getByText('サンプル 01').first().waitFor({ timeout: 60_000 });
+          console.log('signed in as sample01 and /home shows サンプル 01');
+          await browser.close();
+          JS
+          docker run --rm --network host --ipc=host --user "$(id -u):$(id -g)" \
+            -v "$HOME:$HOME" -w "$GITHUB_WORKSPACE" \
+            -v "$RUNNER_TOOL_CACHE:$RUNNER_TOOL_CACHE:ro" \
+            -e PATH="$PATH" -e HOME \
+            mcr.microsoft.com/playwright:v1.65.0-noble \
+            node fresh-clone-check.mjs
+      - name: The app's log
+        if: always()
+        run: tail -80 "$RUNNER_TEMP/app.log"

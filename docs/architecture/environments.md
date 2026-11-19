@@ -9,7 +9,7 @@ status: stable
 # 環境と配備
 
 - 決定: [ADR-0017](../adr/0017-cloudflare-workers-opennext.md)、[ADR-0019](../adr/0019-first-milestone-runs-locally.md)、[ADR-0020](../adr/0020-ci-required-github-actions.md)、[ADR-0008](../adr/0008-s3-compatible-media-storage.md)、[ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md)
-- リポジトリにコードが入る前の設計。コマンドの名前は、最初の PBI で `package.json` に入れるときにこの表に合わせる
+- 手を動かす手順は [ローカルで動かす](../guides/local-development.md)。この文書は構成と、コマンドの一覧（`package.json` の `scripts` と同じ）を示す
 
 ## 1. マイルストーンと環境
 
@@ -60,11 +60,13 @@ status: stable
 | `pnpm install` | 依存を入れる |
 | `pnpm db:generate` | スキーマの差分からマイグレーションの SQL を作る |
 | `pnpm db:migrate` | マイグレーションを流す |
-| `pnpm db:seed` | 架空の 20 人・投稿 300 件・フォロー・いいねを入れる。もう人がいれば何もしない（手で作ったデータを消さない） |
+| `pnpm db:seed` | 架空の 20 人（パスワードは全員 `sample-password`。[ADR-0068](../adr/0068-seed-people-sign-in-with-a-published-dev-password.md)）・投稿 300 件・フォロー・いいねを入れる。もう人がいれば何もしない（手で作ったデータを消さない） |
 | `pnpm dev` | 開発のサーバー |
-| `pnpm docs:check` | `node scripts/check-docs.mjs`。`docs/` の OKF の形・リンク・ADR のステータスを確かめる |
+| `pnpm start` | `pnpm build` のあとの本番の形のサーバー（`next start`）。画面のテストと Chrome での確認はこちら |
+| `pnpm docs:check` | `node scripts/check-docs.mjs && node scripts/check-traceability.mjs`。`docs/` の OKF の形・リンク・ADR のステータスと、要件とテストの結びつき（[ADR-0053](../adr/0053-requirements-trace-to-tests.md)）を確かめる |
 | `pnpm typecheck` | `next typegen && tsc --noEmit`（ルートの型を作ってから確かめる） |
-| `pnpm lint` | `eslint`・`steiger ./src`・`node scripts/check-src-layers.mjs`（FSD の層と公開 API と `src/` の直下。[ADR-0022](../adr/0022-feature-sliced-design.md)・[ADR-0030](../adr/0030-fsd-lint-exceptions-and-own-layer-check.md)） |
+| `pnpm lint` | `eslint --max-warnings 0 .`・`steiger ./src`・`node scripts/check-src-layers.mjs`・`node scripts/check-authz.mjs`（FSD の層と公開 API と `src/` の直下。[ADR-0022](../adr/0022-feature-sliced-design.md)・[ADR-0030](../adr/0030-fsd-lint-exceptions-and-own-layer-check.md)） |
+| `pnpm format` | `prettier --write .` |
 | `pnpm format:check` | `prettier --check .` |
 | `pnpm test` | Vitest（単体とデータアクセス層）。`--coverage` でカバレッジ |
 | `pnpm test:e2e` | Playwright。macOS では WebKit だけ `docker compose` の `webkit`（CI と同じイメージ）につなぐ（[ADR-0052](../adr/0052-local-webkit-in-the-playwright-image.md)） |
@@ -80,6 +82,8 @@ pnpm db:migrate
 pnpm db:seed
 pnpm dev                    # http://localhost:3000（使われていれば PORT=3300 pnpm dev）
 ```
+
+- 同じ手順を [ローカルで動かす](../guides/local-development.md) に書き、CI の `fresh-clone` のジョブがまっさらなランナーでそこから読み出して流す（[ADR-0069](../adr/0069-ci-runs-the-local-guide-on-a-fresh-clone.md)）
 
 - ホストのポート: PostgreSQL は 54320（5432 と重ならないように）、Garage は 3900（S3）と 3902（公開の URL）
 - 手元の pnpm が 12 でないときは `npx -y pnpm@12.19.0 <コマンド>` で動かす（pnpm 10 からの自動の切り替えは失敗する。[Better Auth の調査](../research/better-auth-on-next-16.md) の 3.4）
