@@ -55,8 +55,10 @@ src/
 - Server Actions: `features/*/api/actions.ts` (`'use server'`) — Zod-validate, call the
   mutation, return `{ ok, … }`. No business logic in the action file itself.
 - Route Handlers: implement in `src/_app/api-routes/`; `app/api/**/route.ts` only re-exports
-  (`export { getTimeline as GET } from '@/_app/api-routes'`). A state-changing Route Handler is a
-  POST that refuses an `Origin` other than its own (T-11).
+  (`export { getTimeline as GET } from '@/_app/api-routes'`). A Route Handler that changes state as
+  the session's user is a POST that refuses an `Origin` naming another host than the one the
+  request reached (T-11). Public ones (`postView`) and server-to-server ones (`postCleanupMedia`,
+  its secret) have no session to ride on.
 - **Every entry has tagged authorization tests (ADR-0060).** Each Server Action and Route Handler
   needs a test marked `// AUTHZ: <name> UNAUTHORIZED` right above it; each mutation function also
   one marked `FORBIDDEN` (it can name another person's thing) or `SELF` (only the caller's rows

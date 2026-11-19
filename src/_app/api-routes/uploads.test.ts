@@ -32,10 +32,37 @@ const post = (body: unknown, origin: string | null = 'http://localhost:3000') =>
 const ok = { contentType: 'image/webp', contentLength: 1234, width: 300, height: 200 };
 
 describe('POST /api/uploads/presign（#25、T-07・T-08）', () => {
+  it('Origin は要求が届いたホストと比べる。next start の待ち受けの名前（request.url）とは比べない（#33 レビュー 1）', async () => {
+    signInAs(await makeUser());
+    // The page was opened at 127.0.0.1:3300, while next start built request.url from localhost.
+    const at = (headers: Record<string, string>) =>
+      postUploadPresign(
+        new Request('http://localhost:3000/api/uploads/presign', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', ...headers },
+          body: JSON.stringify(ok),
+        }),
+      );
+    expect((await at({ host: '127.0.0.1:3300', origin: 'http://127.0.0.1:3300' })).status).toBe(
+      200,
+    );
+    // Behind a proxy, the host the browser used is in X-Forwarded-Host.
+    expect(
+      (
+        await at({
+          host: 'app:3000',
+          'x-forwarded-host': 'x-modoki.example',
+          origin: 'https://x-modoki.example',
+        })
+      ).status,
+    ).toBe(200);
+    expect((await at({ host: '127.0.0.1:3300', origin: 'https://evil.test' })).status).toBe(403);
+  });
+
   // NFR-SEC-04: CSRF（T-11）
   it('別のサイトの Origin や Origin の無い POST は 403 で、署名も media の行も作らない（T-11、#33）', async () => {
     signInAs(await makeUser());
-    for (const origin of ['https://evil.test', 'http://localhost:3001', null]) {
+    for (const origin of ['https://evil.test', 'http://localhost:3001', 'null', null]) {
       const response = await post(ok, origin);
       expect(response.status).toBe(403);
       expect(await response.json()).toEqual({ error: 'FORBIDDEN' });

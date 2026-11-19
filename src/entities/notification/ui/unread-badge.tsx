@@ -11,8 +11,12 @@ const POLL_MS = 30_000;
 export function UnreadBadge({ initial }: { initial: number }) {
   const { data: count } = useQuery({
     queryKey: ['notifications', 'unread-count'],
-    queryFn: async () =>
-      ((await (await fetch('/api/notifications/unread-count')).json()) as { count: number }).count,
+    queryFn: async () => {
+      const response = await fetch('/api/notifications/unread-count');
+      // Signed out in another tab, or the session ended: nothing to show (401, #33).
+      if (!response.ok) return 0;
+      return ((await response.json()) as { count: number }).count;
+    },
     initialData: initial,
     staleTime: POLL_MS,
     refetchInterval: POLL_MS,

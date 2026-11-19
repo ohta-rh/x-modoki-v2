@@ -61,4 +61,14 @@ describe('UnreadBadge（#26）', () => {
     await act(() => vi.advanceTimersByTimeAsync(90_000));
     expect(fetchCount).not.toHaveBeenCalled();
   });
+
+  it('確かめたときにログインが切れていれば（401）、バッジを隠す。空のバッジを出さない（#33 レビュー 1）', async () => {
+    vi.stubGlobal('fetch', () =>
+      Promise.resolve(Response.json({ error: 'UNAUTHORIZED' }, { status: 401 })),
+    );
+    show(2);
+    expect(screen.getByRole('link')).toHaveAccessibleName('通知 未読 2 件');
+    await act(() => vi.advanceTimersByTimeAsync(30_010));
+    expect(screen.getByRole('link')).toHaveAccessibleName('通知');
+  });
 });
