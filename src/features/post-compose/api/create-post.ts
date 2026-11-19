@@ -57,12 +57,14 @@ class Refused extends Error {
  */
 export async function createPost(
   text: string,
-  { newId = defaultNewId, replyToId, quoteOfId, media: items = [] }: Options = {},
+  { newId = defaultNewId, replyToId, quoteOfId, media: given = [] }: Options = {},
 ): Promise<CreatePostResult> {
   const viewer = await getSession();
   if (!viewer) return { ok: false, error: 'UNAUTHORIZED' };
   // Spaces and line breaks around the body are not kept, as on X (#67).
   const body = cleanText(text);
+  // Alternative texts are typed too: cleaned the same way before anything checks them (#89).
+  const items = given.map((item) => ({ ...item, alt: cleanText(item.alt) }));
   // A post may be images alone (#25); otherwise its text must be postable.
   const textOk = measurePost(body).postable || (body === '' && items.length > 0);
   const mediaOk = items.length <= MAX_MEDIA && items.every((item) => item.alt.length <= MAX_ALT);

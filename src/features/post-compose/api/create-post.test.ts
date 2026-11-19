@@ -37,6 +37,17 @@ describe('createPost（FR-POST、NFR-SEC-01・02・05）', () => {
     expect(row.text).toBe('前の行\n  次の行');
   });
 
+  it('画像の代替テキストからも U+0000 を除き、整えて保存する（#89 のレビュー）', async () => {
+    const me = await makeUser();
+    signInAs(me);
+    const upload = await makeUpload(me.id);
+    expect(
+      await createPost('代替テキストつき', { media: [{ id: upload.id, alt: '  a\u0000b ' }] }),
+    ).toMatchObject({ ok: true });
+    const [row] = await testDb().select().from(media).where(eq(media.id, upload.id));
+    expect(row.alt).toBe('ab');
+  });
+
   it('U+0000 は除いて保存する（PostgreSQL が受け付けず、500 になっていた、#89）', async () => {
     signInAs(await makeUser());
     expect(await createPost('見えない\u0000文字')).toMatchObject({ ok: true });

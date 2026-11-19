@@ -103,6 +103,18 @@ describe('ImageAttachments（#25）', () => {
     await waitFor(() => expect(screen.queryByRole('alert')).toBeNull());
   });
 
+  it('送っている途中で外した画像の失敗が、あとから届いても文言は出さない（#90 のレビュー）', async () => {
+    let fail!: (error: Error) => void;
+    uploadImage.mockImplementationOnce(() => new Promise((_, reject) => (fail = reject)));
+    render(<Harness />);
+    await userEvent.upload(screen.getByLabelText('画像を追加'), [png(1)]);
+    await waitFor(() => expect(uploadImage).toHaveBeenCalled());
+    await userEvent.click(screen.getByRole('button', { name: '1 枚目を外す' }));
+    fail(new Error('upload 403'));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
   it('ハイドレーションの前に選んだ画像も、受け取る（#47 と同じ）', async () => {
     const { renderToString } = await import('react-dom/server');
     const { hydrateRoot } = await import('react-dom/client');

@@ -36,10 +36,7 @@ export function useImageAttachments() {
         .then(uploadImage)
         .then(
           (id) => update(key, { id }),
-          () => {
-            update(key, { failed: true });
-            setError(UPLOAD_FAILED);
-          },
+          () => update(key, { failed: true }),
         );
     }
   };
@@ -49,13 +46,12 @@ export function useImageAttachments() {
       URL.revokeObjectURL(current.find((item) => item.key === key)!.previewUrl);
       return current.filter((item) => item.key !== key);
     });
-    // The failure's message goes with the last image that failed (#90).
-    const failedLeft = items.some((item) => item.key !== key && item.failed);
-    setError((message) => (message === UPLOAD_FAILED && !failedLeft ? null : message));
   };
   return {
     items,
-    error,
+    // The upload failure's message stays exactly while a failed image is shown, whatever the order
+    // of removal and failure (#90); the limit message comes from the last choice.
+    error: error ?? (items.some((item) => item.failed) ? UPLOAD_FAILED : null),
     add,
     remove,
     setAlt: (key: string, alt: string) => update(key, { alt }),
