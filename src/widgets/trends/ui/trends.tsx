@@ -32,7 +32,7 @@ export function Trends({
                 prefetch={false}
                 className="block px-4 py-3 hover:bg-hover"
               >
-                <span className="block font-bold">#{trend.tag}</span>
+                <span className="block font-bold break-all">#{trend.tag}</span>
                 <span className="block text-[13px] text-text-muted">{trend.count} 件のポスト</span>
               </Link>
             </li>

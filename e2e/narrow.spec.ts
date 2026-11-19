@@ -211,3 +211,84 @@ test.describe('人が入れた長い文字と、画面より高いダイアロ�
     await expect(quote.getByRole('button', { name: '閉じる' })).toBeVisible();
   });
 });
+
+// Every field a person types, long and unbroken: no screen may scroll sideways (#80, after #74).
+test('人が入れる全部の欄が長くても、全部の画面が 320px で横にはみ出さない（#80）', async ({
+  page,
+  browser,
+}) => {
+  test.slow();
+  const reader = await (
+    await browser.newContext({ viewport: { width: 320, height: 740 } })
+  ).newPage();
+  const them = await signUp(reader);
+  const me = await signUp(page);
+  await page.goto('/settings/profile');
+  await page.getByRole('textbox', { name: '名前' }).fill('W'.repeat(50));
+  await page.getByRole('textbox', { name: '自己紹介' }).fill('B'.repeat(160));
+  await page.getByRole('textbox', { name: '場所' }).fill('W'.repeat(30));
+  await page
+    .getByRole('textbox', { name: 'ウェブサイト' })
+    .fill(`https://example.test/${'w'.repeat(79)}`);
+  await page.getByRole('button', { name: '保存' }).click();
+  await expect(page).not.toHaveURL(/\/settings\/profile$/);
+  await page.goto('/home?tab=following');
+  await page
+    .getByRole('textbox', { name: '投稿の本文' })
+    .fill(`#${'t'.repeat(99)} ${'P'.repeat(150)}`);
+  await page.getByRole('button', { name: 'ポストする' }).click();
+  await expect(page.getByRole('article')).toHaveCount(1);
+  // The long-named person follows someone: their notification carries the long name.
+  await page.goto(`/${them.username}`);
+  await page
+    .getByRole('region', { name: 'プロフィール' })
+    .getByRole('button', { name: 'フォロー', exact: true })
+    .click();
+  await expect(
+    page.getByRole('region', { name: 'プロフィール' }).getByRole('button', { name: 'フォロー中' }),
+  ).toBeVisible();
+  await page.goto(`/${me.username}`);
+  await page.getByRole('article').first().locator('time').click();
+  await expect(page).toHaveURL(/\/status\/\d+$/);
+  const status = new URL(page.url()).pathname;
+
+  await page.setViewportSize({ width: 320, height: 740 });
+  const wide: Record<string, number> = {};
+  const check = async (on: typeof page, path: string) => {
+    await on.goto(path);
+    await expect(on.getByRole('main').or(on.getByRole('dialog')).first(), path).toBeVisible();
+    const width = await on.evaluate(() => document.documentElement.scrollWidth);
+    if (width > 320) wide[path] = width;
+  };
+  // Every route of the #31 sweep above, with this person's long data.
+  for (const path of [
+    '/',
+    '/i/flow/login',
+    '/i/flow/signup',
+    '/home',
+    '/home?tab=following',
+    '/explore',
+    `/search?q=${'P'.repeat(20)}`,
+    `/search?q=${me.username}&f=user`,
+    '/notifications',
+    '/notifications/mentions',
+    '/i/bookmarks',
+    '/compose/post',
+    '/settings',
+    '/settings/account',
+    '/settings/display',
+    '/settings/profile',
+    `/${me.username}`,
+    `/${me.username}/with_replies`,
+    `/${me.username}/media`,
+    `/${me.username}/likes`,
+    `/${me.username}/following`,
+    `/${me.username}/followers`,
+    `/${them.username}/followers`,
+    status,
+  ])
+    await check(page, path);
+  await check(reader, '/notifications');
+  await check(reader, '/explore');
+  expect(wide).toEqual({});
+});

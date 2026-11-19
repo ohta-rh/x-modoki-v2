@@ -30,6 +30,8 @@ describe('ProfileHeader（#23、ui-ux.md の 8 節）', () => {
     expect(region).toHaveTextContent('@hanako');
     expect(region).toHaveTextContent('猫が好き');
     expect(region).toHaveTextContent('東京');
+    // The location wraps like the URL beside it (#80).
+    expect(within(region).getByText('東京')).toHaveClass('min-w-0', 'break-all');
     expect(within(region).getByRole('link', { name: 'example.com' })).toHaveAttribute(
       'href',
       'https://example.com',

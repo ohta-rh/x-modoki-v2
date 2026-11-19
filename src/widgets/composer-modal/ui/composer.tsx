@@ -3,7 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import type { Route } from 'next';
 import Link from 'next/link';
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { ImageAttachments, useImageAttachments } from '@/features/media-upload';
 import {
   clearDraft,
@@ -37,9 +37,24 @@ type ComposerProps = {
  * saved, discarded or posted since then gives a fresh box holding it.
  */
 function Composer(props: ComposerProps) {
+  const { username } = props;
+  // Read when the composer is shown (a first open, or Next.js showing a screen it kept hidden,
+  // which subscribes again) and when this tab changes it — never on a mere render, or another
+  // tab's draft would replace what is being written here (#81).
+  const kept = useRef<string | null>(null);
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      kept.current = readDraft(username);
+      return subscribeDraft(() => {
+        kept.current = readDraft(username);
+        onChange();
+      });
+    },
+    [username],
+  );
   const draft = useSyncExternalStore(
-    subscribeDraft,
-    () => readDraft(props.username),
+    subscribe,
+    () => (kept.current ??= readDraft(username)),
     () => null,
   );
   if (draft === null) return null;

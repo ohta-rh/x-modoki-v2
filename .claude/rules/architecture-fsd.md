@@ -54,6 +54,10 @@ src/
   segments, `src/shared/db`, and `src/shared/auth`. Queries are not written in `shared`.
 - Server Actions: `features/*/api/actions.ts` (`'use server'`) — Zod-validate, call the
   mutation, return `{ ok, … }`. No business logic in the action file itself.
+- **Text a person typed wraps or truncates (#74, #80):** names, bios, places, URLs, hashtags and
+  any line that quotes them get `break-words` / `break-all` or `truncate` (with `min-w-0` inside a
+  flex row). A new place that shows such text is added to the 320px sweep in `e2e/narrow.spec.ts`
+  (「人が入れる全部の欄が長くても…」). Found twice: #74, #80.
 - Route Handlers: implement in `src/_app/api-routes/`; `app/api/**/route.ts` only re-exports
   (`export { getTimeline as GET } from '@/_app/api-routes'`). A Route Handler that changes state as
   the session's user is a POST that refuses an `Origin` naming another host than the one the

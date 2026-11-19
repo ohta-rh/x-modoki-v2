@@ -120,3 +120,23 @@ test('下書きは、同じブラウザの別の人に出ない（#79）', async
   await open();
   await expect(box(page)).toHaveValue('');
 });
+
+test('別のタブで下書きを保存しても、開いている欄の書きかけは消えない（#81）', async ({
+  page,
+  context,
+}) => {
+  await signUp(page);
+  const other = await context.newPage();
+  await other.goto('/home');
+  await page.getByRole('navigation').getByRole('link', { name: 'ポストする' }).click();
+  await box(page).fill('このタブの書きかけ');
+  await other.getByRole('navigation').getByRole('link', { name: 'ポストする' }).click();
+  await box(other).fill('別のタブの下書き');
+  await other.keyboard.press('Escape');
+  await other.getByRole('alertdialog').getByRole('button', { name: '保存' }).click();
+  await expect(composer(other)).toBeHidden();
+  await page.bringToFront();
+  await box(page).press('End');
+  await box(page).pressSequentially('を続ける');
+  await expect(box(page)).toHaveValue('このタブの書きかけを続ける');
+});

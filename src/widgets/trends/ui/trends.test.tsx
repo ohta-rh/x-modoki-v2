@@ -31,6 +31,8 @@ describe('Trends（#27）', () => {
     expect(links[0]).toHaveAttribute('href', '/search?q=%23%E7%8C%AB');
     expect(links[0]).toHaveTextContent('#猫');
     expect(links[0]).toHaveTextContent('12 件のポスト');
+    // A 100-letter tag wraps instead of widening the box (#80).
+    expect(within(links[0]).getByText('#猫')).toHaveClass('break-all');
     expect(links[1]).toHaveAttribute('href', '/search?q=%23cats');
     // Not prefetched: a prefetch of /search?q=… was seen to stay open, so the page never went idle.
     expect(prefetchOf(links[0])).toBe(false);

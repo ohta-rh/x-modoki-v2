@@ -84,6 +84,8 @@ describe('NotificationList（#26）', () => {
     expect(rows[1]).toHaveAttribute('data-unread', 'false');
     expect(within(rows[1]).getByRole('link', { name: '三郎' })).toHaveAttribute('href', '/u3');
     expect(rows[2]).toHaveTextContent('花子さんが返信しました');
+    // A long unbroken name wraps instead of widening the row (#80).
+    expect(within(rows[2]).getByText('花子さんが返信しました')).toHaveClass('break-words');
     expect(within(rows[2]).getByRole('link', { name: /返信です/ })).toHaveAttribute(
       'href',
       '/u1/status/200',

@@ -59,7 +59,7 @@ function Row({ group }: { group: NotificationGroup }) {
             </Link>
           ))}
         </div>
-        <p className="mt-2">{describeGroup(group)}</p>
+        <p className="mt-2 break-words">{describeGroup(group)}</p>
         {group.post ? (
           <Link
             href={`/${group.post.authorUsername}/status/${group.post.id}` as Route}

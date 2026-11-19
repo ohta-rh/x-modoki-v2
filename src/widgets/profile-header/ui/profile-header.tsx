@@ -47,8 +47,8 @@ export function ProfileHeader({
         ) : null}
         <p className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-body text-text-muted">
           {profile.location ? (
-            <span className="flex items-center gap-1">
-              <MapPin aria-hidden="true" className="size-[18px]" />
+            <span className="flex min-w-0 items-center gap-1 break-all">
+              <MapPin aria-hidden="true" className="size-[18px] shrink-0" />
               {profile.location}
             </span>
           ) : null}

@@ -37,6 +37,14 @@ describe('ComposerDialog（#28、ui-ux.md の 7 節）', () => {
     expect(screen.queryByRole('alertdialog')).toBeNull();
   });
 
+  it('別のタブが下書きを書き換えても（このタブには知らせが来ない）、開いている欄の書きかけを保つ（#81）', async () => {
+    render(wrap(<ComposerDialog username="me" action={posted()} onClose={vi.fn()} />));
+    await userEvent.type(await screen.findByRole('textbox', { name: '投稿の本文' }), 'このタブ');
+    window.localStorage.setItem(DRAFT, '別のタブの下書き');
+    await userEvent.type(box(), 'で続ける');
+    expect(box()).toHaveValue('このタブで続ける');
+  });
+
   it('書いてから閉じると「破棄 / 保存」を聞き、保存すると下書きを残して閉じる', async () => {
     const onClose = vi.fn();
     render(wrap(<ComposerDialog username="me" action={posted()} onClose={onClose} />));
