@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-19
+* **New**: #80〜#82 の試験レポート（#34 の探索的テストの 3 巡目で見つけた 3 件のバグ: [#80](test-reports/issue-0080-long-text-everywhere.md)、[#81](test-reports/issue-0081-open-composer-keeps-text.md)、[#82](test-reports/issue-0082-offline-auth-and-lint.md)）。
 * **New**: [ADR-0065](adr/0065-client-calls-of-server-actions-take-their-failure.md)（ブラウザからの Server Action の呼び出しは必ず失敗を受け、ESLint で止める）（#82）。
 * **New**: #74〜#79 の試験レポート（#34 の探索的テストの 2 巡目で見つけた 6 件のバグ: [#74](test-reports/issue-0074-long-text-overflow.md)、[#75](test-reports/issue-0075-tall-dialog-scrolls.md)、[#76](test-reports/issue-0076-retried-post-once.md)、[#77](test-reports/issue-0077-save-keeps-chosen-page.md)、[#78](test-reports/issue-0078-reply-delete-parent-count.md)、[#79](test-reports/issue-0079-draft-per-person.md)）。
 * **New**: [ADR-0064](adr/0064-a-repeated-post-within-a-minute-returns-the-first.md)（1 分以内の同じ投稿のやり直しは前の投稿を返す）（#76）。
