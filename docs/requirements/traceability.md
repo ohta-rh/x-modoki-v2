@@ -133,7 +133,7 @@ status: stable
 | NFR-PERF-01 | #32 | `scripts/perf.test.mjs` › 予算は LCP 2.5 秒・CLS 0.1・TBT 200 ミリ秒 |
 | NFR-PERF-02 | #32 | `scripts/perf.test.mjs` › 予算は LCP 2.5 秒・CLS 0.1・TBT 200 ミリ秒 |
 | NFR-PERF-03 | #32 | `scripts/perf.test.mjs` › 予算は LCP 2.5 秒・CLS 0.1・TBT 200 ミリ秒 |
-| NFR-PERF-04 | #32 | `src/_pages/home/api/load-home-page.test.ts` › ホームの最初の 1 ページの問い合わせは 6 回以下で、投稿が 20 件でも 40 件でも同じ回数（#32） |
+| NFR-PERF-04 | #32 | `test/home-render-queries.test.ts` › ログインした /home の最初の描画の問い合わせは、レイアウトの分を含めて 6 回以下で、投稿が 20 件でも 40 件でも同じ回数 |
 | NFR-PERF-05 | #32 | `e2e/performance.spec.ts` › ログインした /home が最初に送る JavaScript は、gzip で 200KB 以下 |
 | NFR-PERF-06 | #32 | `src/entities/post/api/get-timeline.test.ts` › 投稿が 10 万件あり、フォローした 1 人の投稿がまばらでも、1 ページを索引で 50 ミリ秒以下で読む |
 | NFR-PERF-07 | #26・#28 | `src/entities/notification/ui/unread-badge.test.tsx` › 30 秒ごとに確かめて数を変える。タブが見えていない間は確かめない |

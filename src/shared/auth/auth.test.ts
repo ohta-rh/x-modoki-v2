@@ -106,9 +106,32 @@ describe('getSession と requireSession', () => {
       username: 'sample_02',
       displayUsername: 'Sample_02',
       image: null,
+      // The saved look comes with the user's row, so the shell needs no query for it (#32).
+      theme: 'light',
+      accent: 'blue',
     });
     request.headers = new Headers();
     expect(await (await load()).getSession()).toBeNull();
+  });
+
+  it('見た目（theme・accent）は、登録のときに外から決められない（#32）', async () => {
+    const { getAuth } = await load();
+    for (const [field, value] of [
+      ['theme', 'dark'],
+      ['accent', 'pink'],
+    ]) {
+      await expect(
+        getAuth().api.signUpEmail({
+          body: {
+            name: 'x',
+            email: `look_${field}@example.test`,
+            password: 'correct-horse-battery',
+            username: `look_${field}`,
+            [field]: value,
+          } as never,
+        }),
+      ).rejects.toThrow(`${field} is not allowed to be set`);
+    }
   });
 
   it('同じリクエストの中では、セッションを 1 回だけ読む', async () => {

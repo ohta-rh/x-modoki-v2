@@ -28,6 +28,8 @@ export function UserHoverCard(props: Props) {
   // Swapped in by a rested pointer: the card opens at once. Already loaded: it opens on hover.
   const [rested, setRested] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  // Still on the name when the parts arrive: on a slow network they can come after it has left.
+  const hovering = useRef(false);
   if (Card) return <Card {...props} defaultOpen={rested} />;
   const { username, label, className, children } = props;
   return (
@@ -36,15 +38,20 @@ export function UserHoverCard(props: Props) {
       aria-label={label}
       className={className}
       onPointerEnter={() => {
+        hovering.current = true;
         void load();
         timer.current = setTimeout(() => {
           void load().then((loaded) => {
+            if (!hovering.current) return;
             setRested(true);
             setCard(() => loaded);
           });
         }, DELAY_MS);
       }}
-      onPointerLeave={() => clearTimeout(timer.current)}
+      onPointerLeave={() => {
+        hovering.current = false;
+        clearTimeout(timer.current);
+      }}
     >
       {children}
     </Link>

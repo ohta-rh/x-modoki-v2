@@ -12,6 +12,8 @@ export function signInAs(user: {
   name: string;
   username: string | null;
   image?: string | null;
+  theme?: string;
+  accent?: string;
 }) {
   current = {
     id: user.id,
@@ -19,6 +21,8 @@ export function signInAs(user: {
     username: user.username ?? '',
     displayUsername: user.username ?? '',
     image: user.image ?? null,
+    theme: user.theme ?? 'light',
+    accent: user.accent ?? 'blue',
   };
 }
 

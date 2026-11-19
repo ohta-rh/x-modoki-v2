@@ -1,9 +1,7 @@
 import 'server-only';
 import { countUnread } from '@/entities/notification/index.server';
 import { getSession } from '@/shared/auth/index.server';
-import { eq } from 'drizzle-orm';
 import type { Accent, Theme } from '@/shared/config';
-import { getDb, user } from '@/shared/db';
 import { mediaUrl } from '@/shared/lib/media-url';
 
 /** `image` is the avatar's URL on the media host (the session holds its storage key, #25). */
@@ -25,16 +23,12 @@ export type Viewer = {
 export async function loadViewer(): Promise<Viewer | null> {
   const session = await getSession();
   if (!session) return null;
-  const [look] = await getDb()
-    .select({ theme: user.theme, accent: user.accent })
-    .from(user)
-    .where(eq(user.id, session.id));
   return {
     name: session.name,
     username: session.username,
     image: mediaUrl(session.image),
     unread: await countUnread(),
-    theme: look.theme as Theme,
-    accent: look.accent as Accent,
+    theme: session.theme as Theme,
+    accent: session.accent as Accent,
   };
 }

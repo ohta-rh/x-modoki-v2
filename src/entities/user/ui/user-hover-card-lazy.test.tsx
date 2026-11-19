@@ -60,4 +60,21 @@ describe('UserHoverCard の読み込み（#32）', () => {
     expect(await screen.findByRole('dialog', {}, { timeout: 2000 })).toHaveTextContent('@taro');
     expect(loaded).toHaveBeenCalledTimes(1);
   });
+
+  it('0.5 秒たったあと、カードの部品が届く前に離れても、カードは出ない', async () => {
+    // A slow network: the card's parts arrive 300ms after the pointer has rested.
+    vi.doMock('./user-hover-card-live', async (importOriginal) => {
+      loaded();
+      await wait(800);
+      return importOriginal();
+    });
+    render(await card());
+    const link = screen.getByRole('link', { name: 'hanako のプロフィール' });
+    await userEvent.hover(link);
+    await wait(600);
+    await userEvent.unhover(link);
+    await wait(700);
+    expect(loaded).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
 });

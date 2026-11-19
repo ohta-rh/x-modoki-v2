@@ -39,7 +39,7 @@ describe('loadHomePage', () => {
     expect(Date.parse(following.now)).not.toBeNaN();
   });
 
-  // NFR-PERF-04: ホームの最初の描画の問い合わせ
+  // The page's own share of NFR-PERF-04; the whole render is counted in test/home-render-queries.test.ts.
   it('ホームの最初の 1 ページの問い合わせは 6 回以下で、投稿が 20 件でも 40 件でも同じ回数（#32）', async () => {
     const me = await makeUser();
     const friend = await makeUser();

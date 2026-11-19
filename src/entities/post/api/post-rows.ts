@@ -1,6 +1,6 @@
 import 'server-only';
-import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm';
-import { getDb, media, postMedia, posts, user } from '@/shared/db';
+import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { getDb, posts, user } from '@/shared/db';
 import { toIdString } from '@/shared/lib/id';
 import { mediaUrl } from '@/shared/lib/media-url';
 import { findLinks } from '@/shared/lib/text-parse';
@@ -30,8 +30,14 @@ export function postColumns(viewerId: string | null) {
     reposted: viewer(
       sql`select 1 from posts r where r.repost_of_id = ${posts.id} and r.author_id = ${viewerId}`,
     ),
+    // A post's images in position order, read with the post: no query of their own (#32).
+    images: sql<
+      Image[]
+    >`(select coalesce(json_agg(json_build_object('key', m.key, 'width', m.width, 'height', m.height, 'alt', m.alt) order by pm.position), '[]'::json) from post_media pm join media m on m.id = pm.media_id where pm.post_id = ${posts.id})`,
   };
 }
+
+type Image = { key: string; width: number; height: number; alt: string };
 
 export type Row = {
   post: typeof posts.$inferSelect;
@@ -40,6 +46,7 @@ export type Row = {
   liked: boolean;
   bookmarked: boolean;
   reposted: boolean;
+  images: Image[];
 };
 
 type Extra = { repostedBy: Post['repostedBy']; quoted: QuotedPost | null; media: Post['media'] };
@@ -89,11 +96,14 @@ export async function toPosts(rows: Row[], viewerId: string | null): Promise<Pos
   const repostOf = rows.flatMap((row) =>
     row.post.repostOfId === null ? [] : [row.post.repostOfId],
   );
-  const originals = await db
-    .select(postColumns(viewerId))
-    .from(posts)
-    .innerJoin(user, eq(user.id, posts.authorId))
-    .where(and(inArray(posts.id, repostOf), isNull(posts.deletedAt)));
+  // Each lookup is sent only when the page has something to look up (#32).
+  const originals = repostOf.length
+    ? await db
+        .select(postColumns(viewerId))
+        .from(posts)
+        .innerJoin(user, eq(user.id, posts.authorId))
+        .where(and(inArray(posts.id, repostOf), isNull(posts.deletedAt)))
+    : [];
   const originalById = new Map(originals.map((row) => [row.post.id, row]));
   type Shown = { row: Row; repostedBy: Post['repostedBy'] };
   const shown = rows.flatMap((row): Shown[] => {
@@ -104,14 +114,16 @@ export async function toPosts(rows: Row[], viewerId: string | null): Promise<Pos
   const quoteOf = shown.flatMap(({ row }) =>
     row.post.quoteOfId === null ? [] : [row.post.quoteOfId],
   );
-  const quotedRows = await db
-    .select({
-      post: posts,
-      author: { username: user.username, name: user.name, image: user.image },
-    })
-    .from(posts)
-    .innerJoin(user, eq(user.id, posts.authorId))
-    .where(inArray(posts.id, quoteOf));
+  const quotedRows = quoteOf.length
+    ? await db
+        .select({
+          post: posts,
+          author: { username: user.username, name: user.name, image: user.image },
+        })
+        .from(posts)
+        .innerJoin(user, eq(user.id, posts.authorId))
+        .where(inArray(posts.id, quoteOf))
+    : [];
   const quotedById = new Map(
     quotedRows.map(({ post, author }): [bigint, QuotedPost] => [
       post.id,
@@ -127,32 +139,16 @@ export async function toPosts(rows: Row[], viewerId: string | null): Promise<Pos
           },
     ]),
   );
-  const images = await db
-    .select({
-      postId: postMedia.postId,
-      key: media.key,
-      width: media.width,
-      height: media.height,
-      alt: media.alt,
-    })
-    .from(postMedia)
-    .innerJoin(media, eq(media.id, postMedia.mediaId))
-    .where(
-      inArray(
-        postMedia.postId,
-        shown.map(({ row }) => row.post.id),
-      ),
-    )
-    .orderBy(asc(postMedia.postId), asc(postMedia.position));
-  const mediaOf = (id: bigint) =>
-    images
-      .filter((image) => image.postId === id)
-      .map(({ key, width, height, alt }) => ({ url: mediaUrl(key)!, width, height, alt }));
   return shown.map(({ row, repostedBy }) =>
     toPost(row, viewerId, {
       repostedBy,
       quoted: quotedById.get(row.post.quoteOfId!) ?? null,
-      media: mediaOf(row.post.id),
+      media: row.images.map(({ key, width, height, alt }) => ({
+        url: mediaUrl(key)!,
+        width,
+        height,
+        alt,
+      })),
     }),
   );
 }

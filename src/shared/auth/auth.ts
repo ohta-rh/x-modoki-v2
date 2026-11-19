@@ -18,6 +18,14 @@ export const getAuth = cache(() =>
     baseURL: env.BETTER_AUTH_URL,
     database: drizzleAdapter(getDb(), { provider: 'pg', schema }),
     emailAndPassword: { enabled: true, minPasswordLength: 8, maxPasswordLength: 128 },
+    // The saved look comes with the session's own read of the user: no query of its own (#32).
+    // Not input: it changes only through the display settings' Server Action (#29).
+    user: {
+      additionalFields: {
+        theme: { type: 'string', input: false, required: false },
+        accent: { type: 'string', input: false, required: false },
+      },
+    },
     // One rate limit mechanism for the whole app: rate_limits (ADR-0010, NFR-SEC-05).
     rateLimit: { enabled: false },
     // Sign-up and sign-in only through the Server Actions, which validate and rate-limit them
@@ -51,6 +59,9 @@ export type SessionUser = {
   username: string;
   displayUsername: string;
   image: string | null;
+  /** The saved look (#29), read with the user. */
+  theme: string;
+  accent: string;
 };
 
 /** The signed-in user, read once per request, or null. */
@@ -59,9 +70,18 @@ export const getSession = cache(async (): Promise<SessionUser | null> => {
   const requestHeaders = await headers(); // #10 3.1: before betterAuth() is built
   const session = await getAuth().api.getSession({ headers: requestHeaders });
   if (!session) return null;
-  const { id, name, username, displayUsername, image } = session.user;
-  // Sign-up always sets both through the username plugin (src/features/account-access).
-  return { id, name, username: username!, displayUsername: displayUsername!, image: image ?? null };
+  const { id, name, username, displayUsername, image, theme, accent } = session.user;
+  // Sign-up always sets both through the username plugin (src/features/account-access); the
+  // columns default the look (src/shared/db/schema/auth.ts).
+  return {
+    id,
+    name,
+    username: username!,
+    displayUsername: displayUsername!,
+    image: image ?? null,
+    theme: theme!,
+    accent: accent!,
+  };
 });
 
 /** For pages that need a user: the signed-in user, or a redirect to the login screen. */
