@@ -155,7 +155,7 @@ status: stable
 | NFR-I18N-02 | #19 | `src/shared/lib/format/format.test.ts` › %d ミリ秒前は %s |
 | NFR-I18N-03 | #19・#34 | #34 で確かめる |
 | NFR-MAINT-01 | #15 から全部 | `scripts/quality-gates.test.ts` › カバレッジの閾値は、行・分岐・関数・文の全部で 100%。外せるのは ADR-0021・ADR-0022 の種類だけ |
-| NFR-MAINT-02 | #15 から全部 | `scripts/quality-gates.test.ts` › CI は push と PR のたびに、7 つの確認を順に流す |
+| NFR-MAINT-02 | #15 から全部 | `scripts/quality-gates.test.ts` › CI は push と PR のたびに、依存の監査と 7 つの確認の 8 つを順に流す |
 | NFR-MAINT-03 | #15 から全部 | `scripts/quality-gates.test.ts` › lint は ESLint（警告も 0）と Steiger と src の層と認可のテストの確かめで、ルートから DB を読むと止まる |
 | NFR-MAINT-04 | #30 | `scripts/check-traceability.test.mjs` › このリポジトリでは、全部の要件と URL がテストに結びついている（scripts/check-traceability.mjs） |
 | NFR-MAINT-05 | 全部 | `scripts/check-docs.test.mjs` › the repository itself passes |

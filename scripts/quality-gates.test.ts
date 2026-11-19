@@ -44,11 +44,12 @@ describe('品質の確認の設定（#30）', () => {
     ]);
   });
 
-  // NFR-MAINT-02: CI の 7 つの確認
-  it('CI は push と PR のたびに、7 つの確認を順に流す', () => {
+  // NFR-MAINT-02: CI の 8 つの確認（ADR-0070）
+  it('CI は push と PR のたびに、依存の監査と 7 つの確認の 8 つを順に流す', () => {
     const ci = readFileSync('.github/workflows/ci.yml', 'utf8');
     expect(ci).toMatch(/on:\n\s+push:[\s\S]*pull_request:/);
     const order = [
+      'pnpm audit --prod --audit-level high',
       'pnpm docs:check',
       'pnpm typecheck',
       'pnpm lint',
