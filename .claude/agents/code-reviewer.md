@@ -36,7 +36,8 @@ If either is missing, reply `NEEDS_CONTEXT` and say what is missing. Do not gues
 
 1. **Correctness.** Wrong logic, off-by-one, unhandled null / empty / boundary, race between
    concurrent requests, a transaction that does not cover what it must, an error path that
-   swallows or leaks.
+   swallows or leaks. A mutation whose response is lost and retried must return the same result
+   (ADR-0064, ADR-0067); a count it changes must be right in every list after Back.
 2. **Acceptance criteria.** Each criterion in the issue: is it actually implemented, and is
    there a test that would fail if it were not? Name any criterion with no test.
 3. **Security** (`docs/architecture/application-structure.md` §6, the threat model if present):

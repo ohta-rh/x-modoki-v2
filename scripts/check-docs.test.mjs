@@ -541,3 +541,26 @@ test('a bundle without docs/adr passes', () => {
   });
   assert.equal(status, 0, output);
 });
+
+// #39 (W9 in docs/research/retrospective-m1.md): after renumbering, code and harness files kept
+// citing ADR numbers that did not exist. The number is built at run time so that this file does
+// not cite a missing ADR itself.
+const missingAdr = `ADR-${'00'}${'02'}`;
+rejects(
+  'code, tests, configs and the harness cite only ADRs that exist',
+  (f) => {
+    f['src/a.ts'] = `// ${missingAdr}: a decision that is not in docs/adr\n`;
+    f['.claude/rules/x.md'] = '# x\n\nDecided in ADR-0001.\n';
+  },
+  new RegExp(`src/a\\.ts: cites ${missingAdr}, which is not in docs/adr`),
+);
+
+test('citing an ADR that exists, or none, passes', () => {
+  const { status, output } = run((f) => {
+    f['src/a.ts'] = '// ADR-0001\n';
+    f['e2e/b.spec.ts'] = 'test("x", () => {}); // ADR-NNNN in a template is not a citation\n';
+    f['node_modules/pkg/c.js'] = `// ${missingAdr} in a dependency is not ours\n`;
+    f['src/d.png'] = `${missingAdr} inside an image's bytes is not read`;
+  });
+  assert.equal(status, 0, output);
+});

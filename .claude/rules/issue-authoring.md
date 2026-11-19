@@ -64,6 +64,10 @@ from a symptom gets fixed at the symptom and comes back.
       filed as separate PBIs, not folded in.
 - [ ] Affected files / modules are named, and existing code that already does part of the
       job has been searched for and referenced.
+- [ ] Every 確認方法 command was run against the current code before filing, and its output
+      shows it would catch the defect or the missing feature (#57's `grep` could not see the
+      visible English). No criterion depends on an issue's open/closed state where ADR-0029
+      closes issues only on merge (#33).
 - [ ] No open question is left in the body. Decisions the implementer would otherwise have
       to make (data shape, naming of public interfaces, error behavior, migration) are
       already made and written down; a decision that is genuinely the user's is asked

@@ -2,7 +2,7 @@
 // CI, lint, the browsers — checked against that configuration, so weakening one turns this red.
 
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import playwright from '../playwright.config';
 import { guideCommands } from './lib/guide-commands.mjs';
@@ -129,6 +129,17 @@ describe('品質の確認の設定（#30）', () => {
     );
     expect(ci.indexOf('- name: 8. Dependency audit')).toBeLessThan(
       ci.indexOf('- name: 1. Documentation'),
+    );
+  });
+
+  it('commit の前に、ステージした木でドキュメントの確認が動き、落ちたら commit しない（#39）', () => {
+    const hook = readFileSync('.githooks/pre-commit', 'utf8');
+    expect(hook).toMatch(/^#!\/bin\/sh\n/);
+    expect(hook).toMatch(/^exec node scripts\/check-staged\.mjs$/m);
+    expect(statSync('.githooks/pre-commit').mode & 0o111).not.toBe(0);
+    // setup-local.sh, run by everyone before working (docs/guides/local-development.md), turns it on.
+    expect(readFileSync('scripts/setup-local.sh', 'utf8')).toMatch(
+      /git config core\.hooksPath \.githooks/,
     );
   });
 

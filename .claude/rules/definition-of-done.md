@@ -72,7 +72,9 @@ with `--window-size=375,…` lays the page out at ~500px and crops it. So:
 - The change itself: perform each user-visible behavior the PBI adds or alters, including one
   failure path (invalid input, logged out, not found).
 - Three widths: **1280px, 768px, 375px**. Layout holds; nothing overflows, overlaps, or
-  scrolls sideways.
+  scrolls sideways. Also one **low** viewport, **640×400** (1280×800 at 200% zoom): every control
+  the change touches is reachable (seven M1 bugs escaped the three widths: #58, #65, #75, #83,
+  #85, #86, #87).
 - Themes: every theme the change touches (all three for anything with color or borders).
 - **Console: zero errors and zero warnings** caused by the app. Network: no failed or
   unexpected requests.
@@ -92,6 +94,11 @@ with `--window-size=375,…` lays the page out at ~500px and crops it. So:
 | Investigation in a throwaway app | Run the throwaway app in Chrome; the observations and screenshots go into the research document and the report |
 
 ## Test report (item 9) — ADR-0025
+
+- **Before spawning the reviewer**, each row of 受け入れ条件ごとの結果 names the test that checks it
+  and was seen to fail with that behavior removed (break it, watch the test fail, restore). The
+  most frequent M1 review finding was a criterion with no test, or a test that passed without the
+  behavior (about 14 times).
 
 - **Path:** `docs/test-reports/issue-NNNN-<kebab-summary>.md` (NNNN = zero-padded issue
   number). Work not tied to a PBI: `docs/test-reports/YYYY-MM-DD-<kebab-summary>.md`.

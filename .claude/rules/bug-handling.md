@@ -38,6 +38,10 @@ closed (ADR-0028). This rule overrides any wording elsewhere that says to defer,
   2. **Three failed attempts at the same bug:** stop patching. Return to the last green state,
      question the design. Use the fallback the ADR names; if there is none, choose another
      approach and record it in a superseding ADR.
+     **"The same bug" means the same root cause or the same external dependency, across issues**:
+     a new bug PBI whose root cause says an earlier fix was not enough is the next attempt, not
+     attempt one (#43–#45 were three patches of one apt-mirror cause, counted as three first
+     attempts; the change of approach, #52, came from the user — retrospective-m1 R1).
   3. Still failing: split the change into smaller pieces and redo each by TDD.
 - **Code review not approved after three rounds:** same ladder. Do not submit a fourth round
   of the same shape — return to the last green state, split smaller, start over, and continue

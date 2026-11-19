@@ -33,6 +33,11 @@ Decided in ADR-0017, ADR-0019, ADR-0020, ADR-0021; this file is the operating ru
 - **Never weaken a gate to get green:** no `continue-on-error`, no `.skip` / `.only` / `.todo`
   left in tests, no `--no-verify`, no deleting or loosening a failing check, no lowering a
   threshold, no `eslint-disable` / `@ts-expect-error` without a one-line reason on the same line.
+  Taking a browser or engine out of one check, even for a reproduced upstream crash, is a gate
+  change: it needs an ADR with the reproduction, and it is the user's decision (ADR-0055) — skip
+  that work and report it rather than finding out through a blocked command.
+- **The docs are checked on the staged tree before every commit** (#39): `.githooks/pre-commit`
+  runs `scripts/check-staged.mjs`, turned on by `scripts/setup-local.sh`. Never bypass it.
 - The CI workflow and the app scaffold land in the same PBI. No feature PBI starts before CI
   exists and is green.
 - Node.js and pnpm versions come from `.nvmrc` and `packageManager`; never hard-code them in
@@ -68,6 +73,12 @@ Decided in ADR-0017, ADR-0019, ADR-0020, ADR-0021; this file is the operating ru
 - **Read a position after a focus move with `expect.poll`, never once (#36).** WebKit scrolls the
   focused control into view at its next rendering, Chrome at once; a single read after
   `keyboard.press('Tab')` passed locally and failed once in CI (run 44555176296).
+- **Wait for the action to finish before moving on in an e2e test (#50, seven times in M1).** After a
+  click that sends a Server Action, a `router.refresh()`, or a fire-and-forget request, wait for its
+  response to finish (`(await response).finished()`) or for its visible result before `goto`, Back,
+  or reading state: WebKit and Firefox interrupt the navigation otherwise.
+- **Never rebuild `.next` while a server from it is in use** (a hands-on check, an exploratory
+  tester, Lighthouse): it breaks that server (#32, #34). Stop it first or wait.
 - **Stop your own servers by PID, not by name.** `next start` renames itself to `next-server`, so
   `pkill -f "next start"` misses it and the next check hits a stale build (found in #15). Check
   `lsof -iTCP:<port> -sTCP:LISTEN` before a browser test; never touch a process you did not start.

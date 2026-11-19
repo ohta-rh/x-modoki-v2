@@ -37,6 +37,8 @@ its last without a human in between.
    Stage by explicit path; `git diff --check`; message
    references the issue (`Refs #N`); push.
 10. **Watch CI to the end.** Green → continue. Red → fix forward now; do not start the next PBI.
+    Every red run is recorded under 見つけた問題 in the report of the PBI whose commit fixes it,
+    with the run URL (three red runs in M1 were in no report).
 11. **Write the test report.** `docs/test-reports/issue-NNNN-<summary>.md` with the screenshots
     under `docs/test-reports/evidence/`: every acceptance criterion with its result and
     evidence, the gate output, the TDD record, the code review outcome, the Chrome record. Push it; its CI run must be green too.

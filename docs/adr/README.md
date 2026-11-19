@@ -83,3 +83,4 @@ status: stable
 | [0069](0069-ci-runs-the-local-guide-on-a-fresh-clone.md) | CI はまっさらなランナーで手順書のコマンドをそのまま流して確かめる | 採用 | エージェント |
 | [0070](0070-ci-has-eight-gates-with-the-dependency-audit.md) | CI の確認を 8 つにし、本番の依存の監査を最初に動かす | 採用 | エージェント |
 | [0071](0071-dependabot-weekly-updates-pinned-lines-by-adr.md) | 依存の更新は Dependabot が週に 1 回 PR にし、ADR が固定した系列は ADR でだけ上げる | 採用 | エージェント |
+| [0072](0072-docs-checked-on-the-staged-tree-before-commit.md) | commit の前に、ステージした木でドキュメントの確認を動かす | 採用 | エージェント |

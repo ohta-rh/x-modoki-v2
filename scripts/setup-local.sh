@@ -5,6 +5,9 @@
 set -eu
 cd "$(dirname "$0")/.."
 
+# The pre-commit hook checks the docs on what is committed (#39, .githooks/pre-commit).
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then git config core.hooksPath .githooks; fi
+
 rand() { openssl rand -hex "$1"; }
 
 if [ ! -f docker/garage/garage.toml ]; then

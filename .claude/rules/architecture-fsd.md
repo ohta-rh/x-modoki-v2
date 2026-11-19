@@ -74,6 +74,15 @@ src/
   the session's user is a POST that refuses an `Origin` naming another host than the one the
   request reached (T-11). Public ones (`postView`) and server-to-server ones (`postCleanupMedia`,
   its secret) have no session to ride on.
+- **A retried mutation returns the same result (ADR-0064, ADR-0067).** A response can be lost after
+  the change is made; the retry must not fail or duplicate. A new mutation gets an e2e that cuts
+  only its response and retries (#76, #84, #88).
+- **A mutation that changes a count or removes an item lists every cache and screen that shows it**
+  (`updatePostInCaches`, `removePostFromCaches`) and has an e2e "change on the detail → Back → the
+  list shows the new state" (#20, #21, #68, #69, #78).
+- **Better Auth's own endpoints stay closed unless the app calls them (ADR-0045).** After a Better
+  Auth upgrade or a new plugin, extend `src/_app/api-routes/auth.test.ts` with its write paths
+  (#18, #51).
 - **Every entry has tagged authorization tests (ADR-0060).** Each Server Action and Route Handler
   needs a test marked `// AUTHZ: <name> UNAUTHORIZED` right above it; each mutation function also
   one marked `FORBIDDEN` (it can name another person's thing) or `SELF` (only the caller's rows

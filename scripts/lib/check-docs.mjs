@@ -315,7 +315,39 @@ export function checkDocs(repoRoot) {
     });
   }
 
+  checkAdrCitations(repoRoot, fail);
   return { files: files.length, errors };
+}
+
+/** Where code, tests, configs and the harness live: every ADR they cite must exist (#39). */
+const CITING = ['app', 'src', 'e2e', 'scripts', 'eslint-rules', 'docker', '.claude', '.github'];
+const TEXT = /\.(?:[cm]?[jt]sx?|json|ya?ml|md|sh|css|toml)$/;
+
+function textFiles(dir) {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).flatMap((name) => {
+    const path = join(dir, name);
+    if (statSync(path).isDirectory()) return textFiles(path);
+    return TEXT.test(name) ? [path] : [];
+  });
+}
+
+function checkAdrCitations(repoRoot, fail) {
+  const adrDir = join(repoRoot, 'docs', 'adr');
+  if (!existsSync(adrDir)) return;
+  const known = new Set(readdirSync(adrDir).map((name) => name.slice(0, 4)));
+  const roots = readdirSync(repoRoot)
+    .map((name) => join(repoRoot, name))
+    .filter((path) => statSync(path).isFile() && TEXT.test(path));
+  const paths = [...roots, ...CITING.flatMap((dir) => textFiles(join(repoRoot, dir)))];
+  for (const path of paths) {
+    const cited = new Set(
+      [...readFileSync(path, 'utf8').matchAll(/\bADR-(\d{4})\b/g)].map((m) => m[1]),
+    );
+    for (const number of cited) {
+      if (!known.has(number)) fail(path, `cites ADR-${number}, which is not in docs/adr`);
+    }
+  }
 }
 
 /** CLI: `--root <dir>` checks another tree (used by the tests); the default is this repository. */

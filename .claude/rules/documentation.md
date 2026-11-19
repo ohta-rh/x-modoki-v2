@@ -65,6 +65,10 @@ Spec: `GoogleCloudPlatform/open-knowledge-format` `SPEC.md` (v0.2, verified 2026
 
 The global rule `~/.claude/rules/adr.md` applies; these are the local conventions.
 
+- **The number is given in the commit that adds the ADR** (write `ADR-XXXX` while drafting); after
+  any renumbering, `git grep` the old number. `check-docs.mjs` fails on a cited ADR number that does
+  not exist in `src/`, `app/`, `e2e/`, `scripts/`, configs, and `.claude/` (#39; four stale numbers
+  in M1).
 - Location `docs/adr/`, file `NNNN-kebab-title.md`, template `docs/adr/template.md`, index
   `docs/adr/README.md` (a table with the status column; `docs/adr/` has no `index.md`).
 - Written in Japanese. Frontmatter `type: ADR`, `title` identical to the H1 (`ADR-NNNN: …`).
@@ -78,7 +82,11 @@ The global rule `~/.claude/rules/adr.md` applies; these are the local convention
 Run `node scripts/check-docs.mjs` (also `pnpm docs:check`, and the first CI gate). It must
 exit 0. Its own tests are `scripts/check-docs.test.mjs`, run by `pnpm test` (Vitest).
 
-**Checked by the script** — do not re-check by hand, and do not weaken:
+**Checked by the script** — do not re-check by hand, and do not weaken. It also runs on the staged
+tree before every commit (`.githooks/pre-commit`, ADR-0072):
+
+- Every `ADR-NNNN` cited in `src/`, `app/`, `e2e/`, `scripts/`, `eslint-rules/`, `docker/`,
+  `.claude/`, `.github/` and the root files exists in `docs/adr/` (#39).
 
 - Every non-reserved `.md` under `docs/` has frontmatter in the accepted form, with `type`
   (listed in `docs/index.md`), `title` equal to the H1, a one-sentence `description`, `tags`

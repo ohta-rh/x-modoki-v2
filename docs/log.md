@@ -2,6 +2,7 @@
 
 ## 2026-11-20
 
+* **New**: [マイルストーン 1 の振り返り](research/retrospective-m1.md)と [ADR-0072](adr/0072-docs-checked-on-the-staged-tree-before-commit.md)（commit の前にステージした木でドキュメントを確かめる）。ルール（バグ・issue・品質・構造・完了の定義・ループ・文書）とレビュアーを振り返りに合わせて直した（#39）。
 * **New**: [#38 の試験レポート](test-reports/issue-0038-operations-guide.md)。
 * **New**: [困ったときの手順](guides/operations.md)（7 つの場面、データベースの保存と戻しを実際に流した記録、スキーマの変更の決まり。#38）。
 * **New**: [#37 の試験レポート](test-reports/issue-0037-dependabot-and-audit.md)。

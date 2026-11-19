@@ -1,0 +1,4 @@
+#!/bin/sh
+# The documentation checks on the staged tree, before every commit (#39). Turned on by
+# scripts/setup-local.sh (git config core.hooksPath .githooks).
+exec node scripts/check-staged.mjs
