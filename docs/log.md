@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-19
+* **New**: [#32 の試験レポート](test-reports/issue-0032-performance-budget.md)（速さの予算。最初の JavaScript 329KB → 194KB、ホームの描画の問い合わせ 10 → 6 回）。
 * **New**: [マイルストーン 1 の速さの計測](research/performance-m1.md)、[ADR-0058](adr/0058-measure-speed-with-applied-throttling.md)（速さは条件を実際にかけて測る）、[ADR-0059](adr/0059-load-popups-and-parsers-on-first-use.md)（開くまで要らない部品と投稿の解析は使うときに読む）。[非機能要件](requirements/non-functional.md)の NFR-PERF-01・05 の確かめ方と、[アプリケーションの構成](architecture/application-structure.md)の決まりを直した（#32）。
 * **New**: [#55 の試験レポート](test-reports/issue-0055-db-connect-stalls.md)（要求が返らない原因と、つなぐ時間の上限）。
 * **New**: [負荷の下で要求が返らない原因](research/db-connect-stalls.md)と [ADR-0057](adr/0057-db-connect-gives-up-after-1-5s-and-retries-once.md)（新しい接続は 1.5 秒で待つのをやめ、1 回だけつなぎ直す）（#55）。
