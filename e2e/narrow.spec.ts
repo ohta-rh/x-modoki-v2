@@ -122,12 +122,23 @@ test.describe('人が入れた長い文字と、画面より高いダイアロ�
     await page.getByRole('textbox', { name: '自己紹介' }).fill(LONG.bio);
     await page.getByRole('textbox', { name: 'ウェブサイト' }).fill(LONG.website);
     await page.getByRole('button', { name: '保存' }).click();
-    await expect(page).not.toHaveURL(/\/settings\/profile$/);
+    // Wait for the profile the save moves to, not just for leaving: a goto during that move is
+    // interrupted by it (CI, WebKit).
+    await expect(page).toHaveURL(new RegExp(`/${me.username}$`));
+    await expect(page.getByRole('region', { name: 'プロフィール' })).toBeVisible();
     await page.goto(`/${them.username}`);
+    const refreshed = page.waitForResponse(
+      (response) =>
+        response.request().headers()['rsc'] === '1' &&
+        response.request().headers()['next-action'] === undefined &&
+        new URL(response.url()).pathname === `/${them.username}`,
+    );
     await page
       .getByRole('region', { name: 'プロフィール' })
       .getByRole('button', { name: 'フォロー', exact: true })
       .click();
+    // The follow reads the profile again (router.refresh): a goto before that ends is interrupted.
+    await (await refreshed).finished();
     await expect(
       page
         .getByRole('region', { name: 'プロフィール' })
@@ -231,7 +242,10 @@ test('人が入れる全部の欄が長くても、全部の画面が 320px で�
     .getByRole('textbox', { name: 'ウェブサイト' })
     .fill(`https://example.test/${'w'.repeat(79)}`);
   await page.getByRole('button', { name: '保存' }).click();
-  await expect(page).not.toHaveURL(/\/settings\/profile$/);
+  // Wait for the profile the save moves to, not just for leaving: a goto during that move is
+  // interrupted by it (CI, WebKit).
+  await expect(page).toHaveURL(new RegExp(`/${me.username}$`));
+  await expect(page.getByRole('region', { name: 'プロフィール' })).toBeVisible();
   await page.goto('/home?tab=following');
   await page
     .getByRole('textbox', { name: '投稿の本文' })
@@ -240,10 +254,18 @@ test('人が入れる全部の欄が長くても、全部の画面が 320px で�
   await expect(page.getByRole('article')).toHaveCount(1);
   // The long-named person follows someone: their notification carries the long name.
   await page.goto(`/${them.username}`);
+  const refreshed = page.waitForResponse(
+    (response) =>
+      response.request().headers()['rsc'] === '1' &&
+      response.request().headers()['next-action'] === undefined &&
+      new URL(response.url()).pathname === `/${them.username}`,
+  );
   await page
     .getByRole('region', { name: 'プロフィール' })
     .getByRole('button', { name: 'フォロー', exact: true })
     .click();
+  // The follow reads the profile again (router.refresh): a goto before that ends is interrupted.
+  await (await refreshed).finished();
   await expect(
     page.getByRole('region', { name: 'プロフィール' }).getByRole('button', { name: 'フォロー中' }),
   ).toBeVisible();
@@ -389,6 +411,10 @@ test('引き出しを開いたまま 640px より広げると閉じる（#87）'
   await expect(page.getByRole('dialog', { name: 'アカウント' })).toBeVisible();
   await page.setViewportSize({ width: 900, height: 800 });
   await expect(page.getByRole('dialog', { name: 'アカウント' })).toHaveCount(0);
+  // Focus goes to the left column's menu, not to the hidden avatar or the page (round 7).
+  await expect(
+    page.getByTestId('left-column').getByRole('button', { name: /のアカウントのメニュー$/ }),
+  ).toBeFocused();
 });
 
 // NFR-A11Y: フォーカスが隠れない（WCAG 2.2 の 2.4.11、#86）

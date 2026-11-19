@@ -51,7 +51,16 @@ export function MobileAccountDrawer({
         <Avatar name={account.name} src={account.image} size={32} />
       </button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="top-0 left-0 h-dvh max-h-dvh w-[280px] max-w-[85vw] translate-x-0 translate-y-0 content-start rounded-none p-4 sm:max-w-[280px]">
+        <DialogContent
+          // Closed by widening, the avatar is hidden: focus goes to the left column's account menu,
+          // which took its place, instead of falling to the page (#87, round 7).
+          finalFocus={() =>
+            window.matchMedia('(min-width: 640px)').matches
+              ? document.querySelector<HTMLElement>('[data-account-menu]')
+              : true
+          }
+          className="top-0 left-0 h-dvh max-h-dvh w-[280px] max-w-[85vw] translate-x-0 translate-y-0 content-start rounded-none p-4 sm:max-w-[280px]"
+        >
           <DialogTitle className="sr-only">アカウント</DialogTitle>
           <Avatar name={account.name} src={account.image} size={40} />
           <div className="min-w-0">

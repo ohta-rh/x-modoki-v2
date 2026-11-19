@@ -2,7 +2,7 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { redirect } from 'next/navigation';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { toast } from '@/shared/ui/toast';
 import { MobileAccountDrawer } from './mobile-account-drawer';
 
@@ -21,7 +21,7 @@ beforeEach(() => {
       listeners.delete(listener),
   }));
 });
-afterEach(() => vi.unstubAllGlobals());
+// Kept to the end of the file: closing on unmount still asks matchMedia (finalFocus).
 
 const openDrawer = async () => {
   await userEvent.click(
@@ -87,5 +87,27 @@ describe('MobileAccountDrawer（640px 未満のヘッダーのアバター、ui-
     act(() => listeners.forEach((listener) => listener({ matches: true })));
     await waitFor(() => expect(screen.queryByRole('dialog', { name: 'アカウント' })).toBeNull());
     expect(listeners.size).toBe(0);
+  });
+
+  it('640px 以上になって閉じたら、フォーカスは隠れたボタンでなく、左の列のアカウントのメニューへ移る（#87、7 巡目）', async () => {
+    render(
+      <>
+        <button type="button" data-account-menu>
+          左の列のメニュー
+        </button>
+        <MobileAccountDrawer account={account} signOut={vi.fn()} />
+      </>,
+    );
+    await openDrawer();
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      media: query,
+      matches: true,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+    }));
+    act(() => listeners.forEach((listener) => listener({ matches: true })));
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '左の列のメニュー' })).toHaveFocus(),
+    );
   });
 });
