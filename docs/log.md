@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-19
+* **New**: [#33 の試験レポート](test-reports/issue-0033-security-checks.md)（全部の入口の認可、脅威の表、ヘッダーと CSP、依存の監査）。
 * **New**: [ADR-0060](adr/0060-every-entry-has-tagged-authorization-tests.md)（全ての入口に印の付いた認可のテスト）、[ADR-0061](adr/0061-security-headers-and-content-security-policy.md)（セキュリティのヘッダーと CSP）。[脅威の洗い出し](architecture/threat-model.md)の全部の行を実際のテストの名前にし、6 節（ログインの要らない入口）を足した（#33）。
 * **New**: [#32 の試験レポート](test-reports/issue-0032-performance-budget.md)（速さの予算。最初の JavaScript 329KB → 194KB、ホームの描画の問い合わせ 10 → 6 回）。
 * **New**: [マイルストーン 1 の速さの計測](research/performance-m1.md)、[ADR-0058](adr/0058-measure-speed-with-applied-throttling.md)（速さは条件を実際にかけて測る）、[ADR-0059](adr/0059-load-popups-and-parsers-on-first-use.md)（開くまで要らない部品と投稿の解析は使うときに読む）。[非機能要件](requirements/non-functional.md)の NFR-PERF-01・05 の確かめ方と、[アプリケーションの構成](architecture/application-structure.md)の決まりを直した（#32）。
