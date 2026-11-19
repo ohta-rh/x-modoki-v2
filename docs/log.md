@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-19
+* **New**: [#55 の試験レポート](test-reports/issue-0055-db-connect-stalls.md)（要求が返らない原因と、つなぐ時間の上限）。
 * **New**: [負荷の下で要求が返らない原因](research/db-connect-stalls.md)と [ADR-0057](adr/0057-db-connect-gives-up-after-1-5s-and-retries-once.md)（新しい接続は 1.5 秒で待つのをやめ、1 回だけつなぎ直す）（#55）。
 * **New**: [#31 の試験レポート](test-reports/issue-0031-wcag-aa.md)（WCAG 2.2 AA とキーボード）。
 * **New**: [ADR-0056](adr/0056-bugs-fixed-inside-the-pbi-and-lighter-local-checks.md)（中で見つけたバグは中で直す、バグの issue は探索的テストの分だけ、手元の全部の確認は push の前に 1 回）。ADR-0028 の一部を置き換えた。
