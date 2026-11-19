@@ -181,6 +181,11 @@ html {
   scroll-padding-top: 53px;
 }
 
+/* A screen whose sticky block is taller (home's tabs, the search box and its tabs: 114px). */
+html:has(main [data-tall-sticky]) {
+  scroll-padding-top: 116px;
+}
+
 /* A post brought into view (j / k, #29) stops below the sticky header of the column: 53px, plus the
    tabs on /home. */
 main article {

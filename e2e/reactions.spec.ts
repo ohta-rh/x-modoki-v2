@@ -75,9 +75,14 @@ test('ブックマークすると /i/bookmarks に出て、全て削除で消え
 test('詳細を開くと表示の回数が数えられ、カードに出る', async ({ page }) => {
   await signUp(page);
   await postFromHome(page, '見られる投稿');
+  // The detail counts its view once it has drawn: leaving before that request is sent counts
+  // nothing, so wait for its answer (a slow WebKit left first, #34).
+  const viewed = page.waitForResponse(
+    (response) => response.url().endsWith('/view') && response.request().method() === 'POST',
+  );
   await card(page, '見られる投稿').getByText('見られる投稿').click();
   await expect(page.getByRole('article', { name: '投稿の本体' })).toBeVisible();
-  // Counted after the response: give it a moment, then the card shows it.
+  await viewed;
   await expect(async () => {
     await page.goto('/home?tab=following');
     await expect(card(page, '見られる投稿').getByRole('group', { name: '操作' })).toContainText(

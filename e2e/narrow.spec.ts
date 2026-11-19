@@ -339,6 +339,33 @@ test.describe('640px 未満のアカウントの引き出し（#85）', () => {
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog', { name: 'アカウント' })).toHaveCount(0);
     await expect(open).toBeFocused();
+    // Outside the drawer closes it; inside, Tab stays inside (review 1).
+    await open.click();
+    await page.mouse.click(360, 400);
+    await expect(page.getByRole('dialog', { name: 'アカウント' })).toHaveCount(0);
+    await open.click();
+    const drawer = page.getByRole('dialog', { name: 'アカウント' });
+    for (let i = 0; i < 8; i += 1) {
+      await page.keyboard.press('Tab');
+      // At the end Base UI passes through a focus guard, which sends focus back to the start.
+      await expect
+        .poll(() => drawer.evaluate((element) => element.contains(document.activeElement)))
+        .toBe(true);
+    }
+    await page.keyboard.press('Escape');
+    // The search screens have no PageHeader: their box keeps clear of the avatar too.
+    const inter = (a: { x: number; y: number; width: number; height: number }, b: typeof a) =>
+      !(
+        a.x + a.width <= b.x ||
+        b.x + b.width <= a.x ||
+        a.y + a.height <= b.y ||
+        b.y + b.height <= a.y
+      );
+    for (const path of ['/explore', '/search?q=x']) {
+      await page.goto(path);
+      const box = await page.getByRole('search', { name: '話題を検索' }).boundingBox();
+      expect(inter((await open.boundingBox())!, box!), path).toBe(false);
+    }
     await open.click();
     await page
       .getByRole('dialog', { name: 'アカウント' })
@@ -365,5 +392,53 @@ test.describe('狭く低い画面のフォーカス（#86）', () => {
     const bar = await page.getByRole('navigation', { name: '下のタブ' }).boundingBox();
     const box = await edit.boundingBox();
     expect(box!.y + box!.height, 'above the tab bar').toBeLessThanOrEqual(bar!.y);
+  });
+
+  test('Shift+Tab で戻っても、上の見出しとタブの下に隠れない。360×300 の「いいね」も丸いボタンの下に隠れない（#86 のレビュー）', async ({
+    page,
+  }) => {
+    const me = await signUp(page);
+    await insertPosts(me.username, 12, 'フォーカスの確かめ');
+    for (const { width, height, path, stuck } of [
+      { width: 375, height: 400, path: '/home?tab=following', stuck: 107 },
+      { width: 1280, height: 500, path: '/home?tab=following', stuck: 107 },
+      { width: 375, height: 400, path: `/${me.username}`, stuck: 53 },
+    ]) {
+      await page.setViewportSize({ width, height });
+      await page.goto(path);
+      await page.getByRole('article').nth(8).getByRole('button', { name: 'いいね' }).focus();
+      for (let i = 0; i < 20; i += 1) {
+        await page.keyboard.press('Shift+Tab');
+        // WCAG 2.4.11: the focused control is not entirely hidden under the sticky block.
+        const bottom = await page.evaluate(() =>
+          document.activeElement!.closest('main article')
+            ? document.activeElement!.getBoundingClientRect().bottom
+            : Infinity,
+        );
+        expect(bottom, `${path} at ${width}×${height}`).toBeGreaterThan(stuck);
+      }
+    }
+    await page.setViewportSize({ width: 360, height: 300 });
+    await page.goto('/home?tab=following');
+    const fab = await page.getByRole('link', { name: 'ポストする' }).last().boundingBox();
+    for (let i = 0; i < 25; i += 1) {
+      await page.keyboard.press('Tab');
+      const box = await page.evaluate(() => {
+        const element = document.activeElement!;
+        if (!element.closest('main article')) return null;
+        const { x, y, width, height } = element.getBoundingClientRect();
+        return { x, y, width, height };
+      });
+      // Not entirely under the floating button, nor below the tab bar's top (WCAG 2.4.11).
+      if (box) {
+        const under =
+          box.x >= fab!.x &&
+          box.x + box.width <= fab!.x + fab!.width &&
+          box.y >= fab!.y &&
+          box.y + box.height <= fab!.y + fab!.height;
+        expect(under, 'entirely under the floating button').toBe(false);
+        expect(box.y, 'above the tab bar').toBeLessThan(300 - 53);
+      }
+    }
   });
 });

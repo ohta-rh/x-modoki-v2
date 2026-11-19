@@ -22,6 +22,11 @@ describe('ExplorePage（#27）', () => {
     render(<ExplorePage trends={[]} />);
     expect(screen.getByRole('heading', { level: 1, name: '話題を検索' })).toBeInTheDocument();
     expect(screen.getByRole('search', { name: '話題を検索' })).toBeInTheDocument();
+    // Below 640px the box keeps clear of the account avatar (#85 review).
+    expect(screen.getByRole('search', { name: '話題を検索' }).parentElement).toHaveClass(
+      'pl-10',
+      'sm:pl-0',
+    );
     // The right sidebar has its own いまどうしてる？: this one is named apart from it.
     expect(screen.getByRole('region', { name: 'トレンド' })).toBeInTheDocument();
   });

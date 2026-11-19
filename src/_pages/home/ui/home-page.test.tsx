@@ -34,6 +34,8 @@ describe('HomePage（ui-ux.md の 6 節）', () => {
   it('ヘッダーに「ホーム」、タブは「おすすめ」と「フォロー中」で、選んだタブに 4px の下線', () => {
     renderHome('following');
     expect(screen.getByRole('heading', { level: 1, name: 'ホーム' })).toBeInTheDocument();
+    // The header and the tabs stick together: a tall block for the scroll padding (#86 review).
+    expect(screen.getByRole('tablist').closest('[data-tall-sticky]')).not.toBeNull();
     const tabs = screen.getByRole('tablist');
     expect(within(tabs).getByRole('tab', { name: 'おすすめ' })).toHaveAttribute('href', '/home');
     const following = within(tabs).getByRole('tab', { name: 'フォロー中' });

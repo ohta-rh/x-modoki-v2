@@ -14,7 +14,8 @@ type Props = { kind: TimelineKind; firstPage: PostPage; now: string };
 export function HomePage({ kind, firstPage, now }: Props) {
   return (
     <>
-      <div className="sticky top-0 z-10">
+      {/* The header and the tabs stick together, taller than 53px (#86). */}
+      <div data-tall-sticky className="sticky top-0 z-10">
         <PageHeader title="ホーム" />
         <div className="bg-[var(--header-bg)] backdrop-blur-[12px]">
           <HomeTabs kind={kind} />

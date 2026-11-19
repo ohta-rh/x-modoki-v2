@@ -26,10 +26,17 @@ const href = (q: string, filter: SearchFilter) =>
 export function SearchPage({ q, filter, now, signedIn, results }: SearchPageData) {
   return (
     <>
-      <div className="sticky top-0 z-10 bg-[var(--header-bg)] px-4 pt-2 backdrop-blur-[12px]">
+      {/* Taller than the 53px header: the scroll padding makes room for it (#86). */}
+      <div
+        data-tall-sticky
+        className="sticky top-0 z-10 bg-[var(--header-bg)] px-4 pt-2 backdrop-blur-[12px]"
+      >
         {/* The screen's name for assistive technology; the box says it to the eye (#31). */}
         <h1 className="sr-only">{`「${q}」の検索結果`}</h1>
-        <SearchBox key={q} defaultValue={q} label="話題を検索" />
+        {/* Below 640px the account avatar sits at the top left (#85). */}
+        <div className="pl-10 sm:pl-0">
+          <SearchBox key={q} defaultValue={q} label="話題を検索" />
+        </div>
         <div role="tablist" className="mt-2 flex border-b border-line">
           {TABS.map((tab) => {
             const selected = tab.filter === filter;

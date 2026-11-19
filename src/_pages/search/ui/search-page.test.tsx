@@ -84,6 +84,13 @@ describe('SearchPage（#27）', () => {
     });
     expect(screen.getByRole('heading', { level: 1, name: '「猫」の検索結果' })).toBeInTheDocument();
     expect(screen.getByRole('search', { name: '話題を検索' })).toBeInTheDocument();
+    // Below 640px the box keeps clear of the account avatar (#85 review), and the tall sticky
+    // block marks itself for the scroll padding (#86 review).
+    expect(screen.getByRole('search', { name: '話題を検索' }).parentElement).toHaveClass(
+      'pl-10',
+      'sm:pl-0',
+    );
+    expect(screen.getByRole('heading', { level: 1 }).closest('[data-tall-sticky]')).not.toBeNull();
   });
 
   it('結果が無ければ案内。ユーザーのタブは人の一覧（ログインしていなければフォローはログインへ）', () => {

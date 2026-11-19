@@ -8,7 +8,10 @@ export function ExplorePage({ trends }: { trends: Trend[] }) {
     <div className="flex flex-col gap-4 px-4 py-2">
       {/* The screen's name for assistive technology; the box says it to the eye (#31). */}
       <h1 className="sr-only">話題を検索</h1>
-      <SearchBox label="話題を検索" />
+      {/* Below 640px the account avatar sits at the top left (#85). */}
+      <div className="pl-10 sm:pl-0">
+        <SearchBox label="話題を検索" />
+      </div>
       <Trends trends={trends} title="トレンド" />
     </div>
   );
