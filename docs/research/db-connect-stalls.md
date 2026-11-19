@@ -1,7 +1,7 @@
 ---
 type: Research
 title: "負荷の下で要求が返らない原因（#55）"
-description: "全部の画面のテストを並べたときにまれに要求が返らない原因を、中継とアプリの中の見張りで追い、PostgreSQL への新しい接続が OrbStack の公開の口の手前で秒の単位で遅れ、上限の無い接続の待ちがそのまま要求を止めていたことを突き止めた記録。"
+description: "全部の画面のテストを並べたときにまれに要求が返らない原因を、中継とアプリの中の見張りで追い、PostgreSQL への新しい接続が OrbStack の公開の口の奥で秒の単位で遅れ、上限の無い接続の待ちがそのまま要求を止めていたことを突き止めた記録。"
 tags: [database, postgres, connections, testing, investigation]
 status: stable
 ---

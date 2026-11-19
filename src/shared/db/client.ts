@@ -19,6 +19,8 @@ const timedOut = (error: unknown) => error instanceof Error && /timeout/i.test(e
  * burst of new connections a connect can stall for seconds (a dropped SYN, sent again after 1, 2,
  * 4… seconds); with no limit the request waited with it, once for 77s. Most stalls are the first
  * 1s resend, so the second try nearly always gets through; if not, the query fails instead of hanging.
+ * The limit also bounds the wait for a free client when both are busy: a third query fails after
+ * about 3s instead of waiting for one (review 1).
  */
 class StallSafePool extends Pool {
   connect(): Promise<PoolClient>;
