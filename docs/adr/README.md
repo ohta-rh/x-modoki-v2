@@ -39,7 +39,7 @@ status: stable
 | [0025](0025-test-report-with-evidence.md) | PBI を閉じるたびに、エビデンスつきの試験レポートを `docs/test-reports/` に残す | 採用 | ユーザー／エージェント |
 | [0026](0026-implementation-is-always-test-driven.md) | 実装は必ずテスト駆動（TDD）で行い、失敗したテストの記録を残す | 採用 | ユーザー／エージェント |
 | [0027](0027-independent-code-review-in-the-loop.md) | PBI ごとに、push の前に、独立した sub agent（opus）のコードレビューを受ける | 採用（3 回で `blocked` にする決まりを ADR-0028 で置き換え） | ユーザー／エージェント |
-| [0028](0028-bugs-are-fixed-to-completion-without-asking.md) | 見つけたバグは、ループを止めず、ユーザーに確認を求めずに、その場で最後まで直し切る | 採用 | ユーザー／エージェント |
+| [0028](0028-bugs-are-fixed-to-completion-without-asking.md) | 見つけたバグは、ループを止めず、ユーザーに確認を求めずに、その場で最後まで直し切る | 採用（範囲の外のバグをバグの PBI にする決まりを ADR-0056 で置き換え） | ユーザー／エージェント |
 | [0029](0029-milestone-on-a-branch-when-a-pr-is-requested.md) | ユーザーが PR を求めたマイルストーンは、1 本のブランチで進め、issue はマージで閉じる | 採用 | ユーザー／エージェント |
 | [0030](0030-fsd-lint-exceptions-and-own-layer-check.md) | Steiger の 2 つの決まりを範囲を絞って止め、`src/` の直下の層と、クライアントからのサーバーの読み込みは自前の確認で守る | 採用 | エージェント |
 | [0031](0031-database-tests-per-worker-database-and-truncate.md) | データベースのテストは、ワーカーごとのデータベースを使い、テストごとに表を空にし、補助はリポジトリのルートの `test/` に置く | 採用 | エージェント |
@@ -67,3 +67,4 @@ status: stable
 | [0053](0053-requirements-trace-to-tests.md) | 全部の要件を、通っているテストに結びつけ、CI の最初の確認で確かめる | 採用 | エージェント |
 | [0054](0054-text-and-fill-colours-meet-wcag-contrast.md) | 文字と塗りに使う色は、X の色を背景と 4.5:1 以上の差がある最も近い濃さに変える | 採用 | エージェント |
 | [0055](0055-axe-runs-on-chromium-and-webkit.md) | 画面のアクセシビリティの検査（axe）は、Chromium と WebKit で流し、Firefox では流さない | 採用 | ユーザー |
+| [0056](0056-bugs-fixed-inside-the-pbi-and-lighter-local-checks.md) | PBI の中で見つけたバグはその PBI の中で直し、バグの issue は探索的テストの分だけにし、手元の全部の確認は push の前に 1 回にする | 採用 | ユーザー |

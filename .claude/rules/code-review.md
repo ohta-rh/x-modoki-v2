@@ -37,8 +37,8 @@ report says `コードの変更なし` under `## コードレビュー`.
    `minor` alike. None is deferred (`.claude/rules/bug-handling.md`).
 3. **A wrong finding:** reject it with the evidence (the line, the test, the command output).
    Do not "fix" something that is not broken to make the reviewer happy.
-4. **A real finding outside the PBI's scope:** file a bug PBI and fix it immediately, in its
-   own commit with its own review, before resuming.
+4. **A real finding outside the PBI's scope:** fix it inside this PBI, test-first, and record it
+   under 見つけた問題 (ADR-0056). It needs no issue of its own.
 5. After any change, re-run `pnpm verify`, then spawn a **new** reviewer on the new range —
    never continue the previous one, which is now anchored on its earlier reading.
 6. **`APPROVE` with `minor` findings:** fix each real one test-first, applying the fix the

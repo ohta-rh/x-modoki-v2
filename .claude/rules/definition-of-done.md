@@ -149,10 +149,9 @@ with `--window-size=375,…` lays the page out at ~500px and crops it. So:
 - **Inside the PBI's scope:** fix it now, and add a check that reproduces it before the fix
   (a Playwright test for app behavior; a rule or script check for a document or issue defect).
   Then redo items 2–7. Record it under 見つけた問題.
-- **Outside the scope:** reproduce it, state its root cause, file a bug PBI
-  (`.claude/rules/issue-authoring.md`), and **fix it now, to completion, before resuming**
-  (`.claude/rules/bug-handling.md`). It gets its own commit and its own test report; reference
-  it in this one.
+- **Outside the scope:** reproduce it, state its root cause, and **fix it now, to completion,
+  inside this PBI** (`.claude/rules/bug-handling.md`, ADR-0056). Record it under 見つけた問題 in
+  this PBI's test report; it gets no issue or test report of its own.
 - Do not stop, do not defer by severity, do not ask the user.
 - **Never dismiss a symptom as "only at automation speed".** What is on screen differing from what the app
   acts on (text shown but not posted, a count that does not move) is a bug at any speed: a slow

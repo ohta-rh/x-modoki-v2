@@ -21,12 +21,12 @@ closed (ADR-0028). This rule overrides any wording elsewhere that says to defer,
 
 - **No deferral by severity.** Critical, high, medium, low — all fixed. There is no
   "known issue" list.
-- **No deferral by scope.**
-  - Inside the current PBI's scope: fix it inside that PBI.
-  - Outside it (code from a closed PBI, an unrelated area, a tool, a document): file a bug PBI
-    with its root cause (labels `bug`, `pbi`; `.claude/rules/issue-authoring.md`), then
-    **fix it immediately and close it — before resuming the current PBI.** The issue is the
-    record, not a queue.
+- **No deferral by scope — and no separate PBI (ADR-0056).** A bug found while working on a PBI,
+  inside its scope or outside it (code from a closed PBI, an unrelated area, a tool, a document),
+  is fixed inside the current PBI: failing test first, the same review, `pnpm verify`, CI. It is
+  recorded under 見つけた問題 in that PBI's test report. No issue, no separate test report.
+- **A bug issue is filed only for a bug found by exploratory testing** (#34 and the like), with
+  its root cause (labels `bug`, `pbi`; `.claude/rules/issue-authoring.md`).
 - **Red `main` comes first.** Fix forward at once; if that takes more than one attempt, revert
   the offending commit, then fix.
 

@@ -100,8 +100,9 @@ Full rules: @.claude/rules/delivery-loop.md
 ## Bugs — fix to completion, never stop, never ask
 
 - **Every bug is fixed now, all the way** — reproduce, root cause, failing test, fix, gates,
-  Chrome, review, push, CI, record — whatever its severity and wherever it was found. A bug
-  outside the current PBI gets a bug PBI and is fixed immediately, before resuming.
+  Chrome, review, push, CI, record — whatever its severity and wherever it was found. A bug found
+  during a PBI is fixed inside that PBI and recorded in its test report; only exploratory testing
+  files bug issues (ADR-0056).
 - **The loop does not stop.** No `blocked` for bugs. After three failed attempts, change the
   approach (last green state, question the design, split smaller) and keep going.
 - **Do not ask the user.** Decide from the ADRs and rules, or decide yourself and write the ADR

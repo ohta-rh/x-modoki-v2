@@ -14,7 +14,8 @@ Decided in ADR-0017, ADR-0019, ADR-0020, ADR-0021; this file is the operating ru
   workflow runs the documentation gate only (`node scripts/check-docs.mjs`).
 - **A change is not done until CI is green on the commit that contains it.** "Passes locally"
   is not a substitute, and a gate that did not run is not a gate that passed.
-- **Before pushing:** run `pnpm verify` (the same seven gates) and see it exit 0.
+- **Before pushing:** run `pnpm verify` (the same seven gates) and see it exit 0. While working,
+  run only the tests the change touches; the full run is once, right before the push (ADR-0056).
 - **Join a check and the commit after it with `&&`, never `;`.** A `;` lets the commit run
   after a failed check (it happened twice on 2026-11-18: a red `pnpm verify` before #48's commit,
   a red `check-docs` before #52's). If the check failed, there is no commit to undo.

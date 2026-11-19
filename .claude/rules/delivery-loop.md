@@ -19,7 +19,8 @@ its last without a human in between.
    acceptance criterion; then one behavior at a time: write the test, watch it fail for the
    expected reason, write the least code to pass, refactor. Note each red in the TDD record as
    it happens. Tests land in the same commit as the code.
-6. **Verify.** `pnpm verify` exits 0 — all seven gates, coverage 100%. Then check every
+6. **Verify.** While working, run only the unit tests and e2e specs the change touches; then,
+   right before pushing, `pnpm verify` exits 0 — all seven gates, coverage 100% (ADR-0056). Then check every
    acceptance criterion in the issue by the method the issue states, one by one.
    **Then look at it in real Chrome** against `pnpm build && pnpm start`: the change itself, a
    failure path, three widths, the themes it touches, a clean console — saving screenshots
@@ -52,8 +53,8 @@ its last without a human in between.
   the `code-reviewer` subagent, or hand the reviewer its own summary or reasoning.
 - Weaken a gate, exclude a file from coverage, or disable a lint rule to finish.
 - Fold unrelated *improvements* into the commit. An adjacent improvement → file a new PBI
-  under the right EPIC and move on. An adjacent **bug** is different: file a bug PBI and fix it
-  now (`.claude/rules/bug-handling.md`).
+  under the right EPIC and move on. An adjacent **bug** is different: fix it now, inside this PBI
+  (`.claude/rules/bug-handling.md`, ADR-0056).
 - Leave a known bug open, defer one by severity, or label one `blocked`.
 - Start Milestone 2 work, or add Cloudflare-specific packages, during Milestone 1.
 - Ask the user anything. Decide from the ADRs and rules, or decide yourself and write the ADR.
@@ -63,8 +64,8 @@ its last without a human in between.
 `.claude/rules/bug-handling.md` is the rule; this is how it meets the loop.
 
 - **A bug, wherever it was found:** reproduce → root cause → failing test → fix → gates →
-  Chrome → review → push → CI → record. Inside the current PBI's scope, do it inside that PBI.
-  Outside it, file a bug PBI and fix it **now**, before resuming.
+  Chrome → review → push → CI → record, inside the current PBI whatever its scope (ADR-0056).
+  Only a bug found by exploratory testing gets its own issue.
 - **An issue whose premise fails** (a library does not behave as assumed, a criterion
   contradicts an ADR, a dependency is missing): apply the fallback the ADR names
   (e.g. ADR-0008: Garage → SeaweedFS; ADR-0017: `proxy.ts` → layout redirect). If none is
@@ -89,7 +90,7 @@ The loop ends when every sub-issue of the EPIC is closed. A bug, a failed review
 run, or an unanswered design question is never a stopping point.
 
 The final report lists: issues closed (with SHAs), test reports written, bugs found and fixed
-(with their bug PBIs), ADRs added or superseded — marking each decision the loop made itself —
+(and the PBI each was fixed in), ADRs added or superseded — marking each decision the loop made itself —
 and anything labelled `blocked` with why it could not proceed.
 
 Context limits are not a reason to stop: commit work in progress on a passing state, and the

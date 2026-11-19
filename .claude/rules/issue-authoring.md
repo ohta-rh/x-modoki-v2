@@ -29,8 +29,9 @@ Applies whenever work is planned or filed as GitHub issues in this repository.
   `#12` plus the title.
 - `blocked` is never applied to a bug or to a decision (ADR-0028). It is only for work that
   needs something the user alone holds; see `.claude/rules/delivery-loop.md` §3.
-- **A bug PBI** carries the labels `bug` and `pbi`, states the reproduction and the root cause,
-  and is fixed and closed in the same loop that filed it — it is a record, not a backlog item.
+- **A bug PBI** is filed only for a bug found by exploratory testing (ADR-0056); a bug found
+  while working on a PBI is fixed inside that PBI. It carries the labels `bug` and `pbi`, states
+  the reproduction and the root cause, and is fixed and closed in the same loop that filed it.
 - Labels: `epic` on the EPIC, `pbi` on each child. Titles: `[EPIC] <outcome>` /
   `<what the user can do or what stops happening>`.
 - A PBI that depends on another PBI names it under 依存関係 (`blocked by #N`). Order the

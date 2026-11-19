@@ -2,6 +2,7 @@
 
 ## 2026-11-19
 * **New**: [#31 の試験レポート](test-reports/issue-0031-wcag-aa.md)（WCAG 2.2 AA とキーボード）。
+* **New**: [ADR-0056](adr/0056-bugs-fixed-inside-the-pbi-and-lighter-local-checks.md)（中で見つけたバグは中で直す、バグの issue は探索的テストの分だけ、手元の全部の確認は push の前に 1 回）。ADR-0028 の一部を置き換えた。
 * **New**: [ADR-0054](adr/0054-text-and-fill-colours-meet-wcag-contrast.md)（文字と塗りの色は、4.5:1 以上の最も近い濃さ）、[ADR-0055](adr/0055-axe-runs-on-chromium-and-webkit.md)（axe は Chromium と WebKit で）。[UI/UX 仕様](architecture/ui-ux.md)の 4 節と 10 節を直した（#31）。
 * **New**: [#30 の試験レポート](test-reports/issue-0030-requirements-traceability.md)（全部の要件をテストに結びつける）。
 * **New**: [#62 の試験レポート](test-reports/issue-0062-unknown-filter-400.md)（知らない f と tab は 400）。
