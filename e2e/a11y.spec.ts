@@ -112,6 +112,17 @@ for (const theme of ['light', 'dim', 'dark'] as const) {
       await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
       // The photo viewer is a modal over the post: only the dialog is in the accessibility tree.
       await expect(page.getByRole('main').or(page.getByRole('dialog')).first(), path).toBeVisible();
+      // The page's own content streams in after the shell (Suspense): its h1 is there once it is
+      // revealed, not while it still waits in a hidden boundary (seen on CI's slower machine).
+      await expect
+        .poll(
+          () =>
+            page.evaluate(() =>
+              [...document.querySelectorAll('h1')].some((h1) => !h1.closest('[hidden]')),
+            ),
+          path,
+        )
+        .toBe(true);
       found[path] = await test.step(path, () => violations(page));
     }
     expect(

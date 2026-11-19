@@ -11,6 +11,8 @@ import vitestConfig from '../vitest.config';
  * The rule ids ESLint reports for `code` at `filePath`, with the project's own config. In a child
  * process: loaded here, the config and its local rules would be counted twice by coverage.
  */
+// Each call starts ESLint in its own process: 3-4 seconds on a busy machine, so the tests that use
+// it get 30 seconds.
 const lintAs = async (filePath: string, code: string) => {
   const run = spawnSync(
     'node_modules/.bin/eslint',
@@ -70,7 +72,7 @@ describe('品質の確認の設定（#30）', () => {
     expect(
       await lintAs('app/x/page.tsx', "import { getDb } from '@/shared/db';\nvoid getDb;\n"),
     ).toContain('no-restricted-imports');
-  });
+  }, 30_000);
 
   // NFR-MAINT-06: Workers で動かないもの
   it('サーバーのコードで、ネイティブのモジュール（sharp）とファイルシステムを読むと止まる', async () => {
@@ -80,7 +82,7 @@ describe('品質の確認の設定（#30）', () => {
     ]) {
       expect(await lintAs('src/features/x/api/x.ts', code)).toContain('no-restricted-imports');
     }
-  });
+  }, 30_000);
 
   it('macOS では、WebKit を CI と同じ Playwright のイメージで動かす（#61）', () => {
     const { devDependencies } = JSON.parse(readFileSync('package.json', 'utf8')) as {
