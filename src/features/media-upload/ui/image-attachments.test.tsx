@@ -115,6 +115,15 @@ describe('ImageAttachments（#25）', () => {
     expect(screen.queryByRole('alert')).toBeNull();
   });
 
+  it('5 枚選んで「4 枚まで」と出たあとでも、送れなかったら「画像を送れませんでした」を出す（#90 のレビュー）', async () => {
+    uploadImage.mockRejectedValue(new Error('upload 403'));
+    render(<Harness />);
+    await userEvent.upload(screen.getByLabelText('画像を追加'), [1, 2, 3, 4, 5].map(png));
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent('画像を送れませんでした'),
+    );
+  });
+
   it('ハイドレーションの前に選んだ画像も、受け取る（#47 と同じ）', async () => {
     const { renderToString } = await import('react-dom/server');
     const { hydrateRoot } = await import('react-dom/client');

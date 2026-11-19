@@ -33,6 +33,14 @@ describe('updateProfileAction（#23）', () => {
     expect(untouched.bio).toBe('');
   });
 
+  it('U+0000 を含む自己紹介は、U+0000 を除いて保存する（PostgreSQL が受け付けない、#89）', async () => {
+    const me = await makeUser();
+    signInAs(me);
+    expect(await updateProfileAction({ ...input, bio: '猫\u0000が好き' })).toEqual({ ok: true });
+    const [row] = await testDb().select().from(user).where(eq(user.id, me.id));
+    expect(row.bio).toBe('猫が好き');
+  });
+
   // AUTHZ: updateProfileAction UNAUTHORIZED
   // AUTHZ: updateProfile UNAUTHORIZED
   it('形の違う入力は項目ごとの文言、ログイン無しはログインするよう言う', async () => {

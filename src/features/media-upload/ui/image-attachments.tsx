@@ -50,8 +50,8 @@ export function useImageAttachments() {
   return {
     items,
     // The upload failure's message stays exactly while a failed image is shown, whatever the order
-    // of removal and failure (#90); the limit message comes from the last choice.
-    error: error ?? (items.some((item) => item.failed) ? UPLOAD_FAILED : null),
+    // of removal and failure (#90), and wins over the limit message: it is why posting is blocked.
+    error: items.some((item) => item.failed) ? UPLOAD_FAILED : error,
     add,
     remove,
     setAlt: (key: string, alt: string) => update(key, { alt }),
