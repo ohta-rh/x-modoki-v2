@@ -118,4 +118,36 @@ describe('DropdownMenu（#32）', () => {
     await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
     await waitFor(() => expect(screen.getByRole('button', { name: 'もっと見る' })).toHaveFocus());
   });
+
+  it('部品が来る前のボタンも、呼び出し側のイベント（押す・キー・フォーカス・かざす）を呼ぶ（4 回目のレビュー）', async () => {
+    const { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } =
+      await import('./index');
+    const handlers = {
+      onClick: vi.fn(),
+      onKeyDown: vi.fn(),
+      onFocus: vi.fn(),
+      onPointerEnter: vi.fn(),
+    };
+    render(
+      <DropdownMenu>
+        <DropdownMenuTrigger aria-label="もっと見る" {...handlers}>
+          ⋯
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem>項目</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+    const trigger = screen.getByRole('button', { name: 'もっと見る' });
+    fireEvent.pointerEnter(trigger);
+    fireEvent.focus(trigger);
+    fireEvent.keyDown(trigger, { key: 'a' });
+    fireEvent.click(trigger);
+    expect(handlers.onPointerEnter).toHaveBeenCalledTimes(1);
+    expect(handlers.onFocus).toHaveBeenCalledTimes(1);
+    expect(handlers.onKeyDown).toHaveBeenCalledTimes(1);
+    // Once, by the real button the press swapped in: not by the stand-in as well.
+    await screen.findByRole('menu');
+    expect(handlers.onClick).toHaveBeenCalledTimes(1);
+  });
 });

@@ -79,7 +79,11 @@ export function DropdownMenuTrigger({ children, className, ...props }: TriggerPr
       </loaded.DropdownMenuTrigger>
     );
   }
-  const onKeyDown = (event: KeyboardEvent) => {
+  // The caller's own handlers run here too (#32 review 4). Its onClick runs once, on the real
+  // button's press after the swap, so the stand-in does not call it as well.
+  const own = props as ComponentProps<'button'>;
+  const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    own.onKeyDown?.(event);
     if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
     event.preventDefault();
     open();
@@ -90,9 +94,15 @@ export function DropdownMenuTrigger({ children, className, ...props }: TriggerPr
       aria-haspopup="menu"
       aria-expanded={false}
       className={className}
-      {...(props as ComponentProps<'button'>)}
-      onPointerEnter={preload}
-      onFocus={preload}
+      {...own}
+      onPointerEnter={(event) => {
+        own.onPointerEnter?.(event);
+        preload();
+      }}
+      onFocus={(event) => {
+        own.onFocus?.(event);
+        preload();
+      }}
       onClick={open}
       onKeyDown={onKeyDown}
     >
