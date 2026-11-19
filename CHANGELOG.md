@@ -28,7 +28,7 @@
 ### 分かっている制約
 
 - Cloudflare にはまだ置いていない（マイルストーン 2）。ローカルの Docker の PostgreSQL と Garage で動く
-- [機能の範囲](docs/architecture/scope.md) の 2 節の機能（ダイレクトメッセージ、メールの確認とパスワードの再設定、外のサービスでのログイン、投票・予約投稿・GIF・動画、ミュート・ブロック、リスト、点数での並べ替え、リンクのカード、英語の表示）は無い
+- [機能の範囲](docs/architecture/scope.md) の 2 節の機能（ダイレクトメッセージ、メールの確認とパスワードの再設定、外のサービスでのログインとパスキー、投票・予約投稿・GIF・動画、返信できる人の指定・ミュート・ブロック・非公開のアカウント、リスト、点数での並べ替え、リンクのカード、英語の表示）は無い
 
 [Unreleased]: https://github.com/ohta-rh/x-modoki-v2/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/ohta-rh/x-modoki-v2/releases/tag/v0.1.0
