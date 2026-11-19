@@ -2,6 +2,7 @@
 
 ## 2026-11-20
 
+* **New**: [ハーネスの全体像](architecture/harness.md)と、その図解 `architecture/harness.html`。README の「進め方」からリンクした。
 * **New**: [#39 の試験レポート](test-reports/issue-0039-retrospective-and-m2.md)。
 * **New**: [マイルストーン 1 の振り返り](research/retrospective-m1.md)と [ADR-0072](adr/0072-docs-checked-on-the-staged-tree-before-commit.md)（commit の前にステージした木でドキュメントを確かめる）。ルール（バグ・issue・品質・構造・完了の定義・ループ・文書）とレビュアーを振り返りに合わせて直した（#39）。
 * **New**: [#38 の試験レポート](test-reports/issue-0038-operations-guide.md)。

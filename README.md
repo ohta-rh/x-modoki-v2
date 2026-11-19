@@ -41,7 +41,7 @@ pnpm dev
 
 ## 進め方
 
-このリポジトリは、エージェント（Claude Code）が人の手を借りずに要件から運用まで進められるように、決まり（ハーネス）を持っています。
+このリポジトリは、エージェント（Claude Code）が人の手を借りずに要件から運用まで進められるように、決まり（ハーネス）を持っています。全体の図は [ハーネスの全体像](docs/architecture/harness.md)（ブラウザで開く図解: [docs/architecture/harness.html](docs/architecture/harness.html)）にあります。
 
 - [CLAUDE.md](CLAUDE.md) が入口で、詳しい決まりは [.claude/rules/](.claude/rules/) にある: issue の書き方、Feature-Sliced Design、品質の確認、TDD、独立したコードレビュー、完了の定義、1 件ずつ閉じるまでのループ、バグの扱い、文書と ADR
 - コードレビューは、差分の範囲だけを渡された別のエージェント（[.claude/agents/code-reviewer.md](.claude/agents/code-reviewer.md)）が行う
