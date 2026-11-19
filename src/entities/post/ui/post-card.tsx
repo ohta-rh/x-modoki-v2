@@ -41,7 +41,7 @@ type Props = {
 };
 
 /** True when the click started on something with its own action: a link or a button. */
-const ownAction = (event: MouseEvent) =>
+const isOwnControl = (event: MouseEvent) =>
   (event.target as HTMLElement).closest('a, button') !== null;
 
 /** A long body is cut to its first lines in a list, with 「さらに表示」 to the post (#28). */
@@ -86,7 +86,7 @@ export function PostCard({
         // React bubbles events from portals (a dialog's backdrop) through the card: only a click
         // on the card's own DOM opens the detail.
         if (!event.currentTarget.contains(event.target as Node)) return;
-        if (!ownAction(event)) router.push(detail);
+        if (!isOwnControl(event)) router.push(detail);
       }}
       className={`relative flex cursor-pointer gap-3 px-4 py-3 hover:bg-hover/50 ${post.repostedBy || post.pinned ? 'pt-7' : ''} ${connector ? '' : 'border-b border-line'}`}
     >

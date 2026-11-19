@@ -15,11 +15,12 @@ import type { MarkNotificationsReadResult } from '@/features/notifications-read'
 import { cn } from '@/shared/lib/cn';
 import { Avatar } from '@/shared/ui/avatar';
 import { Spinner } from '@/shared/ui/spinner';
+import { settle } from '@/shared/lib/settle';
 
 type Props = {
   tab: 'all' | 'mentions';
   firstPage: NotificationPage;
-  markRead: (upTo: string, tab: 'all' | 'mentions') => Promise<MarkNotificationsReadResult>;
+  markReadAction: (upTo: string, tab: 'all' | 'mentions') => Promise<MarkNotificationsReadResult>;
 };
 
 /** ui-ux.md 通知: a heart for likes, arrows for reposts, a person for follows. */
@@ -77,7 +78,7 @@ function Row({ group }: { group: NotificationGroup }) {
  * The viewer's notifications (#26): grouped rows, newest first; more load as the end is reached.
  * Opening it marks what it shows read and clears the badge.
  */
-export function NotificationList({ tab, firstPage, markRead }: Props) {
+export function NotificationList({ tab, firstPage, markReadAction }: Props) {
   const queryClient = useQueryClient();
   const query = useInfiniteQuery({
     queryKey: ['notifications', tab],
@@ -92,10 +93,14 @@ export function NotificationList({ tab, firstPage, markRead }: Props) {
   useEffect(() => {
     if (newest === undefined) return;
     // The badge becomes what is still unread: the other tab's, or what came in since (review 1).
-    void markRead(newest, tab).then((result) => {
+    // Offline, the badge stays as it is: the next visit marks them (#82 review 2).
+    void settle(markReadAction(newest, tab), {
+      ok: false,
+      error: 'OFFLINE',
+    }).then((result) => {
       if (result.ok) queryClient.setQueryData(['notifications', 'unread-count'], result.unread);
     });
-  }, [newest, tab, markRead, queryClient]);
+  }, [newest, tab, markReadAction, queryClient]);
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = query;
   const loaded = query.data.pages.length;
   useEffect(() => {

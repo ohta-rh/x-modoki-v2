@@ -10,7 +10,11 @@ import { ProfileNotFound } from './profile-not-found';
 import { ProfilePage } from './profile-page';
 
 const refresh = vi.fn();
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh }) }));
+// The real module under the router: settle uses its unstable_rethrow (#82).
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/navigation')>()),
+  useRouter: () => ({ push: vi.fn(), refresh }),
+}));
 vi.mock('@/features/post-like/index.server', () => ({
   setLikeAction: async () => ({ ok: true, count: 1 }),
 }));

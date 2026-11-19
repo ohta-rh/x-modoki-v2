@@ -6,11 +6,24 @@ import { LOGIN_PATH } from '@/shared/config';
 import { Button } from '@/shared/ui/button';
 import type { SignUpState } from '../api/actions';
 import { Field } from '@/shared/ui/field';
+import { OFFLINE_MESSAGE, settle } from '@/shared/lib/settle';
 
 type Props = { action: (state: SignUpState, data: FormData) => Promise<SignUpState> };
 
 export function SignUpForm({ action }: Props) {
-  const [state, formAction, pending] = useActionState(action, undefined);
+  // Offline, the request itself fails: say so and keep what was typed (#82).
+  const [state, formAction, pending] = useActionState(
+    (previous: SignUpState, data: FormData) =>
+      settle(action(previous, data), {
+        formError: OFFLINE_MESSAGE,
+        values: {
+          name: String(data.get('name')),
+          username: String(data.get('username')),
+          email: String(data.get('email')),
+        },
+      }),
+    undefined,
+  );
   const errors = state?.fieldErrors ?? {};
   return (
     <form action={formAction} className="flex flex-col gap-5" noValidate>

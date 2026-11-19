@@ -19,17 +19,17 @@ const mine = { id: '100', text: '私の投稿', authorUsername: 'me' };
 
 const show = (
   firstPage: NotificationPage,
-  markRead = vi.fn(async () => ({ ok: true as const, unread: 2 })),
+  markReadAction = vi.fn(async () => ({ ok: true as const, unread: 2 })),
 ) => {
   // No retries: a failed page shows its alert at once.
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   client.setQueryData(['notifications', 'unread-count'], 5);
   render(
     <QueryClientProvider client={client}>
-      <NotificationList tab="all" firstPage={firstPage} markRead={markRead} />
+      <NotificationList tab="all" firstPage={firstPage} markReadAction={markReadAction} />
     </QueryClientProvider>,
   );
-  return { client, markRead };
+  return { client, markReadAction };
 };
 
 describe('NotificationList（#26）', () => {
@@ -93,33 +93,49 @@ describe('NotificationList（#26）', () => {
   });
 
   it('開くと出ている通知を、そのタブの分だけ既読にし、バッジを残りの未読の数にする', async () => {
-    const { client, markRead } = show({
+    const { client, markReadAction } = show({
       items: [
         item('9', 'like', person(1, '花子'), mine),
         item('7', 'like', person(2, '次郎'), mine),
       ],
       nextCursor: null,
     });
-    await waitFor(() => expect(markRead).toHaveBeenCalledWith('9', 'all'));
+    await waitFor(() => expect(markReadAction).toHaveBeenCalledWith('9', 'all'));
     // The badge shows what is still unread (another tab's, or newer), not a blind 0 (review 1).
     await waitFor(() => expect(client.getQueryData(['notifications', 'unread-count'])).toBe(2));
   });
 
-  it('既読にできなければ（ログインが切れたなど）、バッジは変えない', async () => {
-    const markRead = vi.fn(async () => ({ ok: false as const, error: 'UNAUTHORIZED' as const }));
+  it('通信が切れて既読の要求が失敗しても、投げずにバッジを変えない（#82 のレビュー 2）', async () => {
+    const markReadAction = vi.fn(async () => {
+      throw new TypeError('Failed to fetch');
+    });
     const { client } = show(
       { items: [item('9', 'like', person(1, '花子'), mine)], nextCursor: null },
-      markRead as never,
+      markReadAction as never,
     );
-    await waitFor(() => expect(markRead).toHaveBeenCalled());
+    await waitFor(() => expect(markReadAction).toHaveBeenCalled());
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(client.getQueryData(['notifications', 'unread-count'])).toBe(5);
+  });
+
+  it('既読にできなければ（ログインが切れたなど）、バッジは変えない', async () => {
+    const markReadAction = vi.fn(async () => ({
+      ok: false as const,
+      error: 'UNAUTHORIZED' as const,
+    }));
+    const { client } = show(
+      { items: [item('9', 'like', person(1, '花子'), mine)], nextCursor: null },
+      markReadAction as never,
+    );
+    await waitFor(() => expect(markReadAction).toHaveBeenCalled());
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(client.getQueryData(['notifications', 'unread-count'])).toBe(5);
   });
 
   it('通知が無ければ文言を出し、既読にはしない', () => {
-    const { markRead } = show({ items: [], nextCursor: null });
+    const { markReadAction } = show({ items: [], nextCursor: null });
     expect(screen.getByText('まだ通知はありません')).toBeInTheDocument();
-    expect(markRead).not.toHaveBeenCalled();
+    expect(markReadAction).not.toHaveBeenCalled();
   });
 
   it('続きはタブとカーソルを付けて、3 ページ目以降も読む。読めなければ知らせる', async () => {

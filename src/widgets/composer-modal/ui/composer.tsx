@@ -134,7 +134,8 @@ export function ComposerDialog({ username, action, onClose }: DialogProps) {
   const dirty = content.text !== '' || content.images > 0;
   // A post on its way: closing now would leave twice, once now and once when it is sent (review 1).
   const sending = useRef(false);
-  const send: Action = async (text, media) => {
+  // An action by name: ComposeBox, which calls it, settles it (ADR-0065).
+  const sendAction: Action = async (text, media) => {
     sending.current = true;
     try {
       return await action(text, media);
@@ -168,7 +169,7 @@ export function ComposerDialog({ username, action, onClose }: DialogProps) {
           <DialogTitle className="sr-only">ポストする</DialogTitle>
           <Composer
             username={username}
-            action={send}
+            action={sendAction}
             onTextChange={(text, images) =>
               setContent((was) =>
                 was.text === text && was.images === images ? was : { text, images },

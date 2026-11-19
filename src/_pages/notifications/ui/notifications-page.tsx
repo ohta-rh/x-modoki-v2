@@ -43,7 +43,7 @@ export function NotificationsPage({ tab, firstPage }: Props) {
         key={tab}
         tab={tab}
         firstPage={firstPage}
-        markRead={markNotificationsReadAction}
+        markReadAction={markNotificationsReadAction}
       />
     </>
   );

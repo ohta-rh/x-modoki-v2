@@ -54,6 +54,13 @@ src/
   segments, `src/shared/db`, and `src/shared/auth`. Queries are not written in `shared`.
 - Server Actions: `features/*/api/actions.ts` (`'use server'`) — Zod-validate, call the
   mutation, return `{ ok, … }`. No business logic in the action file itself.
+- **A Server Action called from the browser takes its failure (ADR-0065):** offline, its promise
+  rejects. Wrap it in `settle(…)` from `@/shared/lib/settle` with `OFFLINE_MESSAGE`, or use
+  `.catch`, `.then(ok, failed)` or a TanStack Query `mutationFn`; never hand it to `useActionState`
+  as is. Returning the call is allowed only from a function itself named as an action
+  (`action={…}`, `sendAction`), whose own call is then checked. A redirect rejects the promise too and is not a failure: a hand-written `.catch` calls
+  `unstable_rethrow(error)` first (`settle` does). Name Server Action props `action`, `…Action` or `signOut`, and nothing else so —
+  `local/settle-server-actions` finds them by name (found twice: #70, #82).
 - **Text a person typed wraps or truncates (#74, #80):** names, bios, places, URLs, hashtags and
   any line that quotes them get `break-words` / `break-all` or `truncate` (with `min-w-0` inside a
   flex row). A new place that shows such text is added to the 320px sweep in `e2e/narrow.spec.ts`
@@ -103,6 +110,8 @@ src/
   `_pages` / `_app` from root `app/`; `sharp` and `fs` in server code (ADR-0017).
 - ESLint `local/no-server-import-in-client` blocks `index.server`, `server-only`, and
   `@/shared/db` in `'use client'` files.
+- ESLint `local/settle-server-actions` blocks a Server Action call in a `'use client'` file that
+  does not take its failure (ADR-0065).
 - `scripts/check-src-layers.mjs` fails if `src/` holds anything but the six layers.
 - `scripts/check-authz.mjs` (in `pnpm lint`) fails on an entry without its tagged tests, and on a
   threat-model row whose 確かめるテスト does not name an existing test.

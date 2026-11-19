@@ -94,3 +94,34 @@ describe('文の中のリンク（#31）', () => {
     expect(screen.getByRole('link', { name: 'アカウントを作成' })).toHaveClass('underline');
   });
 });
+
+describe('通信が切れて送れなかったとき（#82）', () => {
+  const offline = async () => {
+    throw new TypeError('Failed to fetch');
+  };
+
+  it('登録: 通信の文言を出し、入れた値（パスワード以外）を残す', async () => {
+    render(<SignUpForm action={vi.fn<UpAction>(offline)} />);
+    await userEvent.type(screen.getByLabelText('名前'), 'サンプル');
+    await userEvent.type(screen.getByLabelText('ユーザー名'), 'sample_01');
+    await userEvent.type(screen.getByLabelText('メールアドレス'), 'a@example.test');
+    await userEvent.type(screen.getByLabelText('パスワード'), 'correct-horse');
+    await userEvent.click(screen.getByRole('button', { name: '登録する' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      '通信できませんでした。もう一度お試しください',
+    );
+    expect(screen.getByLabelText('ユーザー名')).toHaveValue('sample_01');
+    expect(screen.getByLabelText('メールアドレス')).toHaveValue('a@example.test');
+  });
+
+  it('ログイン: 通信の文言を出し、ユーザー名を残す', async () => {
+    render(<SignInForm action={vi.fn<InAction>(offline)} />);
+    await userEvent.type(screen.getByLabelText('ユーザー名またはメールアドレス'), 'sample_01');
+    await userEvent.type(screen.getByLabelText('パスワード'), 'correct-horse');
+    await userEvent.click(screen.getByRole('button', { name: 'ログイン' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      '通信できませんでした。もう一度お試しください',
+    );
+    expect(screen.getByLabelText('ユーザー名またはメールアドレス')).toHaveValue('sample_01');
+  });
+});

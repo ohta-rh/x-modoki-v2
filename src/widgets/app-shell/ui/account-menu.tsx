@@ -8,6 +8,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
+import { toast } from '@/shared/ui/toast';
+import { OFFLINE_MESSAGE } from '@/shared/lib/settle';
+import { unstable_rethrow } from 'next/navigation';
 
 export type Account = { name: string; username: string; image: string | null };
 
@@ -33,7 +36,16 @@ export function AccountMenu({
         <Ellipsis aria-hidden="true" className="hidden size-5 xl:block" />
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={() => void signOut()}>
+        <DropdownMenuItem
+          // Offline the sign-out never reaches the server: say so (#82).
+          onClick={() =>
+            void signOut().catch((error: unknown) => {
+              // Signed out: Next.js rejects with the redirect to move the page. Not a failure.
+              unstable_rethrow(error);
+              toast.add({ title: OFFLINE_MESSAGE });
+            })
+          }
+        >
           @{account.username}からログアウト
         </DropdownMenuItem>
       </DropdownMenuContent>

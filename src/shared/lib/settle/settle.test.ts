@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation';
 import { describe, expect, it } from 'vitest';
 import { OFFLINE_MESSAGE, settle } from './settle';
 
@@ -18,5 +19,15 @@ describe('settle（#70）', () => {
         message: OFFLINE_MESSAGE,
       }),
     ).toEqual({ ok: false, message: '通信できませんでした。もう一度お試しください' });
+  });
+
+  it('移動（redirect）で拒まれたときは、失敗にせず投げ直す（Next.js が移動に使う、#82 のレビュー 1）', async () => {
+    let moved: unknown;
+    try {
+      redirect('/home');
+    } catch (error) {
+      moved = error;
+    }
+    await expect(settle(Promise.reject(moved), { ok: false })).rejects.toBe(moved);
   });
 });

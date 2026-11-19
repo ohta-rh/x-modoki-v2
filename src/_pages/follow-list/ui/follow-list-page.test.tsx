@@ -7,7 +7,11 @@ import type { FollowUser, Profile } from '@/entities/user';
 import { toast } from '@/shared/ui/toast';
 import { FollowListPage } from './follow-list-page';
 
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
+// The real module under the router: settle uses its unstable_rethrow (#82).
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/navigation')>()),
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+}));
 const setFollowAction = vi.fn();
 vi.mock('@/features/user-follow/index.server', () => ({
   setFollowAction: (...args: unknown[]) => setFollowAction(...args),

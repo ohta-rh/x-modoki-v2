@@ -83,3 +83,56 @@ test('投稿の応答が届かずにやり直しても、投稿は 1 つだけ�
   await expect(page.getByRole('article').first()).toContainText('応答が届かない投稿');
   await expect(page.getByRole('article')).toHaveCount(1);
 });
+
+test('オフラインのログイン・登録・ログアウトは知らせて、入れた値を残す（#82）', async ({
+  page,
+  context,
+}) => {
+  const offline = '通信できませんでした。もう一度お試しください';
+  await page.goto('/i/flow/login');
+  await page.getByLabel('ユーザー名またはメールアドレス').fill('someone_offline');
+  await page.getByLabel('パスワード').fill('correct-horse-battery');
+  await context.setOffline(true);
+  await page.getByRole('button', { name: 'ログイン' }).click();
+  await expect(page.getByRole('alert').filter({ hasText: offline })).toBeVisible();
+  await expect(page.getByLabel('ユーザー名またはメールアドレス')).toHaveValue('someone_offline');
+  await context.setOffline(false);
+
+  await page.goto('/i/flow/signup');
+  await page.getByLabel('名前').fill('オフラインの人');
+  await page.getByLabel('ユーザー名').fill('offline_person');
+  await page.getByLabel('メールアドレス').fill('offline_person@example.test');
+  await page.getByLabel('パスワード').fill('correct-horse-battery');
+  await context.setOffline(true);
+  await page.getByRole('button', { name: '登録する' }).click();
+  await expect(page.getByRole('alert').filter({ hasText: offline })).toBeVisible();
+  await expect(page.getByLabel('ユーザー名')).toHaveValue('offline_person');
+  await context.setOffline(false);
+
+  await signUp(page);
+  await page.getByRole('button', { name: /のアカウントのメニュー$/ }).click();
+  await context.setOffline(true);
+  await page.getByRole('menuitem', { name: /からログアウト$/ }).click();
+  // The toast, by its heading (the form's own message is a paragraph).
+  await expect(page.getByRole('heading', { name: offline })).toBeVisible();
+  await expect(page).toHaveURL(/\/home$/);
+});
+
+test('登録とログアウトが通ったときは、通信の文言を出さない（#82 のレビュー 1）', async ({
+  page,
+}) => {
+  const offline = '通信できませんでした。もう一度お試しください';
+  await signUp(page);
+  // The sign-up screen Next.js keeps hidden must not hold the message either.
+  await page.goBack();
+  await expect(page).toHaveURL(/\/i\/flow\/signup$/);
+  await expect(page.getByRole('heading', { name: 'x-modoki に登録' })).toBeVisible();
+  await page.waitForLoadState('networkidle');
+  await expect(page.getByText(offline)).toHaveCount(0);
+  await page.goto('/home');
+  await page.getByRole('button', { name: /のアカウントのメニュー$/ }).click();
+  await page.getByRole('menuitem', { name: /からログアウト$/ }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await page.waitForTimeout(500);
+  await expect(page.getByText(offline)).toHaveCount(0);
+});

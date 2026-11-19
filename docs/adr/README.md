@@ -76,3 +76,4 @@ status: stable
 | [0062](0062-error-screens-are-thin-route-shells.md) | 誤りの画面は、アプリの error.tsx と global-error.tsx から日本語の同期の画面を出し、ボタンでページを読み込み直す | 採用 | エージェント |
 | [0063](0063-proxy-answers-undecodable-paths-with-404.md) | 解読できない % を含むパスは、proxy.ts で 404 の画面へ書き換える | 採用 | エージェント |
 | [0064](0064-a-repeated-post-within-a-minute-returns-the-first.md) | 同じ人が 1 分以内に同じ投稿をもう一度送ったら、新しく作らずに前の投稿を返す | 採用 | エージェント |
+| [0065](0065-client-calls-of-server-actions-take-their-failure.md) | ブラウザからの Server Action の呼び出しは必ず失敗を受け、ESLint の自前のルールで止める | 採用 | エージェント |

@@ -51,7 +51,10 @@ const config = defineConfig([
   ]),
   {
     plugins: { local },
-    rules: { 'local/no-server-import-in-client': 'error' },
+    rules: {
+      'local/no-server-import-in-client': 'error',
+      'local/settle-server-actions': 'error',
+    },
   },
   {
     files: ['src/**/*.{ts,tsx}', 'proxy.ts'],

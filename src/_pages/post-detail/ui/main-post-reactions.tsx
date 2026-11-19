@@ -30,7 +30,7 @@ export function MainPostReactions({ post, likeAction, bookmarkAction }: Props) {
   const run = (
     next: Partial<State>,
     send: () => Promise<{ ok: true; count: number } | { ok: false }>,
-    settle: (target: Post, count: number) => Post,
+    apply: (target: Post, count: number) => Post,
     failure: string,
   ) =>
     startTransition(async () => {
@@ -40,9 +40,12 @@ export function MainPostReactions({ post, likeAction, bookmarkAction }: Props) {
         toast.add({ title: failure });
         return;
       }
-      updatePostInCaches(queryClient, post.id, (target) => settle(target, result.count));
+      updatePostInCaches(queryClient, post.id, (target) => apply(target, result.count));
       router.refresh();
     });
+  // Actions by name: run, which calls them, takes their failure (ADR-0065).
+  const toggleLikeAction = () => likeAction(post.id, !state.liked);
+  const toggleBookmarkAction = () => bookmarkAction(post.id, !state.bookmarked);
   return (
     <>
       <LikeButton
@@ -51,7 +54,7 @@ export function MainPostReactions({ post, likeAction, bookmarkAction }: Props) {
         onToggle={() =>
           run(
             { liked: !state.liked, likes: Math.max(state.likes + (state.liked ? -1 : 1), 0) },
-            () => likeAction(post.id, !state.liked),
+            toggleLikeAction,
             (target, count) => ({
               ...target,
               viewer: { ...target.viewer, liked: !state.liked },
@@ -66,7 +69,7 @@ export function MainPostReactions({ post, likeAction, bookmarkAction }: Props) {
         onToggle={() =>
           run(
             { bookmarked: !state.bookmarked },
-            () => bookmarkAction(post.id, !state.bookmarked),
+            toggleBookmarkAction,
             (target, count) => ({
               ...target,
               viewer: { ...target.viewer, bookmarked: !state.bookmarked },
