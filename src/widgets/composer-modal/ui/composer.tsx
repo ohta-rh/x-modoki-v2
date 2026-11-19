@@ -78,7 +78,12 @@ function ComposerBody({
       action={action}
       initialText={draft}
       autoFocus
-      onTextChange={setText}
+      onTextChange={(next) => {
+        setText(next);
+        // At once, in the input's own handler: a key pressed before React renders (a busy page)
+        // must already see the text (#36's CI).
+        onTextChange?.(next, attachments.count);
+      }}
       attachments={{ ...attachments, node: <ImageAttachments attachments={attachments} /> }}
       onPosted={(id) => {
         clearDraft(username);
@@ -127,11 +132,13 @@ export function ComposerDialog({ username, action, onClose }: DialogProps) {
     [opener],
   );
   const [content, setContent] = useState({ text: '', images: 0 });
+  // What is written now, kept as it is typed: Esc may come before React has rendered it (#36's CI).
+  const latest = useRef(content);
   const [asking, setAsking] = useState(false);
   // The answer, kept until the question has closed. A ref, not state: Next.js may show this
   // dialog again with its state (React Activity), and an old answer must not close it then.
   const answered = useRef(false);
-  const dirty = content.text !== '' || content.images > 0;
+  const dirty = () => latest.current.text !== '' || latest.current.images > 0;
   // A post on its way: closing now would leave twice, once now and once when it is sent (review 1).
   const sending = useRef(false);
   // An action by name: ComposeBox, which calls it, settles it (ADR-0065).
@@ -157,7 +164,7 @@ export function ComposerDialog({ username, action, onClose }: DialogProps) {
         open
         onOpenChange={() => {
           if (sending.current) return;
-          if (!dirty) {
+          if (!dirty()) {
             onClose();
             return;
           }
@@ -170,11 +177,12 @@ export function ComposerDialog({ username, action, onClose }: DialogProps) {
           <Composer
             username={username}
             action={sendAction}
-            onTextChange={(text, images) =>
+            onTextChange={(text, images) => {
+              latest.current = { text, images };
               setContent((was) =>
                 was.text === text && was.images === images ? was : { text, images },
-              )
-            }
+              );
+            }}
             onPosted={onClose}
           />
         </DialogContent>

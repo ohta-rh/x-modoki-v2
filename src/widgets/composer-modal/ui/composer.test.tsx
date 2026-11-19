@@ -37,6 +37,31 @@ describe('ComposerDialog（#28、ui-ux.md の 7 節）', () => {
     expect(screen.queryByRole('alertdialog')).toBeNull();
   });
 
+  it('書いてすぐ Esc を押しても（effect が走る前でも）、保存するかを聞く（#36 の CI で見つけた）', async () => {
+    const onClose = vi.fn();
+    render(wrap(<ComposerDialog username="me" action={posted()} onClose={onClose} />));
+    const textarea = (await screen.findByRole('textbox', {
+      name: '投稿の本文',
+    })) as HTMLTextAreaElement;
+    // As a busy browser does (#36's CI, WebKit): the key arrives before React has rendered or run
+    // the effects of the input — here, with nothing at all in between.
+    const act = (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT;
+    (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = false;
+    try {
+      const setValue = Object.getOwnPropertyDescriptor(
+        HTMLTextAreaElement.prototype,
+        'value',
+      )!.set!;
+      setValue.call(textarea, '書きかけ');
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      textarea.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      expect(onClose).not.toHaveBeenCalled();
+    } finally {
+      (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = act;
+    }
+    expect(await screen.findByRole('alertdialog', { name: 'ポストを保存しますか？' })).toBeTruthy();
+  });
+
   it('別のタブが下書きを書き換えても（このタブには知らせが来ない）、開いている欄の書きかけを保つ（#81）', async () => {
     render(wrap(<ComposerDialog username="me" action={posted()} onClose={vi.fn()} />));
     await userEvent.type(await screen.findByRole('textbox', { name: '投稿の本文' }), 'このタブ');
