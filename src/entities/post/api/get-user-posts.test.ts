@@ -3,7 +3,7 @@ import { setupTestDb, testDb } from '@test/db';
 import { currentSession, signInAs, signOut } from '@test/session';
 import { eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { likes, media, postMedia, user } from '@/shared/db';
+import { likes, media, postMedia, posts, user } from '@/shared/db';
 import { newId } from '@/shared/lib/id';
 import { getUserPosts } from './get-user-posts';
 
@@ -44,6 +44,17 @@ describe('getUserPosts（#23）', () => {
     if (!result.ok) throw new Error();
     expect(result.page.items[0].pinned).toBe(true);
     expect(result.page.items[1].pinned).toBeUndefined();
+  });
+
+  it('ポスト: 元が消されたリポストは出さない（#32 で、タイムラインと別の道を通るようになった）', async () => {
+    const me = await makeUser({ username: 'me' });
+    const other = await makeUser();
+    const gone = await makePost({ id: at(1), authorId: other.id, text: '消える元' });
+    const kept = await makePost({ id: at(2), authorId: other.id, text: '残る元' });
+    await makePost({ id: at(3), authorId: me.id, text: '', repostOfId: gone.id });
+    await makePost({ id: at(4), authorId: me.id, text: '', repostOfId: kept.id });
+    await testDb().update(posts).set({ deletedAt: new Date() }).where(eq(posts.id, gone.id));
+    expect(texts(await getUserPosts('me', 'posts', null))).toEqual(['残る元']);
   });
 
   // FR-PROF-03: タブ

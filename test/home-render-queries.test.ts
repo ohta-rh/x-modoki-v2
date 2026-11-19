@@ -48,11 +48,16 @@ describe('/home の最初の描画（#32）', () => {
       .from(user)
       .where(eq(user.username, 'counter'));
     const friend = await makeUser();
+    const stranger = await makeUser();
     await makeFollow(me.id, friend.id);
     const counts: number[] = [];
     let made = 0;
     for (const total of [20, 40]) {
       for (; made < total; made += 1) await makePost({ authorId: friend.id, text: `投稿 ${made}` });
+      // The top of the page holds a repost and a quote, each of someone else's post (review 2).
+      const original = await makePost({ authorId: stranger.id, text: `元 ${total}` });
+      await makePost({ authorId: friend.id, text: '', repostOfId: original.id });
+      await makePost({ authorId: friend.id, text: `引用 ${total}`, quoteOfId: original.id });
       counts.push(await countQueries(renderHome));
     }
     expect(counts[0]).toBeLessThanOrEqual(6);
