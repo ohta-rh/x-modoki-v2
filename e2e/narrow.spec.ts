@@ -480,26 +480,25 @@ test.describe('狭く低い画面のフォーカス（#86）', () => {
     const fab = await page.getByRole('link', { name: 'ポストする' }).last().boundingBox();
     for (let i = 0; i < 25; i += 1) {
       await page.keyboard.press('Tab');
-      // After WebKit's next rendering, where it scrolls the focused control into view (#36).
-      await page.evaluate(
-        () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
-      );
-      const box = await page.evaluate(() => {
-        const element = document.activeElement!;
-        if (!element.closest('main article')) return null;
-        const { x, y, width, height } = element.getBoundingClientRect();
-        return { x, y, width, height };
-      });
-      // Not entirely under the floating button, nor below the tab bar's top (WCAG 2.4.11).
-      if (box) {
-        const under =
-          box.x >= fab!.x &&
-          box.x + box.width <= fab!.x + fab!.width &&
-          box.y >= fab!.y &&
-          box.y + box.height <= fab!.y + fab!.height;
-        expect(under, 'entirely under the floating button').toBe(false);
-        expect(box.y, 'above the tab bar').toBeLessThan(300 - 53);
-      }
+      // Polled: WebKit scrolls the focused control into view at its next rendering (#36).
+      await expect(async () => {
+        const box = await page.evaluate(() => {
+          const element = document.activeElement!;
+          if (!element.closest('main article')) return null;
+          const { x, y, width, height } = element.getBoundingClientRect();
+          return { x, y, width, height };
+        });
+        // Not entirely under the floating button, nor below the tab bar's top (WCAG 2.4.11).
+        if (box) {
+          const under =
+            box.x >= fab!.x &&
+            box.x + box.width <= fab!.x + fab!.width &&
+            box.y >= fab!.y &&
+            box.y + box.height <= fab!.y + fab!.height;
+          expect(under, 'entirely under the floating button').toBe(false);
+          expect(box.y, 'above the tab bar').toBeLessThan(300 - 53);
+        }
+      }).toPass();
     }
   });
 });
