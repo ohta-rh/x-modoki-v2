@@ -27,6 +27,27 @@ describe('DisplaySettings（#29）', () => {
     expect(screen.getAllByRole('radio')).toHaveLength(9);
   });
 
+  it('テーマの見本も今のアクセントの色を持つ（フォーカスの輪が選んだ色になる、#31 レビュー 1）', async () => {
+    render(
+      <DisplaySettings
+        theme="dark"
+        accent="purple"
+        action={vi.fn(async () => ({ ok: true as const }))}
+      />,
+    );
+    for (const name of ['デフォルト', 'ダークブルー', 'ブラック']) {
+      expect(screen.getByRole('radio', { name }).closest('label')).toHaveAttribute(
+        'data-accent',
+        'purple',
+      );
+    }
+    await userEvent.click(screen.getByRole('radio', { name: '緑' }));
+    expect(screen.getByRole('radio', { name: 'デフォルト' }).closest('label')).toHaveAttribute(
+      'data-accent',
+      'green',
+    );
+  });
+
   it('保存できなければ、元の見た目に戻して知らせる', async () => {
     const action = vi.fn(async () => ({ ok: false as const, error: 'UNAUTHORIZED' as const }));
     render(<DisplaySettings theme="light" accent="blue" action={action} />);

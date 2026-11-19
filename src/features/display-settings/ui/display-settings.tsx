@@ -86,6 +86,8 @@ export function DisplaySettings({
             <label
               key={value}
               data-theme={value}
+              // With the accent too: the accent's text shade is set per theme and accent (ADR-0054).
+              data-accent={display.accent}
               className="flex cursor-pointer items-center gap-2 rounded border border-line bg-[var(--bg)] px-4 py-3 font-bold text-[var(--text)]"
             >
               <input

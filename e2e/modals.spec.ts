@@ -58,6 +58,24 @@ test('全部のモーダルが、フォーカスを中に閉じ、Esc で閉じ�
     () => page.keyboard.press('Enter'),
     'ポストする',
   );
+  // The composer's save / discard question, from Esc with something written (review 1).
+  await page.keyboard.press('n');
+  const box = page.getByRole('dialog', { name: 'ポストする' }).getByRole('textbox', {
+    name: '投稿の本文',
+  });
+  await expect(box).toBeFocused();
+  await checkModal(
+    page,
+    box,
+    async () => {
+      await page.keyboard.type('書きかけ');
+      await page.keyboard.press('Escape');
+    },
+    'ポストを保存しますか？',
+  );
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: '破棄' }).click();
+  await expect(page.getByRole('dialog', { name: 'ポストする' })).toBeHidden();
   // The keyboard shortcuts, from the ? key.
   await checkModal(
     page,
