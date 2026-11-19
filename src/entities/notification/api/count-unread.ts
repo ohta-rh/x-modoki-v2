@@ -3,10 +3,10 @@ import { and, count, eq, isNull } from 'drizzle-orm';
 import { getSession } from '@/shared/auth/index.server';
 import { getDb, notifications } from '@/shared/db';
 
-/** The viewer's unread notifications (#26): the badge on 通知. 0 when signed out. */
-export async function countUnread(): Promise<number> {
+/** The viewer's unread notifications (#26): the badge on 通知. Null when signed out (#33). */
+export async function countUnread(): Promise<number | null> {
   const viewer = await getSession();
-  if (!viewer) return 0;
+  if (!viewer) return null;
   const [row] = await getDb()
     .select({ n: count() })
     .from(notifications)

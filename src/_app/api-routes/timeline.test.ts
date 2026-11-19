@@ -17,10 +17,14 @@ const get = (handler: typeof getFollowingTimeline, query = '') =>
   handler(new Request(`http://localhost:3000/api/timeline/x${query}`));
 
 describe('GET /api/timeline/following と /for-you（application-structure.md の 5 節）', () => {
-  it('ログインが無ければ 401', async () => {
-    const response = await get(getFollowingTimeline);
-    expect(response.status).toBe(401);
-    expect(await response.json()).toEqual({ error: 'UNAUTHORIZED' });
+  // AUTHZ: getFollowingTimeline UNAUTHORIZED
+  // AUTHZ: getForYouTimeline UNAUTHORIZED
+  it('ログインが無ければ 401（フォロー中もおすすめも）', async () => {
+    for (const handler of [getFollowingTimeline, getForYouTimeline]) {
+      const response = await get(handler);
+      expect(response.status).toBe(401);
+      expect(await response.json()).toEqual({ error: 'UNAUTHORIZED' });
+    }
   });
 
   it('items と nextCursor の JSON を返し、ID は文字列', async () => {
@@ -87,6 +91,7 @@ describe('GET /api/timeline/following/new-count?since=（#28）', () => {
     expect(await response.json()).toEqual({ count: 1 });
   });
 
+  // AUTHZ: getFollowingNewCount UNAUTHORIZED
   it('since が無いか ID でなければ 400、ログインが無ければ 401', async () => {
     signInAs(await makeUser());
     expect((await count('')).status).toBe(400);

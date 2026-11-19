@@ -15,6 +15,7 @@ setupTestDb();
 beforeEach(signOut);
 
 describe('markNotificationsReadAction（#26）', () => {
+  // AUTHZ: markNotificationsRead SELF
   it('出ている通知（その ID まで）だけを既読にする。あとから届いたものと他人のものは未読のまま', async () => {
     const [me, them] = [await makeUser(), await makeUser()];
     const ids = Array.from({ length: 3 }, () => newId()).sort((a, b) => (a < b ? -1 : 1));
@@ -35,6 +36,8 @@ describe('markNotificationsReadAction（#26）', () => {
     expect([read(ids[0]), read(ids[1]), read(ids[2])]).toEqual([true, false, false]);
   });
 
+  // AUTHZ: markNotificationsReadAction UNAUTHORIZED
+  // AUTHZ: markNotificationsRead UNAUTHORIZED
   it('ログインしていない・形の違う ID は何もしない', async () => {
     expect(await markNotificationsReadAction('1', 'all')).toEqual({
       ok: false,

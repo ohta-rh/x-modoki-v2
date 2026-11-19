@@ -37,6 +37,8 @@ describe('setPin（#23）', () => {
     expect(await pinned(me.id)).toBeNull();
   });
 
+  // AUTHZ: setPin UNAUTHORIZED
+  // AUTHZ: setPin FORBIDDEN
   it('他人の投稿は FORBIDDEN、ログイン無しは UNAUTHORIZED、無い・削除済み・リポストの行は NOT_FOUND', async () => {
     const me = await makeUser();
     const other = await makeUser();

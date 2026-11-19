@@ -21,6 +21,7 @@ describe('setRepostAction（#22）', () => {
     expect(await setRepostAction(post.id.toString(), false)).toEqual({ ok: true, count: 0 });
   });
 
+  // AUTHZ: setRepostAction UNAUTHORIZED
   it('ログイン無し・無い投稿・数字でない ID は、コードと文言を返す', async () => {
     expect(await setRepostAction('1', true)).toEqual({
       ok: false,

@@ -26,6 +26,7 @@ describe('POST /api/cron/cleanup-media（#25、T-15）', () => {
     expect(cleanupMedia).toHaveBeenCalledWith({ authorization: 'Bearer s' });
   });
 
+  // AUTHZ: postCleanupMedia UNAUTHORIZED
   it('秘密の値が違えば 401（Authorization が無ければ null を渡す）', async () => {
     cleanupMedia.mockResolvedValue({ ok: false, error: 'UNAUTHORIZED' });
     const response = await call();

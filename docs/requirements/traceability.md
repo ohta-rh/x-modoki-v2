@@ -140,23 +140,23 @@ status: stable
 | NFR-COMPAT-01 | #15 | `scripts/quality-gates.test.ts` › 画面のテストは Chromium・Firefox・WebKit の 3 つで流す |
 | NFR-COMPAT-02 | #17・#31 | `e2e/narrow.spec.ts` › 幅 360px で、ルーティングの全部の画面が横にはみ出さない（#31） |
 | NFR-COMPAT-03 | #19 | `e2e/server-render.spec.ts` › アプリの JavaScript が届かなくても、最初の描画で投稿の本文が読める（サーバーで描く、#60） |
-| NFR-SEC-01 | #18〜#29・#33 | #33 で確かめる |
+| NFR-SEC-01 | #18〜#29・#33 | `scripts/check-authz.test.mjs` › このリポジトリでは、全部の入口の認可がテストで確かめられている（scripts/check-authz.mjs） |
 | NFR-SEC-02 | #18〜#29 | `src/_app/api-routes/search.test.ts` › 知らない f は 400 で、検索しない（#62） |
-| NFR-SEC-03 | #18〜#29・#33 | #33 で確かめる |
+| NFR-SEC-03 | #18〜#29・#33 | `src/entities/post/api/get-timeline.test.ts` › DTO の形: ID は文字列、作者・数・見ている人のいいね。メールやハッシュを含まない（NFR-SEC-03） |
 | NFR-SEC-04 | #18 | `src/shared/auth/auth.test.ts` › NFR-SEC-04: 本番（https の URL）では、セッションの cookie に Secure が付く。手元の http では付かない（#30） |
 | NFR-SEC-05 | #18・#19・#24・#25 | `src/shared/api/rate-limit.test.ts` › 区切りの中で limit 回までは通し、limit + 1 回目で止める |
 | NFR-SEC-06 | #19 | `src/shared/lib/text-parse/find-links.test.ts` › http と https の URL だけをリンクにする（スキームの無いもの、javascript: は文字のまま） |
 | NFR-SEC-07 | #25 | `src/features/post-compose/api/create-post.test.ts` › 他人の画像・無い画像・置かれていない画像・申告と違う中身（PNG を WebP と偽る、縦横の違い）・使用済みは拒み、何も書かない |
-| NFR-SEC-08 | #15・#33 | #33 で確かめる |
-| NFR-SEC-09 | #33 | #33 で確かめる |
+| NFR-SEC-08 | #15・#33 | `src/shared/config/env.test.ts` › NFR-SEC-08: 足りない変数があると、読み込みの時点で例外を投げる |
+| NFR-SEC-09 | #33 | `e2e/security-headers.spec.ts` › ページと API の応答に 4 つのヘッダーがあり、CSP は自分のサイトと画像の配信元だけを許す |
 | NFR-SEC-10 | #18 | `e2e/auth.spec.ts` › 戻り先に外の URL を入れても、入ったあとは /home へ進む |
-| NFR-SEC-11 | #33・#37 | #37 で確かめる |
+| NFR-SEC-11 | #33・#37 | `scripts/quality-gates.test.ts` › CI は、本番の依存の高と重大の脆弱性を監査し、あれば止まる（#33） |
 | NFR-I18N-01 | #15 | `e2e/language.spec.ts` › 主な画面は lang="ja" で、英語の UI の言葉を出さない（#30） |
 | NFR-I18N-02 | #19 | `src/shared/lib/format/format.test.ts` › %d ミリ秒前は %s |
 | NFR-I18N-03 | #19・#34 | #34 で確かめる |
 | NFR-MAINT-01 | #15 から全部 | `scripts/quality-gates.test.ts` › カバレッジの閾値は、行・分岐・関数・文の全部で 100%。外せるのは ADR-0021・ADR-0022 の種類だけ |
 | NFR-MAINT-02 | #15 から全部 | `scripts/quality-gates.test.ts` › CI は push と PR のたびに、7 つの確認を順に流す |
-| NFR-MAINT-03 | #15 から全部 | `scripts/quality-gates.test.ts` › lint は ESLint（警告も 0）と Steiger と src の層の確かめで、ルートから DB を読むと止まる |
+| NFR-MAINT-03 | #15 から全部 | `scripts/quality-gates.test.ts` › lint は ESLint（警告も 0）と Steiger と src の層と認可のテストの確かめで、ルートから DB を読むと止まる |
 | NFR-MAINT-04 | #30 | `scripts/check-traceability.test.mjs` › このリポジトリでは、全部の要件と URL がテストに結びついている（scripts/check-traceability.mjs） |
 | NFR-MAINT-05 | 全部 | `scripts/check-docs.test.mjs` › the repository itself passes |
 | NFR-MAINT-06 | #15 から全部 | `scripts/quality-gates.test.ts` › サーバーのコードで、ネイティブのモジュール（sharp）とファイルシステムを読むと止まる |

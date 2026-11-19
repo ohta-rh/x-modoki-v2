@@ -15,7 +15,7 @@ setupTestDb();
 beforeEach(signOut);
 
 describe('countUnread（#26）', () => {
-  it('自分宛ての未読だけを数える。ログインしていなければ 0', async () => {
+  it('自分宛ての未読だけを数える。ログインしていなければ null（#33: Route Handler が 401 にする）', async () => {
     const [me, them, other] = [await makeUser(), await makeUser(), await makeUser()];
     const post = await makePost({ authorId: me.id });
     await testDb()
@@ -33,7 +33,7 @@ describe('countUnread（#26）', () => {
         },
         { id: newId(), recipientId: them.id, actorId: me.id, type: 'follow', postId: null },
       ]);
-    expect(await countUnread()).toBe(0);
+    expect(await countUnread()).toBeNull();
     signInAs(me);
     expect(await countUnread()).toBe(2);
   });

@@ -13,6 +13,7 @@ setupTestDb();
 beforeEach(signOut);
 
 describe('setFollowAction（#24）', () => {
+  // AUTHZ: setFollowAction UNAUTHORIZED
   it('フォローして相手のフォロワーの数を返す。失敗はコードと文言', async () => {
     const me = await makeUser({ username: 'me' });
     await makeUser({ username: 'them' });

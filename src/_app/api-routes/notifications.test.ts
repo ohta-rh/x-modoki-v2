@@ -4,12 +4,16 @@ import { getNotificationList, getUnreadCount } from './notifications';
 // Reading only the viewer's own notifications is tested against PostgreSQL in
 // entities/notification (get-notifications.test.ts, count-unread.test.ts).
 const getNotifications = vi.fn();
+const countUnread = vi.fn();
 vi.mock('@/entities/notification/index.server', () => ({
-  countUnread: async () => 4,
+  countUnread: () => countUnread(),
   getNotifications: (...args: unknown[]) => getNotifications(...args),
 }));
 
-beforeEach(() => getNotifications.mockReset());
+beforeEach(() => {
+  getNotifications.mockReset();
+  countUnread.mockReset().mockResolvedValue(4);
+});
 
 describe('GET /api/notifications/unread-count（#26）', () => {
   it('自分の未読の数を返し、キャッシュさせない', async () => {
@@ -17,6 +21,14 @@ describe('GET /api/notifications/unread-count（#26）', () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ count: 4 });
     expect(response.headers.get('cache-control')).toBe('no-store');
+  });
+
+  // AUTHZ: getUnreadCount UNAUTHORIZED
+  it('ログインしていなければ 401（#33）', async () => {
+    countUnread.mockResolvedValue(null);
+    const response = await getUnreadCount();
+    expect(response.status).toBe(401);
+    expect(await response.json()).toEqual({ error: 'UNAUTHORIZED' });
   });
 });
 
@@ -44,6 +56,7 @@ describe('GET /api/notifications（#26）', () => {
     expect(getNotifications).not.toHaveBeenCalled();
   });
 
+  // AUTHZ: getNotificationList UNAUTHORIZED
   it('ログインしていなければ 401、カーソルが壊れていれば 400', async () => {
     getNotifications.mockResolvedValueOnce({ ok: false, error: 'UNAUTHORIZED' });
     expect((await call('')).status).toBe(401);

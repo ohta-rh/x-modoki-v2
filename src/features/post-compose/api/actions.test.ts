@@ -32,6 +32,7 @@ describe('createPostAction', () => {
     expect(await createPostAction(input as string)).toEqual({ ok: false, message });
   });
 
+  // AUTHZ: createPostAction UNAUTHORIZED
   it('ログインが無ければ、ログインを求める文言', async () => {
     expect(await createPostAction('こんにちは')).toEqual({
       ok: false,
@@ -119,5 +120,23 @@ describe('createPostAction の画像（#25）', () => {
         message: '本文を確かめてください',
       });
     }
+  });
+});
+
+describe('返信と引用の Server Action（#33）', () => {
+  // AUTHZ: createReplyAction UNAUTHORIZED
+  // AUTHZ: createQuoteAction UNAUTHORIZED
+  it('ログインが無ければ、ログインを求める文言で、何も書かない', async () => {
+    const author = await makeUser();
+    const post = await makePost({ authorId: author.id, text: '元' });
+    expect(await createReplyAction('返信', post.id.toString())).toEqual({
+      ok: false,
+      message: 'ログインしてください',
+    });
+    expect(await createQuoteAction('引用', post.id.toString())).toEqual({
+      ok: false,
+      message: 'ログインしてください',
+    });
+    expect(await testDb().select().from(posts)).toHaveLength(1);
   });
 });

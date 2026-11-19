@@ -33,6 +33,8 @@ describe('updateProfileAction（#23）', () => {
     expect(untouched.bio).toBe('');
   });
 
+  // AUTHZ: updateProfileAction UNAUTHORIZED
+  // AUTHZ: updateProfile UNAUTHORIZED
   it('形の違う入力は項目ごとの文言、ログイン無しはログインするよう言う', async () => {
     signInAs(await makeUser());
     expect(await updateProfileAction({ ...input, website: 'ftp://x' })).toEqual({
@@ -76,6 +78,7 @@ describe('updateProfileAction のアバターとバナー（#25）', () => {
     expect(rows.every((item) => item.status === 'ready')).toBe(true);
   });
 
+  // AUTHZ: updateProfile FORBIDDEN
   it('他人の画像・無い画像・大きさの違う画像は保存せず、画像を保存できなかったと言う', async () => {
     const me = await makeUser();
     const other = await makeUser();

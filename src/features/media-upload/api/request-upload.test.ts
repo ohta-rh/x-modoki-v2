@@ -21,6 +21,15 @@ afterEach(() => {
 });
 
 describe('requestUpload（#25、T-08）', () => {
+  // AUTHZ: requestUpload UNAUTHORIZED
+  it('ログインが無ければ UNAUTHORIZED で、行を作らない（#33）', async () => {
+    expect(
+      await requestUpload({ contentType: 'image/webp', contentLength: 10, width: 3, height: 4 }),
+    ).toEqual({ ok: false, error: 'UNAUTHORIZED' });
+    expect(await testDb().select().from(media)).toHaveLength(0);
+  });
+
+  // AUTHZ: requestUpload SELF
   it('media に、自分の pending の行を、推測できないキーと申告の種類・縦横で作る', async () => {
     const me = await makeUser();
     signInAs(me);

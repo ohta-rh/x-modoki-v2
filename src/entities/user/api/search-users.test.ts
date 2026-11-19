@@ -12,7 +12,8 @@ vi.mock('@/shared/auth/index.server', async (importOriginal) => ({
 }));
 
 setupTestDb();
-beforeEach(signOut);
+// Search needs a session (routing.md 1, #33): each test searches as someone signed in.
+beforeEach(async () => signInAs(await makeUser({ username: 'searcher' })));
 
 const names = (result: Awaited<ReturnType<typeof searchUsers>>) => {
   if (!result.ok) throw new Error(result.error);
@@ -21,6 +22,13 @@ const names = (result: Awaited<ReturnType<typeof searchUsers>>) => {
 
 describe('searchUsers（#27）', () => {
   // FR-SEARCH-04: ユーザーの検索
+  // NFR-SEC-01: ログインが要る画面のデータは、データアクセス層でも確かめる
+  it('ログインしていなければ UNAUTHORIZED を返し、何も読まない（#33）', async () => {
+    await makeUser({ username: 'findme' });
+    signOut();
+    expect(await searchUsers('findme', null)).toEqual({ ok: false, error: 'UNAUTHORIZED' });
+  });
+
   it('名前かユーザー名に含む人を、フォロワーの多い順に。大文字と小文字は区別しない。フォローしているかも付く', async () => {
     const me = await makeUser({ username: 'me_search' });
     const hana = await makeUser({ username: 'hanako_x', name: '花子', followersCount: 3 });

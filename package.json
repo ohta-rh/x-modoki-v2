@@ -13,7 +13,7 @@
     "start": "next start",
     "docs:check": "node scripts/check-docs.mjs && node scripts/check-traceability.mjs",
     "typecheck": "next typegen && tsc --noEmit",
-    "lint": "eslint --max-warnings 0 . && steiger ./src && node scripts/check-src-layers.mjs",
+    "lint": "eslint --max-warnings 0 . && steiger ./src && node scripts/check-src-layers.mjs && node scripts/check-authz.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",

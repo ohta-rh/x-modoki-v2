@@ -1,7 +1,7 @@
 import { setupTestDb, testDb } from '@test/db';
 import { eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { account, user } from '@/shared/db';
+import { account, session, user } from '@/shared/db';
 
 // Next.js request APIs and React's per-request cache exist only inside a request; stand in for them.
 const request = { headers: new Headers() };
@@ -67,6 +67,31 @@ describe('getAuth（ADR-0007、#10 の調査の設定）', () => {
     } finally {
       vi.unstubAllEnvs();
     }
+  });
+
+  // NFR-SEC-04: セッションの固定（T-04）
+  it('ログインのたびに新しいセッションのトークンを出し、仕込まれたトークンは使わない（T-04、#33）', async () => {
+    await signUpAs('Fixed_01');
+    const { getAuth } = await load();
+    const signInWith = async (cookie: string) => {
+      const response = await getAuth().api.signInUsername({
+        body: { username: 'fixed_01', password: 'correct-horse-battery' },
+        headers: new Headers({ cookie }),
+        asResponse: true,
+      });
+      const set = response.headers.get('set-cookie') ?? '';
+      return decodeURIComponent(/better-auth\.session_token=([^;]+)/.exec(set)![1]).split('.')[0];
+    };
+    const planted = 'better-auth.session_token=attacker-planted-token';
+    const first = await signInWith(planted);
+    const second = await signInWith(planted);
+    expect(first).not.toBe('attacker-planted-token');
+    expect(second).not.toBe(first);
+    const tokens = (await testDb().select({ token: session.token }).from(session)).map(
+      (row) => row.token,
+    );
+    expect(tokens).toEqual(expect.arrayContaining([first, second]));
+    expect(tokens).not.toContain('attacker-planted-token');
   });
 
   it('ユーザー名は小文字で、入力したままの形も残し、パスワードはハッシュで入る', async () => {

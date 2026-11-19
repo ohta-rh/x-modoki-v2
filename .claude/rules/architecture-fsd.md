@@ -55,7 +55,14 @@ src/
 - Server Actions: `features/*/api/actions.ts` (`'use server'`) — Zod-validate, call the
   mutation, return `{ ok, … }`. No business logic in the action file itself.
 - Route Handlers: implement in `src/_app/api-routes/`; `app/api/**/route.ts` only re-exports
-  (`export { getTimeline as GET } from '@/_app/api-routes'`).
+  (`export { getTimeline as GET } from '@/_app/api-routes'`). A state-changing Route Handler is a
+  POST that refuses an `Origin` other than its own (T-11).
+- **Every entry has tagged authorization tests (ADR-0060).** Each Server Action and Route Handler
+  needs a test marked `// AUTHZ: <name> UNAUTHORIZED` right above it; each mutation function also
+  one marked `FORBIDDEN` (it can name another person's thing) or `SELF` (only the caller's rows
+  change, checked with an author who is not the caller). An entry meant for people without a
+  session goes in section 6 of `docs/architecture/threat-model.md` with its reason instead.
+  A page that needs a login refuses at the data access layer too, not only in `proxy.ts`.
 - `process.env` is read only in `src/shared/config/env.ts`, and `env` is imported only from
   `@/shared/config/index.server` (ADR-0059): through `@/shared/config` it shipped the validator
   (zod) to every browser.
@@ -91,6 +98,8 @@ src/
 - ESLint `local/no-server-import-in-client` blocks `index.server`, `server-only`, and
   `@/shared/db` in `'use client'` files.
 - `scripts/check-src-layers.mjs` fails if `src/` holds anything but the six layers.
+- `scripts/check-authz.mjs` (in `pnpm lint`) fails on an entry without its tagged tests, and on a
+  threat-model row whose 確かめるテスト does not name an existing test.
 - Segment names describe purpose (`entrypoint`, not `providers`); no folder named `ui` inside a segment.
 - Do not turn off a Steiger or ESLint rule to make a violation pass. If a rule is wrong for
   this project, disable that one rule in the config with a one-line reason and record it in

@@ -15,7 +15,8 @@ const TOP_CURSOR = /^(\d+)_(\d+)$/;
 export const postTextMatch = (q: string) => sql`${posts.text} ILIKE ${likePattern(q)} ESCAPE '\\'`;
 
 export type SearchPostsTab = 'top' | 'live' | 'media';
-export type SearchPostsResult = { ok: true; page: PostPage } | { ok: false; error: 'BAD_CURSOR' };
+export type SearchPostsResult =
+  { ok: true; page: PostPage } | { ok: false; error: 'BAD_CURSOR' | 'UNAUTHORIZED' };
 
 /**
  * Posts for a search (#27, data-model.md 4): 話題 — the text contains `q`, most liked first;
@@ -27,7 +28,10 @@ export async function searchPosts(
   tab: SearchPostsTab,
   cursor: string | null,
 ): Promise<SearchPostsResult> {
-  const viewerId = (await getSession())?.id ?? null;
+  // Search is for people signed in (routing.md 1): checked here too, not only by proxy.ts (#33).
+  const viewer = await getSession();
+  if (!viewer) return { ok: false, error: 'UNAUTHORIZED' };
+  const viewerId = viewer.id;
   const db = getDb();
   const where: SQL[] = [isNull(posts.deletedAt)];
   if (q.startsWith('#')) {

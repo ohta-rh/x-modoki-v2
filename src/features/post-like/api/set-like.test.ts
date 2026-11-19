@@ -53,6 +53,7 @@ describe('setLike（data-model.md の 4 節、#21）', () => {
     expect(await count(post.id)).toBe(liked);
   });
 
+  // AUTHZ: setLike UNAUTHORIZED
   it('ログイン無しは UNAUTHORIZED、無い投稿と削除済みの投稿は NOT_FOUND', async () => {
     const me = await makeUser();
     const gone = await makePost({ authorId: me.id, deletedAt: new Date() });
@@ -115,5 +116,19 @@ describe('setLike の通知（#26）', () => {
     ]);
     await setLike(theirs.id, false);
     expect(await notes()).toEqual([]);
+  });
+});
+
+describe('いいねするのは誰か（#33）', () => {
+  // AUTHZ: setLike SELF
+  it('他人の投稿にいいねすると、行はセッションの利用者のもの。作者や別の人の分にはならない', async () => {
+    const author = await makeUser();
+    const me = await makeUser();
+    const post = await makePost({ authorId: author.id });
+    signInAs(me);
+    await setLike(post.id, true);
+    expect(
+      (await testDb().select({ userId: likes.userId }).from(likes)).map((row) => row.userId),
+    ).toEqual([me.id]);
   });
 });

@@ -71,3 +71,5 @@ status: stable
 | [0057](0057-db-connect-gives-up-after-1-5s-and-retries-once.md) | データベースへの新しい接続は 1.5 秒で待つのをやめ、1 回だけつなぎ直す | 採用 | エージェント |
 | [0058](0058-measure-speed-with-applied-throttling.md) | 画面の速さは、Lighthouse のモバイルの回線と CPU の条件を実際にかけて測り、3 回の中央の値で判定する | 採用 | エージェント |
 | [0059](0059-load-popups-and-parsers-on-first-use.md) | メニュー・ダイアログ・ホバーカード・トーストと投稿の解析は、使うときに読み込み、最初に送る JavaScript を e2e で 200KB 以下に保つ | 採用 | エージェント |
+| [0060](0060-every-entry-has-tagged-authorization-tests.md) | 全ての入口に、印の付いた認可のテストを求め、lint で突き合わせる | 採用 | エージェント |
+| [0061](0061-security-headers-and-content-security-policy.md) | 全ての応答にセキュリティのヘッダーを付け、CSP は自分のサイト・画像の配信元・ストレージの口だけを許し、インラインのスクリプトは許す | 採用 | エージェント |

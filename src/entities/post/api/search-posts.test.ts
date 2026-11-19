@@ -1,7 +1,7 @@
 import { makePost, makeUser } from '@test/factories';
 import { setupTestDb, testDb } from '@test/db';
 import { makeUpload } from '@test/uploads';
-import { currentSession, signOut } from '@test/session';
+import { currentSession, signInAs, signOut } from '@test/session';
 import { sql } from 'drizzle-orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { hashtags, postHashtags, postMedia } from '@/shared/db';
@@ -14,7 +14,8 @@ vi.mock('@/shared/auth/index.server', async (importOriginal) => ({
 }));
 
 setupTestDb();
-beforeEach(signOut);
+// Search needs a session (routing.md 1, #33): each test searches as someone signed in.
+beforeEach(async () => signInAs(await makeUser({ username: 'searcher' })));
 
 const texts = (result: Awaited<ReturnType<typeof searchPosts>>) => {
   if (!result.ok) throw new Error(result.error);
@@ -22,6 +23,17 @@ const texts = (result: Awaited<ReturnType<typeof searchPosts>>) => {
 };
 
 describe('searchPosts（#27、data-model.md の 4 節）', () => {
+  // NFR-SEC-01: ログインが要る画面のデータは、データアクセス層でも確かめる
+  it('ログインしていなければ UNAUTHORIZED を返し、何も読まない（#33）', async () => {
+    const author = await makeUser();
+    await makePost({ authorId: author.id, text: '見つかる本文' });
+    signOut();
+    expect(await searchPosts('見つかる', 'top', null)).toEqual({
+      ok: false,
+      error: 'UNAUTHORIZED',
+    });
+  });
+
   // FR-SEARCH-01: 本文の検索
   // FR-SEARCH-02: 結果のタブ
   it('話題は本文に含む投稿をいいねの多い順、最新は新しい順。消した投稿は出ない', async () => {

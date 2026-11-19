@@ -33,6 +33,7 @@ describe('deletePostAction', () => {
     });
   });
 
+  // AUTHZ: deletePostAction UNAUTHORIZED
   it('ログインが無ければ、ログインを求める', async () => {
     expect(await deletePostAction('1')).toEqual({ ok: false, message: 'ログインしてください' });
   });

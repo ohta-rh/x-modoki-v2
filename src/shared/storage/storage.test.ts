@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { newId } from '@/shared/lib/id';
 import { copyObject, presignUpload, readHead, removeObject } from './storage';
 
@@ -26,6 +26,24 @@ describe('storage（#25、ADR-0008）', () => {
       headers: { 'content-type': 'image/gif' },
     });
     expect(put.status).toBe(403);
+    expect(await readHead(key, 4)).toBeNull();
+  });
+
+  // NFR-SEC-07: 署名つき URL の使い回し（T-08）
+  it('期限（60 秒）を過ぎた署名つき URL の PUT は通らない（T-08、#33）', async () => {
+    const key = `test/${newId()}`;
+    // Signed two minutes ago: the URL's 60 seconds are over by the time it is used.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(Date.now() - 120_000);
+    const url = await presignUpload({ key, contentType: 'image/gif', contentLength: 4 });
+    vi.useRealTimers();
+    const put = await fetch(url, {
+      method: 'PUT',
+      body: 'GIF8',
+      headers: { 'content-type': 'image/gif' },
+    });
+    // Garage refuses it with 400 (the request has expired).
+    expect(put.ok).toBe(false);
     expect(await readHead(key, 4)).toBeNull();
   });
 

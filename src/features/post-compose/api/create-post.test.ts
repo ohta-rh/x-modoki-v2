@@ -28,6 +28,7 @@ setupTestDb();
 beforeEach(signOut);
 
 describe('createPost（FR-POST、NFR-SEC-01・02・05）', () => {
+  // AUTHZ: createPost UNAUTHORIZED
   it('ログインが無ければ UNAUTHORIZED で、何も書かない', async () => {
     expect(await createPost('こんにちは')).toEqual({ ok: false, error: 'UNAUTHORIZED' });
     expect(await testDb().select().from(posts)).toEqual([]);
@@ -245,6 +246,7 @@ describe('createPost の画像（#25、T-07・T-08）', () => {
   });
 
   // NFR-SEC-07: 画像は、署名の前に種類と大きさを、置かれたあとに先頭のバイトで種類と縦横を確かめる。アプリとは別のドメイン（ローカルは別のポート）から出す
+  // AUTHZ: createPost FORBIDDEN
   it('他人の画像・無い画像・置かれていない画像・申告と違う中身（PNG を WebP と偽る、縦横の違い）・使用済みは拒み、何も書かない', async () => {
     const me = await makeUser();
     const other = await makeUser();

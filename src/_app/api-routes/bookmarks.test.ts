@@ -29,6 +29,7 @@ describe('GET /api/bookmarks（#21）', () => {
     expect(body.nextCursor).toBeNull();
   });
 
+  // AUTHZ: getBookmarkList UNAUTHORIZED
   it('ログイン無しは 401、形の違うカーソルは 400', async () => {
     expect((await get()).status).toBe(401);
     signInAs(await makeUser());

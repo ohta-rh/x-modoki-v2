@@ -75,6 +75,7 @@ describe('setRepost（#22、ADR-0015）', () => {
     expect((await row(post.id)).repostCount).toBe(6);
   });
 
+  // AUTHZ: setRepost UNAUTHORIZED
   it('ログイン無しは UNAUTHORIZED、無い投稿と削除済みの投稿は NOT_FOUND', async () => {
     const me = await makeUser();
     const gone = await makePost({ authorId: me.id, deletedAt: new Date() });
@@ -121,5 +122,21 @@ describe('setRepost の通知（#26）', () => {
     ]);
     await setRepost(theirs.id, false);
     expect(await notes()).toEqual([]);
+  });
+});
+
+describe('リポストするのは誰か（#33）', () => {
+  // AUTHZ: setRepost SELF
+  it('他人の投稿をリポストすると、リポストの行の作者はセッションの利用者。元の作者の分にはならない', async () => {
+    const author = await makeUser();
+    const me = await makeUser();
+    const post = await makePost({ authorId: author.id });
+    signInAs(me);
+    await setRepost(post.id, true);
+    const reposts = await testDb()
+      .select({ authorId: posts.authorId })
+      .from(posts)
+      .where(isNotNull(posts.repostOfId));
+    expect(reposts.map((row) => row.authorId)).toEqual([me.id]);
   });
 });

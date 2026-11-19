@@ -61,13 +61,20 @@ describe('品質の確認の設定（#30）', () => {
     expect(ci).not.toMatch(/^\s*continue-on-error:/m);
   });
 
+  // NFR-SEC-11: 本番の依存に、高と重大の脆弱性が無い
+  it('CI は、本番の依存の高と重大の脆弱性を監査し、あれば止まる（#33）', () => {
+    const ci = readFileSync('.github/workflows/ci.yml', 'utf8');
+    expect(ci).toMatch(/^\s*run: pnpm audit --prod --audit-level high$/m);
+    expect(ci.indexOf('pnpm audit')).toBeLessThan(ci.indexOf('pnpm docs:check'));
+  });
+
   // NFR-MAINT-03: Steiger と ESLint の違反 0
-  it('lint は ESLint（警告も 0）と Steiger と src の層の確かめで、ルートから DB を読むと止まる', async () => {
+  it('lint は ESLint（警告も 0）と Steiger と src の層と認可のテストの確かめで、ルートから DB を読むと止まる', async () => {
     const pkg = JSON.parse(readFileSync('package.json', 'utf8')) as {
       scripts: Record<string, string>;
     };
     expect(pkg.scripts.lint).toBe(
-      'eslint --max-warnings 0 . && steiger ./src && node scripts/check-src-layers.mjs',
+      'eslint --max-warnings 0 . && steiger ./src && node scripts/check-src-layers.mjs && node scripts/check-authz.mjs',
     );
     expect(
       await lintAs('app/x/page.tsx', "import { getDb } from '@/shared/db';\nvoid getDb;\n"),

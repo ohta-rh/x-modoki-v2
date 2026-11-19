@@ -17,7 +17,8 @@ const CURSOR = /^(0|[1-9]\d{0,9})_(.+)$/;
 export const userSearchMatch = (q: string) =>
   sql`(${user.name} || ' ' || coalesce(${user.username}, '')) ILIKE ${likePattern(q)} ESCAPE '\\'`;
 
-export type SearchUsersResult = { ok: true; page: FollowPage } | { ok: false; error: 'BAD_CURSOR' };
+export type SearchUsersResult =
+  { ok: true; page: FollowPage } | { ok: false; error: 'BAD_CURSOR' | 'UNAUTHORIZED' };
 
 /**
  * People whose name or username contains `q` (#27), most followed first, 20 at a time, with
@@ -25,7 +26,10 @@ export type SearchUsersResult = { ok: true; page: FollowPage } | { ok: false; er
  * so the index serves it.
  */
 export async function searchUsers(q: string, cursor: string | null): Promise<SearchUsersResult> {
-  const viewerId = (await getSession())?.id ?? null;
+  // Search is for people signed in (routing.md 1): checked here too, not only by proxy.ts (#33).
+  const viewer = await getSession();
+  if (!viewer) return { ok: false, error: 'UNAUTHORIZED' };
+  const viewerId = viewer.id;
   const where: SQL[] = [userSearchMatch(q)];
   if (cursor !== null) {
     const [, followers = '', id = ''] = CURSOR.exec(cursor) ?? [];
@@ -43,9 +47,7 @@ export async function searchUsers(q: string, cursor: string | null): Promise<Sea
       image: user.image,
       bio: user.bio,
       followers: user.followersCount,
-      isFollowing: viewerId
-        ? sql<boolean>`exists (select 1 from follows v where v.follower_id = ${viewerId} and v.followee_id = ${user.id})`
-        : sql<boolean>`false`,
+      isFollowing: sql<boolean>`exists (select 1 from follows v where v.follower_id = ${viewerId} and v.followee_id = ${user.id})`,
     })
     .from(user)
     .where(and(...where))

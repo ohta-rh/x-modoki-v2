@@ -23,6 +23,7 @@ describe('setBookmarkAction・clearBookmarksAction（#21）', () => {
     expect(await testDb().select().from(bookmarks)).toHaveLength(0);
   });
 
+  // AUTHZ: setBookmarkAction UNAUTHORIZED
   it('ログイン無しはログインするよう、無い・数字でない投稿は見つからないと言う', async () => {
     expect(await setBookmarkAction('1', true)).toEqual({
       ok: false,
@@ -42,5 +43,18 @@ describe('setBookmarkAction・clearBookmarksAction（#21）', () => {
         message: 'この投稿は見つかりません',
       });
     }
+  });
+});
+
+describe('clearBookmarksAction（#33）', () => {
+  // AUTHZ: clearBookmarksAction UNAUTHORIZED
+  it('ログインが無ければ、ログインを求める文言で、何も消さない', async () => {
+    const me = await makeUser();
+    const post = await makePost({ authorId: me.id });
+    signInAs(me);
+    await setBookmarkAction(post.id.toString(), true);
+    signOut();
+    expect(await clearBookmarksAction()).toMatchObject({ ok: false, code: 'UNAUTHORIZED' });
+    expect(await testDb().select().from(bookmarks)).toHaveLength(1);
   });
 });

@@ -3,10 +3,9 @@ import { countUnread, getNotifications } from '@/entities/notification/index.ser
 
 /** GET /api/notifications/unread-count — the badge's number, polled by the client (#26, ADR-0011). */
 export async function getUnreadCount(): Promise<Response> {
-  return Response.json(
-    { count: await countUnread() },
-    { headers: { 'cache-control': 'no-store' } },
-  );
+  const count = await countUnread();
+  if (count === null) return Response.json({ error: 'UNAUTHORIZED' }, { status: 401 });
+  return Response.json({ count }, { headers: { 'cache-control': 'no-store' } });
 }
 
 /** GET /api/notifications?tab=&cursor= — the next page of the viewer's own notifications (#26). */

@@ -20,5 +20,9 @@ export async function getSearch(request: Request): Promise<Response> {
   const cursor = params.get('cursor') || null;
   const result =
     filter === 'user' ? await searchUsers(q, cursor) : await searchPosts(q, filter, cursor);
-  return result.ok ? Response.json(result.page) : invalid();
+  if (result.ok) return Response.json(result.page);
+  // Search is for people signed in (routing.md 1, #33); a broken cursor is the caller's mistake.
+  return result.error === 'UNAUTHORIZED'
+    ? Response.json({ error: 'UNAUTHORIZED' }, { status: 401 })
+    : invalid();
 }

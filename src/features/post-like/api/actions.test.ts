@@ -21,6 +21,7 @@ describe('setLikeAction（#21）', () => {
     expect(await setLikeAction(post.id.toString(), false)).toEqual({ ok: true, count: 0 });
   });
 
+  // AUTHZ: setLikeAction UNAUTHORIZED
   it('ログイン無しはログインするよう、無い・数字でない・削除済みの投稿は見つからないと言う', async () => {
     const me = await makeUser();
     const gone = await makePost({ authorId: me.id, deletedAt: new Date() });

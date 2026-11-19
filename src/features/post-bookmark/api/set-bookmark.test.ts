@@ -31,6 +31,7 @@ describe('setBookmark（#21）', () => {
     expect(await testDb().select().from(bookmarks)).toHaveLength(0);
   });
 
+  // AUTHZ: setBookmark UNAUTHORIZED
   it('ログイン無しは UNAUTHORIZED、無い投稿と削除済みの投稿は NOT_FOUND', async () => {
     const me = await makeUser();
     const gone = await makePost({ authorId: me.id, deletedAt: new Date() });
@@ -42,6 +43,7 @@ describe('setBookmark（#21）', () => {
 });
 
 describe('clearBookmarks（#21: 全て削除）', () => {
+  // AUTHZ: clearBookmarks SELF
   it('自分のブックマークだけを全て消し、それぞれの数を 1 減らす（0 より小さくしない）', async () => {
     const me = await makeUser();
     const other = await makeUser();
@@ -60,6 +62,7 @@ describe('clearBookmarks（#21: 全て削除）', () => {
     expect(left.map((row) => row.userId)).toEqual([other.id]);
   });
 
+  // AUTHZ: clearBookmarks UNAUTHORIZED
   it('ログイン無しは UNAUTHORIZED。何も無くても ok', async () => {
     expect(await clearBookmarks()).toEqual({ ok: false, error: 'UNAUTHORIZED' });
     signInAs(await makeUser());
@@ -81,5 +84,21 @@ describe('setBookmark の同時の操作（#21 のレビュー）', () => {
     expect(results.every((result) => result.ok)).toBe(true);
     const [row] = await testDb().select().from(posts).where(eq(posts.id, post.id));
     expect(row.bookmarkCount).toBe(8);
+  });
+});
+
+describe('ブックマークするのは誰か（#33）', () => {
+  // AUTHZ: setBookmark SELF
+  it('他人の投稿をブックマークすると、行はセッションの利用者のもの。作者の分にはならない', async () => {
+    const author = await makeUser();
+    const me = await makeUser();
+    const post = await makePost({ authorId: author.id });
+    signInAs(me);
+    await setBookmark(post.id, true);
+    expect(
+      (await testDb().select({ userId: bookmarks.userId }).from(bookmarks)).map(
+        (row) => row.userId,
+      ),
+    ).toEqual([me.id]);
   });
 });

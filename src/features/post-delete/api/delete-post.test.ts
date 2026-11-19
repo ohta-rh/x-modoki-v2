@@ -28,6 +28,7 @@ describe('deletePost（NFR-SEC-01、T-01）', () => {
   });
 
   // NFR-SEC-01: 全ての Server Action と、ログインが要る全ての Route Handler が、`api` セグメントで認証と認可を行う。ログインしていなければ `UNAUTHORIZED`、他人のものへの変更は `FORBIDDEN`。`proxy.ts` の確認だけに頼らない
+  // AUTHZ: deletePost FORBIDDEN
   it('他人: FORBIDDEN で、データが変わらない', async () => {
     const owner = await makeUser();
     const post = await makePost({ authorId: owner.id });
@@ -36,6 +37,7 @@ describe('deletePost（NFR-SEC-01、T-01）', () => {
     expect((await row(post.id)).deletedAt).toBeNull();
   });
 
+  // AUTHZ: deletePost UNAUTHORIZED
   it('ログイン無し: UNAUTHORIZED で、データが変わらない', async () => {
     const post = await makePost({ authorId: (await makeUser()).id });
     expect(await deletePost(post.id)).toEqual({ ok: false, error: 'UNAUTHORIZED' });

@@ -30,6 +30,7 @@ const counts = async (id: string) => {
 
 describe('setFollow（#24）', () => {
   // FR-FOLLOW-01: フォロー
+  // AUTHZ: setFollow SELF
   it('フォローの行と両方の数が同じトランザクションで変わる。2 回でも 1 回。解除で戻る（0 より小さくしない）', async () => {
     const me = await makeUser();
     const them = await makeUser({ username: 'them' });
@@ -85,6 +86,7 @@ describe('setFollow（#24）', () => {
 
   // FR-FOLLOW-03: 自分はフォローできない
   // FR-FOLLOW-05: 回数の制限
+  // AUTHZ: setFollow UNAUTHORIZED
   it('自分は FORBIDDEN、無い人は NOT_FOUND、ログイン無しは UNAUTHORIZED、1 分に 31 回目は RATE_LIMITED', async () => {
     const me = await makeUser({ username: 'me' });
     await makeUser({ username: 'them' });

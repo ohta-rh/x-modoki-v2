@@ -16,18 +16,27 @@ vi.mock('next/navigation', () => ({
 }));
 
 setupTestDb();
-beforeEach(signOut);
+// Search needs a session (routing.md 1, #33): each test searches as someone signed in.
+beforeEach(async () => signInAs(await makeUser({ username: 'searcher' })));
 
 describe('loadSearchPage（#27）', () => {
-  it('投稿のタブは投稿の 1 ページ目、ユーザーのタブは人の 1 ページ目。ログインしているかも返す', async () => {
+  it('ログインしていなければ、検索せずにログインへ送る（#33）', async () => {
+    signOut();
+    await expect(loadSearchPage('花子の', undefined)).rejects.toThrow(
+      'NEXT_REDIRECT /i/flow/login',
+    );
+    await expect(loadSearchPage('hana', 'user')).rejects.toThrow('NEXT_REDIRECT /i/flow/login');
+  });
+
+  it('投稿のタブは投稿の 1 ページ目、ユーザーのタブは人の 1 ページ目', async () => {
     const hana = await makeUser({ username: 'hana_ls', name: '花子' });
     await makePost({ authorId: hana.id, text: '花子の投稿' });
+    signInAs(hana);
     const posts = await loadSearchPage('花子の', undefined);
-    expect(posts).toMatchObject({ q: '花子の', filter: 'top', signedIn: false });
+    expect(posts).toMatchObject({ q: '花子の', filter: 'top', signedIn: true });
     expect(
       posts.results.kind === 'posts' && posts.results.page.items.map((item) => item.text),
     ).toEqual(['花子の投稿']);
-    signInAs(hana);
     const users = await loadSearchPage(' hana_ls ', 'user');
     expect(users).toMatchObject({ q: 'hana_ls', filter: 'user', signedIn: true });
     expect(

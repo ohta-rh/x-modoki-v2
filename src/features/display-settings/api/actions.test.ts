@@ -21,6 +21,7 @@ beforeEach(() => {
 
 describe('setDisplayAction（#29）', () => {
   // FR-SET-02: 選択の保存
+  // AUTHZ: updateDisplay SELF
   it('自分のテーマとアクセントの色を users に残し、cookie にも書く。ほかの人は変えない', async () => {
     const me = await makeUser();
     const other = await makeUser();
@@ -36,6 +37,8 @@ describe('setDisplayAction（#29）', () => {
     );
   });
 
+  // AUTHZ: setDisplayAction UNAUTHORIZED
+  // AUTHZ: updateDisplay UNAUTHORIZED
   it('知らない値は VALIDATION、ログインが無ければ UNAUTHORIZED。どちらも何も書かない', async () => {
     signInAs(await makeUser());
     expect(await setDisplayAction({ theme: 'neon', accent: 'pink' })).toEqual({

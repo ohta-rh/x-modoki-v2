@@ -27,7 +27,8 @@ export async function loadViewer(): Promise<Viewer | null> {
     name: session.name,
     username: session.username,
     image: mediaUrl(session.image),
-    unread: await countUnread(),
+    // Signed in (checked above), so the count is a number.
+    unread: (await countUnread())!,
     theme: session.theme as Theme,
     accent: session.accent as Accent,
   };

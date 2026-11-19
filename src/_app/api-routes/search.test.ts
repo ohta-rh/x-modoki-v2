@@ -19,6 +19,17 @@ beforeEach(() => {
 const call = (query: string) => getSearch(new Request(`http://localhost:3000/api/search${query}`));
 
 describe('GET /api/search（#27）', () => {
+  // AUTHZ: getSearch UNAUTHORIZED
+  it('ログインしていなければ、投稿の検索も人の検索も 401（#33）', async () => {
+    searchPosts.mockResolvedValue({ ok: false, error: 'UNAUTHORIZED' });
+    searchUsers.mockResolvedValue({ ok: false, error: 'UNAUTHORIZED' });
+    for (const query of ['?q=%E7%8C%AB', '?q=hana&f=user']) {
+      const response = await call(query);
+      expect(response.status).toBe(401);
+      expect(await response.json()).toEqual({ error: 'UNAUTHORIZED' });
+    }
+  });
+
   it('f で話題・最新・メディア・ユーザーを分け、q とカーソルを渡す', async () => {
     expect(await (await call('?q=%E7%8C%AB')).json()).toEqual({ items: [], nextCursor: 'p' });
     expect(searchPosts).toHaveBeenLastCalledWith('猫', 'top', null);

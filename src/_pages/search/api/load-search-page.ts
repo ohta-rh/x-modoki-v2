@@ -8,6 +8,7 @@ import type { FollowPage } from '@/entities/user';
 import { searchUsers } from '@/entities/user/index.server';
 import { type SearchFilter, searchFilter, searchQuery } from '@/features/search-box';
 import { getSession } from '@/shared/auth/index.server';
+import { LOGIN_PATH } from '@/shared/config';
 
 export type SearchPageData = {
   q: string;
@@ -27,17 +28,13 @@ export async function loadSearchPage(qParam: Param, fParam: Param): Promise<Sear
   const q = searchQuery(first(qParam));
   if (q === null) redirect('/explore' as Route);
   const filter = searchFilter(first(fParam));
-  // No cursor is given, so neither search can refuse it.
+  // No cursor is given, so a search refuses only a caller without a session (#33).
+  const found = filter === 'user' ? await searchUsers(q, null) : await searchPosts(q, filter, null);
+  if (!found.ok) redirect(LOGIN_PATH);
   const results =
     filter === 'user'
-      ? {
-          kind: 'users' as const,
-          page: ((await searchUsers(q, null)) as { page: FollowPage }).page,
-        }
-      : {
-          kind: 'posts' as const,
-          page: ((await searchPosts(q, filter, null)) as { page: PostPage }).page,
-        };
+      ? { kind: 'users' as const, page: found.page as FollowPage }
+      : { kind: 'posts' as const, page: found.page as PostPage };
   return {
     q,
     filter,
