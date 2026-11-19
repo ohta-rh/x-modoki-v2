@@ -432,8 +432,17 @@ test.describe('狭く低い画面のフォーカス（#86）', () => {
     }
     await expect(edit).toBeFocused();
     const bar = await page.getByRole('navigation', { name: '下のタブ' }).boundingBox();
-    const box = await edit.boundingBox();
-    expect(box!.y + box!.height, 'above the tab bar').toBeLessThanOrEqual(bar!.y);
+    // WebKit scrolls the focused control into view at its next rendering, not at the key press
+    // (Chrome does it at once): poll until it has (#36, CI run 44555176296).
+    await expect
+      .poll(
+        async () => {
+          const box = await edit.boundingBox();
+          return box!.y + box!.height;
+        },
+        { message: 'above the tab bar' },
+      )
+      .toBeLessThanOrEqual(bar!.y);
   });
 
   test('Shift+Tab で戻っても、上の見出しとタブの下に隠れない。360×300 の「いいね」も丸いボタンの下に隠れない（#86 のレビュー）', async ({
@@ -451,13 +460,19 @@ test.describe('狭く低い画面のフォーカス（#86）', () => {
       await page.getByRole('article').nth(8).getByRole('button', { name: 'いいね' }).focus();
       for (let i = 0; i < 20; i += 1) {
         await page.keyboard.press('Shift+Tab');
-        // WCAG 2.4.11: the focused control is not entirely hidden under the sticky block.
-        const bottom = await page.evaluate(() =>
-          document.activeElement!.closest('main article')
-            ? document.activeElement!.getBoundingClientRect().bottom
-            : Infinity,
-        );
-        expect(bottom, `${path} at ${width}×${height}`).toBeGreaterThan(stuck);
+        // WCAG 2.4.11: the focused control is not entirely hidden under the sticky block. Polled:
+        // WebKit scrolls it into view at its next rendering (#36).
+        await expect
+          .poll(
+            () =>
+              page.evaluate(() =>
+                document.activeElement!.closest('main article')
+                  ? document.activeElement!.getBoundingClientRect().bottom
+                  : Infinity,
+              ),
+            { message: `${path} at ${width}×${height}` },
+          )
+          .toBeGreaterThan(stuck);
       }
     }
     await page.setViewportSize({ width: 360, height: 300 });
@@ -465,6 +480,10 @@ test.describe('狭く低い画面のフォーカス（#86）', () => {
     const fab = await page.getByRole('link', { name: 'ポストする' }).last().boundingBox();
     for (let i = 0; i < 25; i += 1) {
       await page.keyboard.press('Tab');
+      // After WebKit's next rendering, where it scrolls the focused control into view (#36).
+      await page.evaluate(
+        () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
+      );
       const box = await page.evaluate(() => {
         const element = document.activeElement!;
         if (!element.closest('main article')) return null;
