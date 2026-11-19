@@ -36,7 +36,16 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 const RING_COLOR = { normal: 'var(--accent)', warning: '#ffd400', over: 'var(--danger)' } as const;
 
 /** The inline composer at the top of /home (docs/architecture/ui-ux.md 7). */
-const UNMEASURED: PostMeasure = { weighted: 0, remaining: MAX_WEIGHTED_LENGTH, postable: false };
+/**
+ * Before the parser arrives: no count is shown, and any non-blank text may be sent. The server
+ * weighs it with the same parser and refuses an over-long post with its message (#32, CI run
+ * 44462798903: a quick press found the button disabled).
+ */
+const unmeasured = (text: string): PostMeasure => ({
+  weighted: 0,
+  remaining: MAX_WEIGHTED_LENGTH,
+  postable: text.trim().length > 0,
+});
 
 /** Loads the parser once per box and hands its measure to `setMeasure`. */
 function startLoading(
@@ -79,8 +88,7 @@ export function ComposeBox({
     setTextState(typed);
     ref.current!.style.height = `${ref.current!.scrollHeight}px`;
   }, []);
-  // Until the parser is here nothing is postable; it arrives before a person finishes a word.
-  const { weighted, remaining, postable: textPostable } = measure?.(text) ?? UNMEASURED;
+  const { weighted, remaining, postable: textPostable } = (measure ?? unmeasured)(text);
   // Images alone may be posted (#25); nothing is sent while one is still uploading.
   const count = attachments?.count ?? 0;
   const postable = (textPostable || (text === '' && count > 0)) && (attachments?.ready ?? true);

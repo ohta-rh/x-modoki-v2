@@ -30,8 +30,26 @@ describe('ComposeBox の文字数の数え（#32）', () => {
   });
 
   it('最初から本文があるときは、すぐ読み込んで数える', async () => {
-    render(<ComposeBox action={vi.fn()} initialText="こんにちは" />);
-    // Nothing focused or typed: only the text already in the box starts the load.
-    await waitFor(() => expect(screen.getByRole('button', { name: 'ポストする' })).toBeEnabled());
+    render(<ComposeBox action={vi.fn()} initialText={'あ'.repeat(141)} />);
+    // Nothing focused or typed: only the text already in the box starts the load, and the count
+    // shows only once the parser is here.
+    expect(await screen.findByText('-2')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ポストする' })).toBeDisabled();
+  });
+
+  it('数える仕組みが届く前に打って押しても、投稿できる（上限はサーバーが確かめる）', async () => {
+    vi.resetModules();
+    // A slow network: the parser is still on its way when the person presses ポストする.
+    vi.doMock('@/shared/lib/text-parse', async (importOriginal) => {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      return importOriginal();
+    });
+    const { ComposeBox: Slow } = await import('./compose-box');
+    const action = vi.fn(async () => ({ ok: true as const, id: '1', username: 'u' }));
+    render(<Slow action={action} />);
+    await userEvent.type(screen.getByRole('textbox', { name: '投稿の本文' }), '意見');
+    await userEvent.click(screen.getByRole('button', { name: 'ポストする' }));
+    expect(action).toHaveBeenCalledWith('意見', []);
+    vi.doUnmock('@/shared/lib/text-parse');
   });
 });
