@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
 import type { DeletePostActionResult } from '../model/types';
+import { OFFLINE_MESSAGE, settle } from '@/shared/lib/settle';
 
 type Props = {
   postId: string;
@@ -28,7 +29,7 @@ export function DeletePostMenu({ postId, action, onDeleted, items }: Props) {
 
   const remove = () =>
     startTransition(async () => {
-      const result = await action(postId);
+      const result = await settle(action(postId), { ok: false, message: OFFLINE_MESSAGE });
       if (!result.ok) {
         setError(result.message);
         return;

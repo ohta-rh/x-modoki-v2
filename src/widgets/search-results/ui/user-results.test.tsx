@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { toast } from '@/shared/ui/toast';
 import { UserResults } from './user-results';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -45,6 +46,22 @@ describe('UserResults（#27）', () => {
     await userEvent.click(screen.getByRole('button', { name: 'フォロー' }));
     expect(action).toHaveBeenCalledWith('aa', true);
     expect(screen.getByRole('button', { name: 'フォロー中' })).toBeInTheDocument();
+  });
+
+  it('通信が切れてフォローが失敗したら、元に戻してトーストで知らせる。断られたときも知らせる（#70）', async () => {
+    const add = vi.spyOn(toast, 'add');
+    const action = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce({ ok: false, message: 'だめ' });
+    show({ action: action as never });
+    await userEvent.click(screen.getByRole('button', { name: 'フォロー' }));
+    await vi.waitFor(() =>
+      expect(add).toHaveBeenCalledWith({ title: '通信できませんでした。もう一度お試しください' }),
+    );
+    expect(screen.getByRole('button', { name: 'フォロー' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'フォロー' }));
+    await vi.waitFor(() => expect(add).toHaveBeenCalledWith({ title: 'だめ' }));
   });
 
   it('フォローが失敗したら戻す。ログインしていなければログインへのリンク', async () => {

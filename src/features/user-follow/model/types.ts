@@ -3,6 +3,7 @@ export type FollowActionResult =
   | { ok: true; followersCount: number }
   | {
       ok: false;
-      code: 'UNAUTHORIZED' | 'NOT_FOUND' | 'FORBIDDEN' | 'RATE_LIMITED';
+      // OFFLINE: the request never reached the server; only the client gives it (#70).
+      code: 'UNAUTHORIZED' | 'NOT_FOUND' | 'FORBIDDEN' | 'RATE_LIMITED' | 'OFFLINE';
       message: string;
     };

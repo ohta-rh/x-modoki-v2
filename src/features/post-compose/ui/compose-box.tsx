@@ -1,6 +1,7 @@
 'use client';
 
 import { type ReactNode, useEffect, useRef, useState, useTransition } from 'react';
+import { OFFLINE_MESSAGE, settle } from '@/shared/lib/settle';
 import { MAX_WEIGHTED_LENGTH } from '@/shared/lib/text';
 import type { PostMeasure } from '@/shared/lib/text-parse';
 import { Button } from '@/shared/ui/button';
@@ -96,7 +97,11 @@ export function ComposeBox({
 
   const submit = () =>
     startTransition(async () => {
-      const result = await action(text, attachments?.media ?? []);
+      // Offline, the request itself fails: say so and keep what was written (#70).
+      const result = await settle(action(text, attachments?.media ?? []), {
+        ok: false,
+        message: OFFLINE_MESSAGE,
+      });
       if (!result.ok) {
         setError(result.message);
         return;

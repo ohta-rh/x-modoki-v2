@@ -33,4 +33,9 @@ describe('measurePost（ui-ux.md の 5 節、FR-POST）', () => {
   it.each(['', '   ', '\n\n'])('空や空白だけの本文 %j は投稿できない', (text) => {
     expect(measurePost(text).postable).toBe(false);
   });
+
+  it('前後の空白と改行は、保存しないので重みに数えない（#67）', () => {
+    expect(measurePost('\n\n  abc  \n\n').weighted).toBe(3);
+    expect(measurePost(' '.repeat(10) + 'a'.repeat(280)).postable).toBe(true);
+  });
 });

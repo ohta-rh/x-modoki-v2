@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { onlineManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { hydrateRoot } from 'react-dom/client';
@@ -383,6 +383,40 @@ describe('PostFeed の高さの無い窓（#60 review 2）', () => {
       ),
     ).not.toThrow();
     vi.restoreAllMocks();
+  });
+});
+
+describe('PostFeed の続きとオフライン（#72）', () => {
+  it('オフラインで続きの読み込みが止まると、ぐるぐるでなく知らせを出し、つながると続きを出す', async () => {
+    const fetchSpy = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ items: [post(2, false)], nextCursor: null }), {
+          headers: { 'content-type': 'application/json' },
+        }),
+    );
+    vi.stubGlobal('fetch', fetchSpy);
+    onlineManager.setOnline(false);
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <PostFeed
+          queryKey={['offline-next']}
+          endpoint="/api/offline-next"
+          firstPage={{ items: [post(1, false)], nextCursor: 'c1' }}
+          now="2026-11-18T03:00:00.000Z"
+        />
+      </QueryClientProvider>,
+    );
+    expect(
+      await screen.findByText('オフラインです。つながると続きを読み込みます'),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('status', { name: '読み込み中' })).toBeNull();
+    expect(fetchSpy).not.toHaveBeenCalled();
+    act(() => onlineManager.setOnline(true));
+    await waitFor(() =>
+      expect(screen.queryByText('オフラインです。つながると続きを読み込みます')).toBeNull(),
+    );
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    vi.unstubAllGlobals();
   });
 });
 

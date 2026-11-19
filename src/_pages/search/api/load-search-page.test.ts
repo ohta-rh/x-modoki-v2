@@ -45,6 +45,16 @@ describe('loadSearchPage（#27）', () => {
     expect(Date.parse(users.now)).not.toBeNaN();
   });
 
+  // FR-SEARCH-01: 本文の検索
+  it('濁点を分けて書いた（NFD の）語でも、NFC で保存した投稿が見つかる（#66）', async () => {
+    const hana = await makeUser({ username: 'hana_nfd' });
+    await makePost({ authorId: hana.id, text: 'がっこうの話' });
+    const found = await loadSearchPage('か\u3099っこう', 'live');
+    expect(
+      found.results.kind === 'posts' && found.results.page.items.map((item) => item.text),
+    ).toEqual(['がっこうの話']);
+  });
+
   it('同じ名前のパラメーターが並んでいれば、最初の値を使う', async () => {
     const hana = await makeUser({ username: 'hana_arr' });
     await makePost({ authorId: hana.id, text: '並んだ検索' });

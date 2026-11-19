@@ -1,7 +1,7 @@
 import { QueryClient } from '@tanstack/react-query';
 import { describe, expect, it } from 'vitest';
-import type { Post, PostPage } from '@/entities/post';
-import { updatePostInCaches } from './update-post-in-caches';
+import type { Post, PostPage } from '../model/types';
+import { removePostFromCaches, updatePostInCaches } from './update-post-in-caches';
 
 const post = (id: string, likes = 0): Post => ({
   id,
@@ -49,5 +49,27 @@ describe('updatePostInCaches（#21: 同じ投稿の全ての表示を変える�
     expect(read(['timeline', 'for-you']).map((p) => p.counts.likes)).toEqual([0, 1]);
     expect(read(['replies', '9'])[0].counts.likes).toBe(6);
     expect(client.getQueryData(['session'])).toEqual({ name: '太郎' });
+  });
+});
+
+describe('removePostFromCaches（#68）', () => {
+  it('どの一覧のキャッシュからも、その投稿（とそれを出すリポストの行）を取り除き、ほかは残す', () => {
+    const client = new QueryClient();
+    const item = (id: string) => ({ id, counts: { replies: 0 } }) as unknown as Post;
+    const pages = (...ids: string[][]) => ({
+      pages: ids.map((group) => ({ items: group.map(item), nextCursor: null })),
+      pageParams: ids.map(() => null),
+    });
+    client.setQueryData(['timeline', 'following'], pages(['1', '2'], ['1', '3']));
+    client.setQueryData(['user-posts', 'taro'], pages(['2', '1']));
+    client.setQueryData(['notifications', 'unread-count'], 3);
+    removePostFromCaches(client, '1');
+    const ids = (key: string[]) =>
+      client
+        .getQueryData<{ pages: PostPage[] }>(key)!
+        .pages.map((page) => page.items.map((post) => post.id));
+    expect(ids(['timeline', 'following'])).toEqual([['2'], ['3']]);
+    expect(ids(['user-posts', 'taro'])).toEqual([['2']]);
+    expect(client.getQueryData(['notifications', 'unread-count'])).toBe(3);
   });
 });

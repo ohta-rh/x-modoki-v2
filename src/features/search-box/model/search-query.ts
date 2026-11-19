@@ -3,9 +3,12 @@ export const MAX_QUERY_LENGTH = 100;
 
 export type SearchFilter = 'top' | 'live' | 'user' | 'media';
 
-/** The query as searched: trimmed, 1 to 100 characters; null when it cannot be searched. */
+/**
+ * The query as searched: NFC like the posts it searches (#66), trimmed, 1 to 100 characters;
+ * null when it cannot be searched.
+ */
 export function searchQuery(q: string | null): string | null {
-  const trimmed = (q ?? '').trim();
+  const trimmed = (q ?? '').normalize('NFC').trim();
   return trimmed.length === 0 || trimmed.length > MAX_QUERY_LENGTH ? null : trimmed;
 }
 

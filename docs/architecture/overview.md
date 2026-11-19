@@ -31,6 +31,7 @@ x-modoki は、X（x.com）の Web 版の見た目と操作を可能な限り再
    ▼
 ┌──────────── Next.js 16.4（本番は Cloudflare Workers、ローカルは next dev）────────────┐
 │ proxy.ts              ログインしていなければログインへ送る（粗い門だけ）       │
+│                       解読できない % のパスは 404 の画面へ（ADR-0063）         │
 │                                                                                │
 │ app/（ルーティングだけ。src/_pages と src/_app を呼ぶ）                              │
 │   Server Component ──────────────┐   最初の画面を描く                          │

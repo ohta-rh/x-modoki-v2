@@ -28,6 +28,15 @@ setupTestDb();
 beforeEach(signOut);
 
 describe('createPost（FR-POST、NFR-SEC-01・02・05）', () => {
+  // FR-POST-01: 本文を投稿する
+  it('本文の前後の空白と改行は削って保存し、途中の改行と空白は残す（#67）', async () => {
+    const me = await makeUser();
+    signInAs(me);
+    expect(await createPost('\n\n  前の行\n  次の行  \n\n')).toMatchObject({ ok: true });
+    const [row] = await testDb().select().from(posts);
+    expect(row.text).toBe('前の行\n  次の行');
+  });
+
   // AUTHZ: createPost UNAUTHORIZED
   it('ログインが無ければ UNAUTHORIZED で、何も書かない', async () => {
     expect(await createPost('こんにちは')).toEqual({ ok: false, error: 'UNAUTHORIZED' });

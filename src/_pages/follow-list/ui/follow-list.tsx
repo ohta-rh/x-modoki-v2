@@ -9,6 +9,7 @@ import { type FollowActionResult, FollowButton } from '@/features/user-follow';
 import { toast } from '@/shared/ui/toast';
 import { Avatar } from '@/shared/ui/avatar';
 import { Spinner } from '@/shared/ui/spinner';
+import { OFFLINE_MESSAGE, settle } from '@/shared/lib/settle';
 
 type Props = {
   username: string;
@@ -37,7 +38,11 @@ function Row({
   const toggle = async () => {
     const next = !following;
     setFollowing(next);
-    const result = await action(person.username, next);
+    const result = await settle(action(person.username, next), {
+      ok: false,
+      code: 'OFFLINE',
+      message: OFFLINE_MESSAGE,
+    });
     if (!result.ok) {
       setFollowing(!next);
       toast.add({ title: result.message });

@@ -3,4 +3,4 @@ export type BookmarkActionResult =
   { ok: true; count: number } | { ok: false; code: 'UNAUTHORIZED' | 'NOT_FOUND'; message: string };
 /** What the 全て削除 menu gets back. */
 export type ClearBookmarksActionResult =
-  { ok: true } | { ok: false; code: 'UNAUTHORIZED'; message: string };
+  { ok: true } | { ok: false; code: 'UNAUTHORIZED' | 'OFFLINE'; message: string };

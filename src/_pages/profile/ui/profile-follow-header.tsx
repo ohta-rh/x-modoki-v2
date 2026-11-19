@@ -6,6 +6,7 @@ import type { Profile } from '@/entities/user';
 import { type FollowActionResult, FollowButton } from '@/features/user-follow';
 import { toast } from '@/shared/ui/toast';
 import { ProfileHeader } from '@/widgets/profile-header';
+import { OFFLINE_MESSAGE, settle } from '@/shared/lib/settle';
 
 type Props = {
   profile: Profile;
@@ -28,7 +29,11 @@ export function ProfileFollowHeader({ profile, signedIn, action }: Props) {
     startTransition(async () => {
       const following = !state.following;
       change({ following, followers: Math.max(state.followers + (following ? 1 : -1), 0) });
-      const result = await action(profile.username, following);
+      const result = await settle(action(profile.username, following), {
+        ok: false,
+        code: 'OFFLINE',
+        message: OFFLINE_MESSAGE,
+      });
       if (result.ok) router.refresh();
       else toast.add({ title: result.message });
     });

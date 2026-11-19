@@ -45,6 +45,21 @@ describe('ProfileEditForm（#23）', () => {
     expect(onSaved).not.toHaveBeenCalled();
   });
 
+  it('通信が切れて action が失敗しても、通信の文言を出し、入れた値を残し、onSaved を呼ばない（#70）', async () => {
+    const onSaved = vi.fn();
+    const action = vi.fn(async (): Promise<{ ok: true }> => {
+      throw new TypeError('Failed to fetch');
+    });
+    render(<ProfileEditForm initial={initial} action={action} onSaved={onSaved} />);
+    await userEvent.type(screen.getByRole('textbox', { name: '自己紹介' }), '猫');
+    await userEvent.click(screen.getByRole('button', { name: '保存' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      '通信できませんでした。もう一度お試しください',
+    );
+    expect(screen.getByRole('textbox', { name: '自己紹介' })).toHaveValue('猫');
+    expect(onSaved).not.toHaveBeenCalled();
+  });
+
   it('画像の欄を差し込め、選んだ画像の ID も送る。送っている間は保存できない（#25）', async () => {
     const action = vi.fn(async () => ({ ok: true as const }));
     const images = (busy: boolean) => ({

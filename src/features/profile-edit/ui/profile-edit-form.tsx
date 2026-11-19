@@ -5,6 +5,7 @@ import { Button } from '@/shared/ui/button';
 import { Field } from '@/shared/ui/field';
 import type { ProfileInput } from '../model/schema';
 import type { UpdateProfileActionResult } from '../model/types';
+import { OFFLINE_MESSAGE, settle } from '@/shared/lib/settle';
 
 type Props = {
   initial: ProfileInput;
@@ -41,7 +42,12 @@ export function ProfileEditForm({ initial, action, onSaved, images }: Props) {
         ) as ProfileInput;
         Object.assign(input, images?.ids);
         startTransition(async () => {
-          const next = await action(input);
+          const next = await settle(action(input), {
+            ok: false,
+            code: 'OFFLINE',
+            fieldErrors: {},
+            message: OFFLINE_MESSAGE,
+          });
           setResult(next);
           if (next.ok) onSaved();
         });

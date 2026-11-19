@@ -1,5 +1,5 @@
 import type { InfiniteData, QueryClient } from '@tanstack/react-query';
-import type { Post, PostPage } from '@/entities/post';
+import type { Post, PostPage } from '../model/types';
 
 // Only the post lists are infinite queries in this app; Object() lets undefined data through safely.
 const isPostPages = (data: unknown): data is InfiniteData<PostPage> =>
@@ -21,6 +21,23 @@ export function updatePostInCaches(
       pages: data.pages.map((page) => ({
         ...page,
         items: page.items.map((item) => (item.id === postId ? update(item) : item)),
+      })),
+    });
+  }
+}
+
+/**
+ * Drops one post from every post list it is in — a deleted post's card, and the repost rows that
+ * show it (#68). A list read again later gets the same from the server.
+ */
+export function removePostFromCaches(client: QueryClient, postId: string): void {
+  for (const [key, data] of client.getQueriesData({})) {
+    if (!isPostPages(data)) continue;
+    client.setQueryData<InfiniteData<PostPage>>(key, {
+      ...data,
+      pages: data.pages.map((page) => ({
+        ...page,
+        items: page.items.filter((item) => item.id !== postId),
       })),
     });
   }

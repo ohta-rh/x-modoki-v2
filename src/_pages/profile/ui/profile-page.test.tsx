@@ -135,6 +135,18 @@ describe('ProfilePage のフォロー（#24）', () => {
     await waitFor(() => expect(refresh).toHaveBeenCalled());
   });
 
+  it('通信が切れてフォローが失敗したら、元に戻してトーストで知らせる（#70）', async () => {
+    const add = vi.spyOn(toast, 'add');
+    setFollowAction.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    page({ profile: { ...profile, isSelf: false, isFollowing: false, followersCount: 4 } });
+    const header = within(screen.getByRole('region', { name: 'プロフィール' }));
+    await userEvent.click(header.getByRole('button', { name: 'フォロー' }));
+    await waitFor(() =>
+      expect(add).toHaveBeenCalledWith({ title: '通信できませんでした。もう一度お試しください' }),
+    );
+    expect(screen.getByRole('region', { name: 'プロフィール' })).toHaveTextContent('4 フォロワー');
+  });
+
   it('フォロー中を押すと解除。失敗したら戻してトースト', async () => {
     const add = vi.spyOn(toast, 'add');
     setFollowAction.mockResolvedValueOnce({

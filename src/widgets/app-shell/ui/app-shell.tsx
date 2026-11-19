@@ -29,6 +29,9 @@ export function AppShell({
   unread?: number;
 }) {
   const currentPath = usePathname();
+  // The compose and settings screens have their own action at the bottom right: the floating
+  // button would sit on it, and X does not show it there either (#65).
+  const floating = !(currentPath === COMPOSE_PATH || currentPath.startsWith('/settings'));
   return (
     <div className="flex min-h-screen justify-center">
       <div
@@ -37,7 +40,9 @@ export function AppShell({
       >
         <LeftNav currentPath={currentPath} account={account} signOut={signOut} unread={unread} />
       </div>
-      <main className="min-h-screen w-full max-w-[600px] min-w-0 border-line pb-[53px] sm:border-x sm:pb-0">
+      {/* Under 640px the last content can scroll above the floating button: its top edge is 136px
+          up (bottom-20 plus its 56px), over the 53px tab bar (#65). */}
+      <main className="min-h-screen w-full max-w-[600px] min-w-0 border-line pb-[136px] sm:border-x sm:pb-0">
         {children}
         <SiteFooter className="lg:hidden" />
       </main>
@@ -48,15 +53,17 @@ export function AppShell({
       <div className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-[var(--header-bg)] backdrop-blur-[12px] sm:hidden">
         <TabBar currentPath={currentPath} unread={unread} />
       </div>
-      <div className="fixed right-4 bottom-20 z-10 sm:hidden">
-        <Link
-          href={COMPOSE_PATH}
-          aria-label="ポストする"
-          className="flex size-14 items-center justify-center rounded-full bg-brand-fill text-on-brand shadow-lg"
-        >
-          <Feather aria-hidden="true" className="size-6" />
-        </Link>
-      </div>
+      {floating ? (
+        <div className="fixed right-4 bottom-20 z-10 sm:hidden">
+          <Link
+            href={COMPOSE_PATH}
+            aria-label="ポストする"
+            className="flex size-14 items-center justify-center rounded-full bg-brand-fill text-on-brand shadow-lg"
+          >
+            <Feather aria-hidden="true" className="size-6" />
+          </Link>
+        </div>
+      ) : null}
     </div>
   );
 }

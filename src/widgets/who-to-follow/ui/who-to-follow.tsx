@@ -6,6 +6,8 @@ import { useState } from 'react';
 import type { FollowUser } from '@/entities/user';
 import { type FollowActionResult, FollowButton } from '@/features/user-follow';
 import { Avatar } from '@/shared/ui/avatar';
+import { OFFLINE_MESSAGE, settle } from '@/shared/lib/settle';
+import { toast } from '@/shared/ui/toast';
 
 type Props = {
   users: FollowUser[];
@@ -19,8 +21,14 @@ function Row({ person, action, loginHref }: { person: FollowUser } & Omit<Props,
   const toggle = async () => {
     const next = !following;
     setFollowing(next);
-    const result = await action!(person.username, next);
-    if (!result.ok) setFollowing(!next);
+    const result = await settle(action!(person.username, next), {
+      ok: false,
+      code: 'OFFLINE',
+      message: OFFLINE_MESSAGE,
+    });
+    if (result.ok) return;
+    setFollowing(!next);
+    toast.add({ title: result.message });
   };
   return (
     <li className="flex items-center gap-3 px-4 py-3 hover:bg-hover">

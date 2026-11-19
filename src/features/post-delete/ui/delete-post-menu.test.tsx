@@ -43,6 +43,20 @@ describe('DeletePostMenu（#20）', () => {
     expect(onDeleted).not.toHaveBeenCalled();
   });
 
+  it('通信が切れて action が失敗しても、通信の文言を出し、onDeleted を呼ばない（#70）', async () => {
+    const action = vi.fn<Action>(async () => {
+      throw new TypeError('Failed to fetch');
+    });
+    const onDeleted = vi.fn();
+    render(<DeletePostMenu postId="123" action={action} onDeleted={onDeleted} />);
+    await openConfirm();
+    await userEvent.click(screen.getByRole('button', { name: '削除' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      '通信できませんでした。もう一度お試しください',
+    );
+    expect(onDeleted).not.toHaveBeenCalled();
+  });
+
   it('items を渡すと、削除の上に並べる（#23）', async () => {
     render(
       <DeletePostMenu

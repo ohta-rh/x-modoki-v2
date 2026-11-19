@@ -40,4 +40,18 @@ describe('PinMenuItem（#23）', () => {
     await waitFor(() => expect(add).toHaveBeenCalledWith({ title: 'この投稿は固定できません' }));
     expect(onDone).not.toHaveBeenCalled();
   });
+
+  it('通信が切れて action が失敗したら、トーストで知らせ、onDone を呼ばない（#70）', async () => {
+    const add = vi.spyOn(toast, 'add');
+    const action = vi.fn(async (): Promise<{ ok: true }> => {
+      throw new TypeError('Failed to fetch');
+    });
+    const onDone = vi.fn();
+    await open(<PinMenuItem postId="1" pinned={false} action={action} onDone={onDone} />);
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'プロフィールに固定する' }));
+    await waitFor(() =>
+      expect(add).toHaveBeenCalledWith({ title: '通信できませんでした。もう一度お試しください' }),
+    );
+    expect(onDone).not.toHaveBeenCalled();
+  });
 });

@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
 import type { ClearBookmarksActionResult } from '../model/types';
+import { OFFLINE_MESSAGE, settle } from '@/shared/lib/settle';
 
 type Props = { action: () => Promise<ClearBookmarksActionResult>; onCleared: () => void };
 
@@ -22,7 +23,11 @@ export function ClearBookmarksMenu({ action, onCleared }: Props) {
 
   const clear = () =>
     startTransition(async () => {
-      const result = await action();
+      const result = await settle(action(), {
+        ok: false,
+        code: 'OFFLINE',
+        message: OFFLINE_MESSAGE,
+      });
       if (!result.ok) {
         setError(result.message);
         return;

@@ -38,4 +38,22 @@ describe('ClearBookmarksMenu（#21）', () => {
     expect(await dialog.findByRole('alert')).toHaveTextContent('ログインしてください');
     expect(onCleared).not.toHaveBeenCalled();
   });
+
+  it('通信が切れて action が失敗しても、通信の文言を出し、onCleared を呼ばない（#70）', async () => {
+    const onCleared = vi.fn();
+    render(
+      <ClearBookmarksMenu
+        action={async () => {
+          throw new TypeError('Failed to fetch');
+        }}
+        onCleared={onCleared}
+      />,
+    );
+    const dialog = await open();
+    await userEvent.click(dialog.getByRole('button', { name: '削除' }));
+    expect(await dialog.findByRole('alert')).toHaveTextContent(
+      '通信できませんでした。もう一度お試しください',
+    );
+    expect(onCleared).not.toHaveBeenCalled();
+  });
 });

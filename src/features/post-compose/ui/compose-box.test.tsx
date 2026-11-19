@@ -41,6 +41,21 @@ describe('ComposeBox（ui-ux.md の 7 節）', () => {
     expect(box().style.height).toBe('120px');
   });
 
+  it('通信が切れて action が失敗しても、画面を壊さず、通信の文言を出し、打った文字を残す（#70）', async () => {
+    const onPosted = vi.fn();
+    const action = vi.fn<Action>(async () => {
+      throw new TypeError('Failed to fetch');
+    });
+    render(<ComposeBox action={action} onPosted={onPosted} />);
+    await userEvent.type(box(), '送れない投稿');
+    await userEvent.click(button());
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      '通信できませんでした。もう一度お試しください',
+    );
+    expect(box()).toHaveValue('送れない投稿');
+    expect(onPosted).not.toHaveBeenCalled();
+  });
+
   it('送ると action に本文を渡し、空にして onPosted を呼ぶ', async () => {
     const action = ok();
     const onPosted = vi.fn();

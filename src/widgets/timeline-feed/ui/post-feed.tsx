@@ -217,6 +217,11 @@ export function PostFeed({
         <p role="alert" className="px-4 py-6 text-center text-text-muted">
           続きを読み込めませんでした
         </p>
+      ) : hasNextPage && query.fetchStatus === 'paused' ? (
+        // Offline: the next page waits for the network; a spinner would turn forever (#72).
+        <p role="status" className="px-4 py-6 text-center text-text-muted">
+          オフラインです。つながると続きを読み込みます
+        </p>
       ) : hasNextPage ? (
         <Spinner />
       ) : null}

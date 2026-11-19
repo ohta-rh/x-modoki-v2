@@ -8,8 +8,9 @@ import type { Post, PostDetail } from '@/entities/post';
 import { PostThread } from './post-thread';
 
 const push = vi.fn();
+const replace = vi.fn();
 const refresh = vi.fn();
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push, refresh }) }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push, replace, refresh }) }));
 
 const post = (id: string, text: string, isAuthor = false): Post => ({
   id,
@@ -91,10 +92,18 @@ describe('PostThread（#20）', () => {
     expect(refresh).toHaveBeenCalled();
   });
 
-  it('本体を削除したら、ホームへ移る', async () => {
+  it('本体を削除したら、履歴を置き換えてホームへ移り、一覧からも消す（戻っても消した投稿が出ない、#68）', async () => {
     push.mockReset();
+    replace.mockReset();
+    const client = new QueryClient();
+    client.setQueryData(['timeline', 'following'], {
+      pages: [{ items: [post('3', '本体'), post('9', 'ほか')], nextCursor: null }],
+      pageParams: [null],
+    });
     render(
-      wrap(<PostThread detail={detail} now="2026-11-18T03:00:00.000Z" signedIn {...actions()} />),
+      <QueryClientProvider client={client}>
+        <PostThread detail={detail} now="2026-11-18T03:00:00.000Z" signedIn {...actions()} />
+      </QueryClientProvider>,
     );
     const main = screen.getByRole('article', { name: '投稿の本体' });
     await userEvent.click(within(main).getByRole('button', { name: 'もっと見る' }));
@@ -102,6 +111,30 @@ describe('PostThread（#20）', () => {
     await userEvent.click(
       within(await screen.findByRole('alertdialog')).getByRole('button', { name: '削除' }),
     );
-    await waitFor(() => expect(push).toHaveBeenCalledWith('/home'));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/home'));
+    expect(push).not.toHaveBeenCalled();
+    // Out of the lists too: Back to them must not show it.
+    expect(
+      client
+        .getQueryData<{ pages: { items: Post[] }[] }>(['timeline', 'following'])!
+        .pages[0].items.map((item) => item.id),
+    ).toEqual(['9']);
+  });
+
+  it('返信が通ると、一覧のキャッシュのその投稿の返信の数を 1 増やす（戻ったホームのカードに出る、#69）', async () => {
+    const client = new QueryClient();
+    const page = { items: [post('3', '本体'), post('9', 'ほか')], nextCursor: null };
+    client.setQueryData(['timeline', 'following'], { pages: [page], pageParams: [null] });
+    render(
+      <QueryClientProvider client={client}>
+        <PostThread detail={detail} now="2026-11-18T03:00:00.000Z" signedIn {...actions()} />
+      </QueryClientProvider>,
+    );
+    await userEvent.type(screen.getByRole('textbox', { name: '返信の本文' }), '返信する');
+    await userEvent.click(screen.getByRole('button', { name: '返信' }));
+    await waitFor(() => {
+      const data = client.getQueryData<{ pages: { items: Post[] }[] }>(['timeline', 'following']);
+      expect(data!.pages[0].items.map((item) => item.counts.replies)).toEqual([1, 0]);
+    });
   });
 });

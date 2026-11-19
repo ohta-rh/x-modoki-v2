@@ -5,7 +5,8 @@ export type UpdateProfileActionResult =
   | { ok: true }
   | {
       ok: false;
-      code: 'VALIDATION' | 'UNAUTHORIZED';
+      // OFFLINE: the request never reached the server; only the form gives it (#70).
+      code: 'VALIDATION' | 'UNAUTHORIZED' | 'OFFLINE';
       fieldErrors: Partial<Record<keyof ProfileInput, string[]>>;
       message?: string;
     };

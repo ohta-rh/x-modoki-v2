@@ -3,7 +3,13 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { MainPost, PostCard, type PostDetail } from '@/entities/post';
+import {
+  MainPost,
+  PostCard,
+  type PostDetail,
+  removePostFromCaches,
+  updatePostInCaches,
+} from '@/entities/post';
 import { ComposeBox, type CreatePostActionResult } from '@/features/post-compose';
 import { type DeletePostActionResult, DeletePostMenu } from '@/features/post-delete';
 
@@ -59,7 +65,11 @@ export function PostThread({
             <DeletePostMenu
               postId={post.id}
               action={deleteAction}
-              onDeleted={() => router.push('/home')}
+              // Replace, not push, and out of every list: Back must not bring it back (#68).
+              onDeleted={() => {
+                removePostFromCaches(queryClient, post.id);
+                router.replace('/home');
+              }}
             />
           ) : undefined
         }
@@ -72,6 +82,11 @@ export function PostThread({
           action={(text) => replyAction(text, post.id)}
           onPosted={() => {
             void queryClient.resetQueries({ queryKey: repliesKey });
+            // The lists hold this post too: their card shows the new count on Back (#69).
+            updatePostInCaches(queryClient, post.id, (target) => ({
+              ...target,
+              counts: { ...target.counts, replies: target.counts.replies + 1 },
+            }));
             // The post's reply count is server data: read the page again.
             router.refresh();
           }}

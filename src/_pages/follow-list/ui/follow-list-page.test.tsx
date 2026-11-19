@@ -72,6 +72,18 @@ describe('FollowListPage（#24）', () => {
     expect(first.getByRole('button', { name: /フォロー中|フォロー解除/ })).toBeInTheDocument();
   });
 
+  it('通信が切れて行のフォローが失敗したら、元に戻してトーストで知らせる（#70）', async () => {
+    const add = vi.spyOn(toast, 'add');
+    setFollowAction.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    show();
+    const first = within(screen.getAllByRole('listitem')[0]);
+    await userEvent.click(first.getByRole('button', { name: 'フォロー' }));
+    await waitFor(() =>
+      expect(add).toHaveBeenCalledWith({ title: '通信できませんでした。もう一度お試しください' }),
+    );
+    expect(first.getByRole('button', { name: 'フォロー' })).toBeInTheDocument();
+  });
+
   it('ログインしていなければ、ログインへのリンク。空なら案内', () => {
     show({
       signedIn: false,

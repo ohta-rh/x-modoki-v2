@@ -4,6 +4,7 @@ import { Pin } from 'lucide-react';
 import { DropdownMenuItem } from '@/shared/ui/dropdown-menu';
 import { toast } from '@/shared/ui/toast';
 import type { SetPinActionResult } from '../model/types';
+import { OFFLINE_MESSAGE, settle } from '@/shared/lib/settle';
 
 type Props = {
   postId: string;
@@ -18,7 +19,11 @@ export function PinMenuItem({ postId, pinned, action, onDone }: Props) {
     <DropdownMenuItem
       className="font-bold"
       onClick={async () => {
-        const result = await action(postId, !pinned);
+        const result = await settle(action(postId, !pinned), {
+          ok: false,
+          code: 'OFFLINE',
+          message: OFFLINE_MESSAGE,
+        });
         if (result.ok) onDone();
         else toast.add({ title: result.message });
       }}

@@ -97,3 +97,38 @@ test('返信を消すと、本体の返信の数がその場で減る', async ({
   await expect(page.getByRole('region', { name: '返信' })).toContainText('まだ返信がありません');
   await expect(main).toContainText('0 件の返信');
 });
+
+// FR-POST-08: 投稿の削除
+test('詳細の画面で削除したあと「戻る」でも、消した投稿の詳細は出ない（#68）', async ({ page }) => {
+  await signUp(page);
+  await postFromHome(page, '戻って見える投稿');
+  await page.getByRole('article').first().locator('time').click();
+  await expect(page).toHaveURL(/\/status\/\d+$/);
+  const main = page.getByRole('article', { name: '投稿の本体' });
+  await main.getByRole('button', { name: 'もっと見る' }).click();
+  await page.getByRole('menuitem', { name: '削除' }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: '削除' }).click();
+  await expect(page).toHaveURL(/\/home/);
+  await page.goBack();
+  await expect(page.getByRole('article', { name: '投稿の本体' })).toHaveCount(0);
+  // Visible only: Next.js keeps the page it left hidden in the DOM (Activity).
+  await expect(page.getByText('戻って見える投稿').filter({ visible: true })).toHaveCount(0);
+});
+
+// FR-VIEW-01: 投稿の詳細
+test('詳細で返信して戻ると、ホームのカードの返信と表示の数が増えている（#69）', async ({
+  page,
+}) => {
+  await signUp(page);
+  await postFromHome(page, '数が戻る投稿');
+  await page.getByRole('article').first().locator('time').click();
+  await expect(page).toHaveURL(/\/status\/\d+$/);
+  await page.getByRole('textbox', { name: '返信の本文' }).fill('返信した');
+  await page.getByRole('button', { name: '返信', exact: true }).click();
+  await expect(page.getByText('1 件の返信')).toBeVisible();
+  await page.goBack();
+  const card = page.getByRole('article').filter({ hasText: '数が戻る投稿' });
+  // Each count is read as 「返信 1」 / 「表示 1」 (the words are for screen readers).
+  await expect(card.getByText('返信 1', { exact: true })).toHaveCount(1);
+  await expect(card.getByText('表示 1', { exact: true })).toHaveCount(1);
+});

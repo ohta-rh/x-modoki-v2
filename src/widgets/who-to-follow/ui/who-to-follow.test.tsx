@@ -2,6 +2,7 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { toast } from '@/shared/ui/toast';
 import { WhoToFollow } from './who-to-follow';
 
 const person = (username: string, name: string) => ({
@@ -42,5 +43,22 @@ describe('WhoToFollow（#27）', () => {
     const empty = render(<WhoToFollow users={[]} />);
     expect(empty.container).toBeEmptyDOMElement();
     void container;
+  });
+
+  it('通信が切れてフォローが失敗したら、元に戻してトーストで知らせる。断られたときも知らせる（#70）', async () => {
+    const add = vi.spyOn(toast, 'add');
+    const action = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce({ ok: false, message: 'フォローが多すぎます' });
+    render(<WhoToFollow users={[person('hana', '花子')]} action={action} />);
+    const section = within(screen.getByRole('region', { name: 'おすすめユーザー' }));
+    await userEvent.click(section.getByRole('button', { name: 'フォロー' }));
+    await vi.waitFor(() =>
+      expect(add).toHaveBeenCalledWith({ title: '通信できませんでした。もう一度お試しください' }),
+    );
+    expect(section.getByRole('button', { name: 'フォロー' })).toBeInTheDocument();
+    await userEvent.click(section.getByRole('button', { name: 'フォロー' }));
+    await vi.waitFor(() => expect(add).toHaveBeenCalledWith({ title: 'フォローが多すぎます' }));
   });
 });

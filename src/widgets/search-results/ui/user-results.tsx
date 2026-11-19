@@ -8,6 +8,8 @@ import type { FollowPage, FollowUser } from '@/entities/user';
 import { type FollowActionResult, FollowButton } from '@/features/user-follow';
 import { Avatar } from '@/shared/ui/avatar';
 import { Spinner } from '@/shared/ui/spinner';
+import { OFFLINE_MESSAGE, settle } from '@/shared/lib/settle';
+import { toast } from '@/shared/ui/toast';
 
 type Props = {
   q: string;
@@ -32,8 +34,14 @@ function Row({
   const toggle = async () => {
     const next = !following;
     setFollowing(next);
-    const result = await action!(person.username, next);
-    if (!result.ok) setFollowing(!next);
+    const result = await settle(action!(person.username, next), {
+      ok: false,
+      code: 'OFFLINE',
+      message: OFFLINE_MESSAGE,
+    });
+    if (result.ok) return;
+    setFollowing(!next);
+    toast.add({ title: result.message });
   };
   return (
     <li className="flex gap-3 border-b border-line px-4 py-3">

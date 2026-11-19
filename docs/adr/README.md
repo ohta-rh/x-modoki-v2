@@ -73,3 +73,5 @@ status: stable
 | [0059](0059-load-popups-and-parsers-on-first-use.md) | メニュー・ダイアログ・ホバーカード・トーストと投稿の解析は、使うときに読み込み、最初に送る JavaScript を e2e で 200KB 以下に保つ | 採用 | エージェント |
 | [0060](0060-every-entry-has-tagged-authorization-tests.md) | 全ての入口に、印の付いた認可のテストを求め、lint で突き合わせる | 採用 | エージェント |
 | [0061](0061-security-headers-and-content-security-policy.md) | 全ての応答にセキュリティのヘッダーを付け、CSP は自分のサイト・画像の配信元・ストレージの口だけを許し、インラインのスクリプトは許す | 採用 | エージェント |
+| [0062](0062-error-screens-are-thin-route-shells.md) | 誤りの画面は、アプリの error.tsx と global-error.tsx から日本語の同期の画面を出し、ボタンでページを読み込み直す | 採用 | エージェント |
+| [0063](0063-proxy-answers-undecodable-paths-with-404.md) | 解読できない % を含むパスは、proxy.ts で 404 の画面へ書き換える | 採用 | エージェント |

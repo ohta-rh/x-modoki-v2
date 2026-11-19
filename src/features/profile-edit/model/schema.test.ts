@@ -24,6 +24,16 @@ describe('profileSchema（#23）', () => {
     expect(errors({ website: 'http://example.com' })).toEqual({});
   });
 
+  it('文字の項目は NFC にそろえて保存する（濁点を分けて書いても、検索で見つかる、#66）', () => {
+    const parsed = profileSchema.parse({
+      name: 'か\u3099',
+      bio: 'e\u0301',
+      location: 'ハ\u309A',
+      website: '',
+    });
+    expect([parsed.name, parsed.bio, parsed.location]).toEqual(['が', 'é', 'パ']);
+  });
+
   it('前後の空白は取り除く', () => {
     const result = profileSchema.parse({ ...valid, name: '  花子  ', website: ' https://x.test ' });
     expect(result).toMatchObject({ name: '花子', website: 'https://x.test' });

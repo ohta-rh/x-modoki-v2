@@ -60,7 +60,8 @@ export async function createPost(
 ): Promise<CreatePostResult> {
   const viewer = await getSession();
   if (!viewer) return { ok: false, error: 'UNAUTHORIZED' };
-  const body = text.normalize('NFC');
+  // Spaces and line breaks around the body are not kept, as on X (#67).
+  const body = text.normalize('NFC').trim();
   // A post may be images alone (#25); otherwise its text must be postable.
   const textOk = measurePost(body).postable || (body === '' && items.length > 0);
   const mediaOk = items.length <= MAX_MEDIA && items.every((item) => item.alt.length <= MAX_ALT);

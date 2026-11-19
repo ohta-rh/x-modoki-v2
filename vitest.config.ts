@@ -5,7 +5,7 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
 // Coverage is 100% for everything Vitest can run (ADR-0021). The only exclusions are the four
-// kinds named in ADR-0021 / ADR-0022: root app/ page, layout, default and not-found files (not in `include`; ADR-0039),
+// kinds named in ADR-0021 / ADR-0022: root app/ page, layout, default, not-found, error and global-error files (not in `include`; ADR-0039, ADR-0062),
 // vendored shadcn/ui, the Drizzle schema declarations, and type-only files (no code to measure).
 // Tests and the database global setup read DATABASE_URL from .env.local, as Next.js does.
 if (existsSync('.env.local')) process.loadEnvFile('.env.local');

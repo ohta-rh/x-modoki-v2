@@ -59,7 +59,7 @@ status: stable
 | FR-REACT-01 | #21 | `e2e/reactions.spec.ts` › いいねを押すと、すぐに数が 1 増える。もう一度押すと戻る |
 | FR-REACT-02 | #21 | `e2e/reactions.spec.ts` › いいねが失敗したら元に戻り、トーストが出る |
 | FR-REACT-03 | #21 | `src/features/post-like/api/set-like.test.ts` › 同時に 2 回いいねしても、数は 1 しか増えない |
-| FR-REACT-04 | #21 | `src/widgets/timeline-feed/lib/update-post-in-caches.test.ts` › 全ての一覧（ホームの 2 つのタブ・返信・ブックマーク）の、その ID の投稿だけを書き換える |
+| FR-REACT-04 | #21 | `src/entities/post/lib/update-post-in-caches.test.ts` › 全ての一覧（ホームの 2 つのタブ・返信・ブックマーク）の、その ID の投稿だけを書き換える |
 | FR-REACT-05 | #21 | `e2e/reactions.spec.ts` › ブックマークすると /i/bookmarks に出て、全て削除で消える |
 | FR-REACT-06 | #21 | `src/features/post-view-count/api/count-view.test.ts` › 表示の回数を 1 足す。削除された投稿は足さない（ログインは要らない） |
 | FR-REACT-07 | #21 | `e2e/reactions.spec.ts` › prefers-reduced-motion のとき、ハートは動かない |

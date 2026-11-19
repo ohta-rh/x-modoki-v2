@@ -6,7 +6,8 @@ import { AppShell } from './app-shell';
 import { PageHeader } from './page-header';
 import { TabBar } from './tab-bar';
 
-vi.mock('next/navigation', () => ({ usePathname: () => '/explore' }));
+const at = vi.hoisted(() => ({ path: '/explore' }));
+vi.mock('next/navigation', () => ({ usePathname: () => at.path }));
 
 describe('AppShell（ui-ux.md の 2 節）', () => {
   it('左の列・メイン・右サイドバー・下のタブバー・右下の投稿ボタンを並べ、中身をメインに出す', () => {
@@ -59,6 +60,29 @@ describe('AppShell（ui-ux.md の 2 節）', () => {
     const footer = within(screen.getByRole('main')).getByRole('contentinfo');
     expect(footer).toHaveTextContent('X Corp. とは関係の無い学習用のアプリ');
     expect(footer).toHaveClass('lg:hidden');
+  });
+});
+
+describe('右下の投稿ボタンと、メインの下の余白（#65）', () => {
+  const floating = () =>
+    screen.queryAllByRole('link', { name: 'ポストする' }).filter((link) => link.closest('.fixed'));
+
+  it('投稿の画面と設定の画面では、右下の投稿ボタンを出さない（その画面の操作に重なるので）', () => {
+    for (const path of ['/compose/post', '/settings', '/settings/profile', '/settings/display']) {
+      at.path = path;
+      const { unmount } = render(<AppShell>中身</AppShell>);
+      expect(floating(), path).toHaveLength(0);
+      unmount();
+    }
+    at.path = '/home';
+    render(<AppShell>中身</AppShell>);
+    expect(floating()).toHaveLength(1);
+    at.path = '/explore';
+  });
+
+  it('640px 未満のメインの下には、タブバーと投稿ボタンの分の余白を取る', () => {
+    render(<AppShell>中身</AppShell>);
+    expect(screen.getByRole('main')).toHaveClass('pb-[136px]', 'sm:pb-0');
   });
 });
 
