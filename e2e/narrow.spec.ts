@@ -113,6 +113,9 @@ test.describe('人が入れた長い文字と、画面より高いダイアロ�
     page,
   }) => {
     test.slow();
+    // Someone for the long-named person to follow, so the long row shows in a follower list.
+    const them = await signUp(page);
+    await page.context().clearCookies();
     const me = await signUp(page);
     await page.goto('/settings/profile');
     await page.getByRole('textbox', { name: '名前' }).fill(LONG.name);
@@ -120,13 +123,27 @@ test.describe('人が入れた長い文字と、画面より高いダイアロ�
     await page.getByRole('textbox', { name: 'ウェブサイト' }).fill(LONG.website);
     await page.getByRole('button', { name: '保存' }).click();
     await expect(page).not.toHaveURL(/\/settings\/profile$/);
+    await page.goto(`/${them.username}`);
+    await page
+      .getByRole('region', { name: 'プロフィール' })
+      .getByRole('button', { name: 'フォロー', exact: true })
+      .click();
+    await expect(
+      page
+        .getByRole('region', { name: 'プロフィール' })
+        .getByRole('button', { name: 'フォロー中' }),
+    ).toBeVisible();
     await page.goto('/home?tab=following');
     await page.getByRole('textbox', { name: '投稿の本文' }).fill('長い名前の人の投稿');
     await page.getByRole('button', { name: 'ポストする' }).click();
     await expect(page.getByRole('article').first()).toContainText('長い名前の人の投稿');
     for (const width of [320, 1280]) {
       await page.setViewportSize({ width, height: 740 });
-      for (const path of [`/${me.username}`, `/search?q=${me.username}&f=user`]) {
+      for (const path of [
+        `/${me.username}`,
+        `/search?q=${me.username}&f=user`,
+        `/${them.username}/followers`,
+      ]) {
         await page.goto(path);
         await expect(page.getByText(LONG.bio).first()).toBeVisible();
         expect(await sideways(page), `${path} at ${width}`).toBe(0);
@@ -179,5 +196,18 @@ test.describe('人が入れた長い文字と、画面より高いダイアロ�
     await expect(cancel).toBeInViewport();
     await cancel.click();
     await expect(dialog).toHaveCount(0);
+
+    // The quote dialog has its own layout: the same at 320×200.
+    await page.setViewportSize({ width: 320, height: 740 });
+    await post.getByRole('button', { name: 'リポスト' }).click();
+    await page.getByRole('menuitem', { name: '引用' }).click();
+    const quote = page.getByRole('dialog', { name: '引用' });
+    await expect(quote).toBeVisible();
+    await page.setViewportSize({ width: 320, height: 200 });
+    await expect.poll(async () => (await quote.boundingBox())!.y).toBeGreaterThanOrEqual(0);
+    const send = quote.getByRole('button', { name: 'ポストする' });
+    await send.scrollIntoViewIfNeeded();
+    await expect(send).toBeInViewport();
+    await expect(quote.getByRole('button', { name: '閉じる' })).toBeVisible();
   });
 });

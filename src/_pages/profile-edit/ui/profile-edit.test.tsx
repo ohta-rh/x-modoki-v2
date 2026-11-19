@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { ProfileEditModal, ProfileEditPage } from './profile-edit';
@@ -84,6 +84,55 @@ describe('保存の途中で、ほかへ移ったとき（#77）', () => {
     await waitFor(() => expect(router.refresh).toHaveBeenCalled());
     expect(router.push).not.toHaveBeenCalled();
   });
+
+  it('保存を押す前のクリックや、新しいタブで開くクリックでは、保存のあとにプロフィールへ移る（レビュー 1）', async () => {
+    router.push.mockClear();
+    render(
+      <>
+        <a href="https://example.test/elsewhere" onClick={(event) => event.preventDefault()}>
+          話題を検索
+        </a>
+        <ProfileEditPage {...data} />
+      </>,
+    );
+    // Before 保存: it does not count.
+    await userEvent.click(screen.getByRole('link', { name: '話題を検索' }));
+    const finish = slowSave();
+    await userEvent.click(screen.getByRole('button', { name: '保存' }));
+    // During the save, but into a new tab: this tab stays.
+    fireEvent.click(screen.getByRole('link', { name: '話題を検索' }), { metaKey: true });
+    finish();
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/hanako'));
+  });
+
+  it.each([
+    ['Ctrl', { ctrlKey: true }, {}],
+    ['Shift', { shiftKey: true }, {}],
+    ['target="_blank"', {}, { target: '_blank' }],
+  ])(
+    '保存の間の %s のリンク（別のタブや窓）や、リンクでない所のクリックは、移ったことにしない',
+    async (_kind, keys, attributes) => {
+      router.push.mockClear();
+      render(
+        <>
+          <a
+            href="https://example.test/elsewhere"
+            {...attributes}
+            onClick={(event) => event.preventDefault()}
+          >
+            話題を検索
+          </a>
+          <ProfileEditPage {...data} />
+        </>,
+      );
+      const finish = slowSave();
+      await userEvent.click(screen.getByRole('button', { name: '保存' }));
+      fireEvent.click(screen.getByRole('link', { name: '話題を検索' }), keys);
+      fireEvent.click(document);
+      finish();
+      await waitFor(() => expect(router.push).toHaveBeenCalledWith('/hanako'));
+    },
+  );
 
   it.each([
     ['ページ', ProfileEditPage],
