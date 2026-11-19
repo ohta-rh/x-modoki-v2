@@ -104,11 +104,16 @@ describe('品質の確認の設定（#30）', () => {
       ['@types/node', 'ADR-0005', [major]],
       ['drizzle-orm', 'ADR-0006', [major, minor]],
       ['drizzle-kit', 'ADR-0006', [major, minor]],
+      // The exact version is also the Playwright image's tag in ci.yml and docker-compose.yml.
+      ['@playwright/test', 'ADR-0046', []],
+      ['playwright', 'ADR-0046', []],
     ] as const) {
       const quoted = name.startsWith('@') ? `'${name}'` : name;
-      expect(config, name).toContain(
-        `- dependency-name: ${quoted}\n        update-types: [${types.join(', ')}]`,
-      );
+      expect(config, name).toContain(`- dependency-name: ${quoted}\n`);
+      // No update types: every update of it is ignored.
+      const next = `- dependency-name: ${quoted}\n        update-types: `;
+      if (types.length > 0) expect(config, name).toContain(`${next}[${types.join(', ')}]`);
+      else expect(config, name).not.toContain(next);
       const at = config.indexOf(`- dependency-name: ${quoted}\n`);
       expect(config.slice(0, at).trimEnd().split('\n').at(-1), name).toMatch(
         new RegExp(`# ${adr}`),

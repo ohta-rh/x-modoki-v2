@@ -25,7 +25,8 @@ Decided in ADR-0017, ADR-0019, ADR-0020, ADR-0021; this file is the operating ru
 - **Dependency update PRs (Dependabot, ADR-0071):** a weekly patch-and-minor PR is taken when its
   CI is green (look at the app in Chrome as for any change). A major update is taken only after an
   ADR for it; a line an ADR pinned (Next.js 16.4, React 19.3, TypeScript 6.0, Node.js 24, Drizzle 0.45) is moved
-  by a superseding ADR, never by merging the PR. A red audit is fixed by updating the dependency,
+  by a superseding ADR, never by merging the PR. Playwright gets no Dependabot PR: its version is
+  also the image tag in `ci.yml` and `docker-compose.yml`, and the three move in one change (ADR-0047). A red audit is fixed by updating the dependency,
   never by an `--ignore` or a lower `--audit-level`.
 - **Red `main` is fixed first.** Nothing else starts until it is green; if it cannot be fixed
   quickly, revert the commit.

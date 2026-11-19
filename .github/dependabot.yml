@@ -37,6 +37,12 @@ updates:
       # ADR-0006: drizzle-kit 0.31 line, paired with Drizzle ORM 0.45.
       - dependency-name: drizzle-kit
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      # No update at all: the exact version is also the Playwright image's tag in ci.yml and
+      # docker-compose.yml, and the three move together, by hand.
+      # ADR-0046, ADR-0047: no Dependabot update.
+      - dependency-name: '@playwright/test'
+      # ADR-0046: moves with @playwright/test and the image.
+      - dependency-name: playwright
   - package-ecosystem: github-actions
     directory: /
     schedule:

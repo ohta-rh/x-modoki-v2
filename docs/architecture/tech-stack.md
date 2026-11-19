@@ -52,7 +52,7 @@ status: stable
 | 本番の実行環境 | Cloudflare Workers と `@opennextjs/cloudflare`・`wrangler` | 1.20.x / 4.x | [ADR-0017](../adr/0017-cloudflare-workers-opennext.md) |
 | 本番のデータベース | Neon（PostgreSQL）を Cloudflare Hyperdrive でつなぐ | — | [ADR-0017](../adr/0017-cloudflare-workers-opennext.md) |
 | ローカルと CI | Docker Compose（PostgreSQL と Garage） | — | [ADR-0019](../adr/0019-first-milestone-runs-locally.md) |
-| CI | GitHub Actions | — | [ADR-0020](../adr/0020-ci-required-github-actions.md) |
+| CI | GitHub Actions | — | [ADR-0070](../adr/0070-ci-has-eight-gates-with-the-dependency-audit.md)、[ADR-0071](../adr/0071-dependabot-weekly-updates-pinned-lines-by-adr.md) |
 
 PostgreSQL の 18 は、イメージのタグを実装のときに確かめて固定する。`@opennextjs/cloudflare` と `wrangler` を入れるのはマイルストーン 2。
 

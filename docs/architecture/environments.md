@@ -8,7 +8,7 @@ status: stable
 
 # 環境と配備
 
-- 決定: [ADR-0017](../adr/0017-cloudflare-workers-opennext.md)、[ADR-0019](../adr/0019-first-milestone-runs-locally.md)、[ADR-0020](../adr/0020-ci-required-github-actions.md)、[ADR-0008](../adr/0008-s3-compatible-media-storage.md)、[ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md)
+- 決定: [ADR-0017](../adr/0017-cloudflare-workers-opennext.md)、[ADR-0019](../adr/0019-first-milestone-runs-locally.md)、[ADR-0070](../adr/0070-ci-has-eight-gates-with-the-dependency-audit.md)、[ADR-0008](../adr/0008-s3-compatible-media-storage.md)、[ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md)
 - 手を動かす手順は [ローカルで動かす](../guides/local-development.md)。この文書は構成と、コマンドの一覧（`package.json` の `scripts` と同じ）を示す
 
 ## 1. マイルストーンと環境

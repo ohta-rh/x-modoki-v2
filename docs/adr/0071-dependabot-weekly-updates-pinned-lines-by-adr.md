@@ -24,7 +24,7 @@ status: stable
 
 - `.github/dependabot.yml` で、npm と GitHub Actions を週に 1 回調べる
 - パッチとマイナーは、生態系ごとに 1 つの PR（`minor-and-patch` のグループ）にまとめる。メジャーはグループに入れず、1 つずつの PR にする
-- ADR が固定した系列は、それを外れる更新の PR を作らない。`@types/node` はメジャーを、`next`・`react`・`react-dom`・`@types/react`・`@types/react-dom`・`typescript`・`drizzle-orm`・`drizzle-kit` はメジャーとマイナーを無視する（系列がマイナーで決まっているため）。設定のそれぞれに、理由の ADR の番号を注で書く
+- ADR が固定した系列は、それを外れる更新の PR を作らない。`@types/node` はメジャーを、`next`・`react`・`react-dom`・`@types/react`・`@types/react-dom`・`typescript`・`drizzle-orm`・`drizzle-kit` はメジャーとマイナーを無視する（系列がマイナーで決まっているため）。`@playwright/test` と `playwright` は、全部の更新を無視する: 版がそのまま CI と `docker-compose.yml` の Playwright のイメージの名前（`v1.65.0-noble`）でもあり、3 つを同じ変更で手で動かす（ADR-0046、ADR-0047）設定のそれぞれに、理由の ADR の番号を注で書く
 - PR の扱い: パッチとマイナーの PR は、CI が緑で、Chrome でアプリを見て問題が無ければ取り込む。メジャーは ADR を書いてから取り込む。固定した系列を動かすときは、その ADR を置き換える ADR を書き、設定の無視を外す
 - 自動のマージはしない
 
