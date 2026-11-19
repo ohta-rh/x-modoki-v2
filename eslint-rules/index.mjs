@@ -51,7 +51,9 @@ const functionName = (fn) => {
   const parent = fn.parent;
   if (parent.type === 'VariableDeclarator') return parent.id.name;
   if (parent.type === 'Property') return parent.key.name;
-  if (parent.type === 'JSXExpressionContainer') return parent.parent.name.name;
+  if (parent.type === 'JSXExpressionContainer') {
+    return parent.parent.type === 'JSXAttribute' ? parent.parent.name.name : null;
+  }
   return null;
 };
 

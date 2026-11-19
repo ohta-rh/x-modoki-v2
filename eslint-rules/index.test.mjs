@@ -132,6 +132,11 @@ tester.run('settle-server-actions (#82, ADR-0065)', settleRule, {
       name: '名前の無い関数（引数の矢印関数）で返す',
     },
     {
+      code: `${CLIENT}function f(action) { return <List>{() => action(1)}</List>; }`,
+      errors: [unsettled('action')],
+      name: 'JSX の子の矢印関数で返す（落ちずに止める、#82 のレビュー）',
+    },
+    {
       code: `${CLIENT}function f(action) { return action(1); }`,
       errors: [unsettled('action')],
       name: '名前が action でない関数の return',
