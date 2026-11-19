@@ -68,3 +68,4 @@ status: stable
 | [0054](0054-text-and-fill-colours-meet-wcag-contrast.md) | 文字と塗りに使う色は、X の色を背景と 4.5:1 以上の差がある最も近い濃さに変える | 採用 | エージェント |
 | [0055](0055-axe-runs-on-chromium-and-webkit.md) | 画面のアクセシビリティの検査（axe）は、Chromium と WebKit で流し、Firefox では流さない | 採用 | ユーザー |
 | [0056](0056-bugs-fixed-inside-the-pbi-and-lighter-local-checks.md) | PBI の中で見つけたバグはその PBI の中で直し、バグの issue は探索的テストの分だけにし、手元の全部の確認は push の前に 1 回にする | 採用 | ユーザー |
+| [0057](0057-db-connect-gives-up-after-1-5s-and-retries-once.md) | データベースへの新しい接続は 1.5 秒で待つのをやめ、1 回だけつなぎ直す | 採用 | エージェント |

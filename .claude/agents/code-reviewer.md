@@ -54,7 +54,9 @@ If either is missing, reply `NEEDS_CONTEXT` and say what is missing. Do not gues
    mount, or without the hydration test for it (ADR-0044).
 6. **Runtime constraints** (ADR-0017): native modules, filesystem writes, module-level
    connections or mutable state, timers assuming a long-lived process.
-7. **Scope and decisions.** Changes outside the issue's スコープ; a decision made in the diff
+7. **Scope and decisions.** Changes outside the issue's スコープ — except a bug found while working
+   on the PBI, which is fixed inside it whatever its scope and recorded in its test report
+   (ADR-0056; only exploratory testing files bug issues); a decision made in the diff
    with no ADR; a weakened gate (`.claude/rules/quality-gates.md`); a document or rule the
    change makes untrue.
 
