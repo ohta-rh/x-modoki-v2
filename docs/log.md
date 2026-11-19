@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-19
+* **New**: [ADR-0067](adr/0067-retried-deletes-and-profile-images-return-the-same-result.md)（削除とプロフィールの画像の保存のやり直しは同じ結果）。ADR-0066 を置き換えた（#88）。
 * **New**: #85・#86 の試験レポート（#34 の探索的テストの 5 巡目で見つけた 2 件のバグ: [#85](test-reports/issue-0085-mobile-account-drawer.md)、[#86](test-reports/issue-0086-focus-not-obscured.md)）。
 * **New**: #83・#84 の試験レポート（#34 の探索的テストの 4 巡目で見つけた 2 件のバグ: [#83](test-reports/issue-0083-left-column-scrolls.md)、[#84](test-reports/issue-0084-delete-retry-succeeds.md)）。
 * **New**: [ADR-0066](adr/0066-deleting-an-already-deleted-own-post-succeeds.md)（もう消した自分の投稿の削除は成功を返す）（#84）。

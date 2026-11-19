@@ -381,6 +381,16 @@ test.describe('640px 未満のアカウントの引き出し（#85）', () => {
   });
 });
 
+test('引き出しを開いたまま 640px より広げると閉じる（#87）', async ({ page }) => {
+  await signUp(page);
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto('/home');
+  await page.getByRole('button', { name: /のアカウントのメニュー$/ }).click();
+  await expect(page.getByRole('dialog', { name: 'アカウント' })).toBeVisible();
+  await page.setViewportSize({ width: 900, height: 800 });
+  await expect(page.getByRole('dialog', { name: 'アカウント' })).toHaveCount(0);
+});
+
 // NFR-A11Y: フォーカスが隠れない（WCAG 2.2 の 2.4.11、#86）
 test.describe('狭く低い画面のフォーカス（#86）', () => {
   test.use({ hasTouch: false });

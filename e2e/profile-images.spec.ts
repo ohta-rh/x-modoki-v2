@@ -35,3 +35,27 @@ test('プロフィールの編集で、アバターとバナーを変えられ�
     page.getByRole('button', { name: 'アカウントのメニュー' }).locator('img'),
   ).toHaveAttribute('src', /^http:\/\/[^/]*web\.garage\.localhost:3902\//);
 });
+
+test('プロフィールの画像の保存の応答が届かずにやり直しても、保存できる（#88）', async ({
+  page,
+}) => {
+  const me = await signUp(page);
+  await page.goto('/settings/profile');
+  await page.getByLabel('アバターの画像を選ぶ').setInputFiles(await pngFile(page, 600, 300));
+  await expect(page.getByRole('img', { name: '新しいアバター' })).toHaveAttribute('width', '400');
+  // The save reaches the server; only its answer is lost.
+  let cut = true;
+  await page.route('**/settings/profile', async (route) => {
+    if (cut && route.request().method() === 'POST') {
+      cut = false;
+      await route.fetch();
+      return route.abort('connectionreset');
+    }
+    return route.fallback();
+  });
+  const save = page.getByRole('button', { name: '保存' });
+  await save.click();
+  await expect(page.getByText('通信できませんでした。もう一度お試しください')).toBeVisible();
+  await save.click();
+  await expect(page).toHaveURL(new RegExp(`/${me.username}$`));
+});

@@ -23,10 +23,35 @@ class Refused extends Error {}
 export async function updateProfile(input: ProfileInput): Promise<UpdateProfileResult> {
   const viewer = await getSession();
   if (!viewer) return { ok: false, error: 'UNAUTHORIZED' };
-  const wanted = (['avatar', 'banner'] as const).flatMap((slot) => {
+  const asked = (['avatar', 'banner'] as const).flatMap((slot) => {
     const id = slot === 'avatar' ? input.avatarId : input.bannerId;
     return id === undefined ? [] : [{ slot, id: BigInt(id) }];
   });
+  // An image already this person's avatar or banner is a retry whose answer was lost (#88,
+  // ADR-0067): that slot is saved already, so only the other fields are written again.
+  const [current] = await getDb()
+    .select({ image: user.image, banner: user.banner })
+    .from(user)
+    .where(eq(user.id, viewer.id));
+  const applied =
+    asked.length === 0
+      ? []
+      : await getDb()
+          .select({ id: media.id, key: media.key })
+          .from(media)
+          .where(
+            and(
+              inArray(
+                media.id,
+                asked.map((item) => item.id),
+              ),
+              eq(media.ownerId, viewer.id),
+              eq(media.status, 'ready'),
+            ),
+          );
+  const wanted = asked.filter(
+    ({ slot, id }) => !applied.some((row) => row.id === id && row.key === current[COLUMN[slot]]),
+  );
   const sealed = await Promise.all(
     wanted.map(async ({ slot, id }) => ({
       slot,

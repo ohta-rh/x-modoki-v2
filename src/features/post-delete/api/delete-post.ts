@@ -20,7 +20,7 @@ export async function deletePost(postId: bigint): Promise<DeletePostResult> {
     .from(posts)
     .where(eq(posts.id, postId));
   // The author's own post, already deleted: a retry whose answer was lost, or another tab. It is
-  // gone, as asked (#84, ADR-0066). Anyone else's deleted post stays not found.
+  // gone, as asked (#84, ADR-0067). Anyone else's deleted post stays not found.
   if (post?.deletedAt && post.authorId === viewer.id) return { ok: true };
   if (!post || post.deletedAt) return { ok: false, error: 'NOT_FOUND' };
   if (post.authorId !== viewer.id) return { ok: false, error: 'FORBIDDEN' };

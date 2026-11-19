@@ -4,7 +4,7 @@ import { Bookmark, Settings, User } from 'lucide-react';
 import type { Route } from 'next';
 import Link from 'next/link';
 import { unstable_rethrow } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { OFFLINE_MESSAGE } from '@/shared/lib/settle';
 import { Avatar } from '@/shared/ui/avatar';
 import { Dialog, DialogContent, DialogTitle } from '@/shared/ui/dialog';
@@ -24,6 +24,17 @@ export function MobileAccountDrawer({
 }) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
+  // From 640px the left column has its own menu: a drawer left open by widening (a rotated tablet)
+  // closes instead of lingering over it with its button hidden (#87).
+  useEffect(() => {
+    if (!open) return;
+    const wide = window.matchMedia('(min-width: 640px)');
+    const onChange = (event: { matches: boolean }) => {
+      if (event.matches) setOpen(false);
+    };
+    wide.addEventListener('change', onChange);
+    return () => wide.removeEventListener('change', onChange);
+  }, [open]);
   const links = [
     { name: 'プロフィール', href: `/${account.username}`, icon: User },
     { name: 'ブックマーク', href: '/i/bookmarks', icon: Bookmark },

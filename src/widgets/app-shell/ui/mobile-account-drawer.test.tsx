@@ -1,12 +1,27 @@
 // @vitest-environment jsdom
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { redirect } from 'next/navigation';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { toast } from '@/shared/ui/toast';
 import { MobileAccountDrawer } from './mobile-account-drawer';
 
 const account = { name: 'サンプル 01', username: 'sample01', image: null };
+
+// jsdom has no matchMedia: a stand-in whose change can be fired by hand (#87).
+const listeners = new Set<(event: { matches: boolean }) => void>();
+beforeEach(() => {
+  listeners.clear();
+  vi.stubGlobal('matchMedia', (query: string) => ({
+    media: query,
+    matches: false,
+    addEventListener: (_: string, listener: (event: { matches: boolean }) => void) =>
+      listeners.add(listener),
+    removeEventListener: (_: string, listener: (event: { matches: boolean }) => void) =>
+      listeners.delete(listener),
+  }));
+});
+afterEach(() => vi.unstubAllGlobals());
 
 const openDrawer = async () => {
   await userEvent.click(
@@ -62,5 +77,15 @@ describe('MobileAccountDrawer（640px 未満のヘッダーのアバター、ui-
     process.off('unhandledRejection', unhandled);
     expect(moved).toHaveBeenCalledTimes(1);
     expect(add).not.toHaveBeenCalled();
+  });
+
+  it('開いたまま 640px 以上になると閉じ、640px 未満のままの変化では閉じない（#87）', async () => {
+    render(<MobileAccountDrawer account={account} signOut={vi.fn()} />);
+    await openDrawer();
+    act(() => listeners.forEach((listener) => listener({ matches: false })));
+    expect(screen.getByRole('dialog', { name: 'アカウント' })).toBeInTheDocument();
+    act(() => listeners.forEach((listener) => listener({ matches: true })));
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'アカウント' })).toBeNull());
+    expect(listeners.size).toBe(0);
   });
 });

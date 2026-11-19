@@ -78,6 +78,40 @@ describe('updateProfileAction のアバターとバナー（#25）', () => {
     expect(rows.every((item) => item.status === 'ready')).toBe(true);
   });
 
+  it('もう取り込んだ自分のアバター・バナーの同じ ID でもう一度保存すると（応答が届かなかったやり直し）、画像は変えずにほかの欄を保存する（#88）', async () => {
+    const me = await makeUser();
+    signInAs(me);
+    const avatar = await upload(me.id, 400, 400);
+    const banner = await upload(me.id, 1500, 500);
+    const ids = { avatarId: avatar.id.toString(), bannerId: banner.id.toString() };
+    expect(await updateProfileAction({ ...input, ...ids })).toEqual({ ok: true });
+    const [first] = await testDb().select().from(user).where(eq(user.id, me.id));
+    expect(await updateProfileAction({ ...input, name: 'やり直し', ...ids })).toEqual({ ok: true });
+    const [again] = await testDb().select().from(user).where(eq(user.id, me.id));
+    expect(again).toMatchObject({ name: 'やり直し', image: first.image, banner: first.banner });
+    expect((await testDb().select().from(media)).length).toBe(2);
+  });
+
+  it('取り込み済みでも、自分の別の欄の画像（アバターの ID をバナーに）と、使われていない画像は断る（#88）', async () => {
+    const me = await makeUser();
+    signInAs(me);
+    const avatar = await upload(me.id, 400, 400);
+    await updateProfileAction({ ...input, avatarId: avatar.id.toString() });
+    expect(await updateProfileAction({ ...input, bannerId: avatar.id.toString() })).toMatchObject({
+      ok: false,
+      code: 'VALIDATION',
+    });
+    // Replaced: the first avatar's row is gone, so its ID is no longer this person's avatar.
+    await updateProfileAction({
+      ...input,
+      avatarId: (await upload(me.id, 400, 400)).id.toString(),
+    });
+    expect(await updateProfileAction({ ...input, avatarId: avatar.id.toString() })).toMatchObject({
+      ok: false,
+      code: 'VALIDATION',
+    });
+  });
+
   // AUTHZ: updateProfile FORBIDDEN
   it('他人の画像・無い画像・大きさの違う画像は保存せず、画像を保存できなかったと言う', async () => {
     const me = await makeUser();
