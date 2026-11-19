@@ -2,7 +2,7 @@ import type { ButtonHTMLAttributes } from 'react';
 import { cn } from '@/shared/lib/cn';
 
 const VARIANTS = {
-  brand: 'bg-brand-fill text-on-brand hover:opacity-90',
+  brand: 'bg-brand-fill text-on-brand hover:brightness-90',
   solid: 'bg-text text-bg hover:opacity-90',
   outline: 'border border-line bg-transparent text-text hover:bg-hover',
 } as const;

@@ -21,6 +21,12 @@ describe('Button（ui-ux.md の 4 節: 15px / 700、角は丸）', () => {
     expect(screen.getByRole('button')).toHaveClass(className);
   });
 
+  it('アクセントの塗りは、ホバーで薄くせず暗くする（白い文字との差を 4.5:1 より下げない、#31 レビュー 3）', () => {
+    render(<Button variant="brand">押す</Button>);
+    expect(screen.getByRole('button')).toHaveClass('hover:brightness-90');
+    expect(screen.getByRole('button')).not.toHaveClass('hover:opacity-90');
+  });
+
   it('押すと onClick を呼び、使えないときは呼ばない', async () => {
     const onClick = vi.fn();
     const { rerender } = render(<Button onClick={onClick}>押す</Button>);

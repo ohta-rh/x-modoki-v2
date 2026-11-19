@@ -17,7 +17,7 @@ export function LandingPage() {
           <div className="flex flex-col gap-3">
             <Link
               href={SIGNUP_PATH}
-              className={`${pill} bg-brand-fill text-on-brand hover:opacity-90`}
+              className={`${pill} bg-brand-fill text-on-brand hover:brightness-90`}
             >
               アカウントを作成
             </Link>

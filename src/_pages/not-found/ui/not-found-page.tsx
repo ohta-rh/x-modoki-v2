@@ -11,7 +11,7 @@ export function NotFoundPage() {
       <p className="text-body text-text-muted">他のページを検索してみましょう。</p>
       <Link
         href="/explore"
-        className="rounded-full bg-brand-fill px-4 py-2 text-body font-bold text-on-brand hover:opacity-90"
+        className="rounded-full bg-brand-fill px-4 py-2 text-body font-bold text-on-brand hover:brightness-90"
       >
         検索
       </Link>
