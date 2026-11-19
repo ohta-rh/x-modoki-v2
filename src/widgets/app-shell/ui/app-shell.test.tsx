@@ -31,6 +31,11 @@ describe('AppShell（ui-ux.md の 2 節）', () => {
     expect(compose?.closest('div')).toHaveClass('fixed', 'sm:hidden');
   });
 
+  it('左の列は、画面より高いと中を送れる（低い画面でもアカウントのメニューに届く、#83）', () => {
+    render(<AppShell>中身</AppShell>);
+    expect(screen.getByTestId('left-column')).toHaveClass('sticky', 'h-screen', 'overflow-y-auto');
+  });
+
   it('今いるパスと今の人を、左ナビと下のタブに渡す', () => {
     render(
       <AppShell

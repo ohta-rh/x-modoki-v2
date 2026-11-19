@@ -44,12 +44,24 @@ describe('deletePost（NFR-SEC-01、T-01）', () => {
     expect((await row(post.id)).deletedAt).toBeNull();
   });
 
-  it('無い投稿と、削除済みの投稿は NOT_FOUND', async () => {
+  it('無い投稿と、他人の削除済みの投稿は NOT_FOUND', async () => {
     const me = await makeUser();
-    const gone = await makePost({ authorId: me.id, deletedAt: new Date() });
+    const other = await makeUser();
+    const theirs = await makePost({ authorId: other.id, deletedAt: new Date() });
     signInAs(me);
     expect(await deletePost(newId())).toEqual({ ok: false, error: 'NOT_FOUND' });
-    expect(await deletePost(gone.id)).toEqual({ ok: false, error: 'NOT_FOUND' });
+    expect(await deletePost(theirs.id)).toEqual({ ok: false, error: 'NOT_FOUND' });
+  });
+
+  it('自分のもう消した投稿をもう一度消すと（応答が届かなかったやり直し）、成功し、数はもう減らさない（#84）', async () => {
+    const me = await makeUser();
+    await testDb().update(user).set({ postsCount: 3 }).where(eq(user.id, me.id));
+    const post = await makePost({ authorId: me.id });
+    signInAs(me);
+    expect(await deletePost(post.id)).toEqual({ ok: true });
+    expect(await deletePost(post.id)).toEqual({ ok: true });
+    const [author] = await testDb().select().from(user).where(eq(user.id, me.id));
+    expect(author.postsCount).toBe(2);
   });
 
   it('返信を消すと相手の返信の数を 1 減らし、0 より小さくしない', async () => {
@@ -64,14 +76,14 @@ describe('deletePost（NFR-SEC-01、T-01）', () => {
     expect((await row(parent.id)).replyCount).toBe(0);
   });
 
-  it('同じ投稿を同時に何回消しても、数は 1 だけ減り、ほかは NOT_FOUND（#20 のレビュー）', async () => {
+  it('同じ投稿を同時に何回消しても、数は 1 だけ減り、どれも成功（#20 のレビュー、#84）', async () => {
     const me = await makeUser();
     await testDb().update(user).set({ postsCount: 5 }).where(eq(user.id, me.id));
     const parent = await makePost({ authorId: me.id, replyCount: 5 });
     const reply = await makePost({ authorId: me.id, replyToId: parent.id, rootId: parent.id });
     signInAs(me);
     const results = await Promise.all(Array.from({ length: 5 }, () => deletePost(reply.id)));
-    expect(results.filter((result) => result.ok)).toHaveLength(1);
+    expect(results.every((result) => result.ok)).toBe(true);
     expect((await row(parent.id)).replyCount).toBe(4);
     const [author] = await testDb().select().from(user).where(eq(user.id, me.id));
     expect(author.postsCount).toBe(4);

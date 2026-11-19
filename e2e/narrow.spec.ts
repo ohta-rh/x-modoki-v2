@@ -292,3 +292,23 @@ test('人が入れる全部の欄が長くても、全部の画面が 320px で�
   await check(reader, '/explore');
   expect(wide).toEqual({});
 });
+
+// NFR-COMPAT-02: 拡大した低い画面でも、全ての操作に届く（#83）
+test.describe('低い画面の左の列（#83）', () => {
+  test.use({ hasTouch: false });
+  for (const { width, height } of [
+    { width: 640, height: 400 },
+    { width: 812, height: 375 },
+  ]) {
+    test(`${width}×${height} でも、左の列を送ってアカウントのメニューに届く`, async ({ page }) => {
+      await signUp(page);
+      await page.setViewportSize({ width, height });
+      await page.goto('/home');
+      const menu = page.getByRole('button', { name: /のアカウントのメニュー$/ });
+      await menu.scrollIntoViewIfNeeded();
+      await expect(menu).toBeInViewport();
+      await menu.click();
+      await expect(page.getByRole('menuitem', { name: /からログアウト$/ })).toBeVisible();
+    });
+  }
+});

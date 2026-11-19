@@ -29,6 +29,8 @@ services:
   # @playwright/test.
   webkit:
     image: mcr.microsoft.com/playwright:v1.65.0-noble
+    # Reaps the browsers' child processes; npm as PID 1 does not (Playwright's Docker guide, #34).
+    init: true
     command: npx -y playwright@1.65.0 run-server --port 3333 --host 0.0.0.0
     ports: ['127.0.0.1:3333:3333']
 volumes:

@@ -102,6 +102,9 @@ describe('品質の確認の設定（#30）', () => {
     expect(compose).toContain(
       `playwright@${devDependencies['@playwright/test']} run-server --port 3333 --host 0.0.0.0`,
     );
+    // An init process reaps the WebKit processes each test leaves: without one, 4,683 zombies piled
+    // up in a day and new browsers stalled (found in #34).
+    expect(compose).toMatch(/webkit:\n(\s+\S.*\n)*?\s+init: true\n/);
     const webkit = playwright.projects!.find((project) => project.name === 'webkit')!;
     expect(webkit.use!.connectOptions).toEqual(
       process.platform === 'darwin'

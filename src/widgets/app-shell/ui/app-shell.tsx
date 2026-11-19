@@ -37,7 +37,8 @@ export function AppShell({
     <div className="flex min-h-screen justify-center">
       <div
         data-testid="left-column"
-        className="sticky top-0 hidden h-screen w-[88px] shrink-0 flex-col px-2 sm:flex xl:w-[275px] xl:px-3"
+        // Pinned to the top; what does not fit (a low or zoomed screen) scrolls inside it (#83, as #58).
+        className="sticky top-0 hidden h-screen w-[88px] shrink-0 flex-col overflow-y-auto px-2 sm:flex xl:w-[275px] xl:px-3"
       >
         <LeftNav currentPath={currentPath} account={account} signOut={signOut} unread={unread} />
       </div>

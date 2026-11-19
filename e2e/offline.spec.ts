@@ -136,3 +136,31 @@ test('登録とログアウトが通ったときは、通信の文言を出さ�
   await page.waitForTimeout(500);
   await expect(page.getByText(offline)).toHaveCount(0);
 });
+
+test('削除の応答が届かずにやり直しても、投稿は消える（#84）', async ({ page }) => {
+  const me = await signUp(page);
+  await page.goto('/home?tab=following');
+  await page.getByRole('textbox', { name: '投稿の本文' }).fill('応答の届かない削除');
+  await page.getByRole('button', { name: 'ポストする' }).click();
+  await expect(page.getByRole('article').first()).toContainText('応答の届かない削除');
+  await page.goto(`/${me.username}`);
+  const post = page.getByRole('article').filter({ hasText: '応答の届かない削除' });
+  // The delete reaches the server; only its answer is lost.
+  let cut = true;
+  await page.route(`**/${me.username}`, async (route) => {
+    if (cut && route.request().method() === 'POST') {
+      cut = false;
+      await route.fetch();
+      return route.abort('connectionreset');
+    }
+    return route.fallback();
+  });
+  await post.getByRole('button', { name: 'もっと見る' }).click();
+  await page.getByRole('menuitem', { name: '削除' }).click();
+  const dialog = page.getByRole('alertdialog');
+  await dialog.getByRole('button', { name: '削除' }).click();
+  await expect(dialog.getByText('通信できませんでした。もう一度お試しください')).toBeVisible();
+  await dialog.getByRole('button', { name: '削除' }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(post).toHaveCount(0);
+});

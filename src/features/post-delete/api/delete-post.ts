@@ -16,10 +16,13 @@ export async function deletePost(postId: bigint): Promise<DeletePostResult> {
   if (!viewer) return { ok: false, error: 'UNAUTHORIZED' };
   const db = getDb();
   const [post] = await db
-    .select({ authorId: posts.authorId, replyToId: posts.replyToId })
+    .select({ authorId: posts.authorId, replyToId: posts.replyToId, deletedAt: posts.deletedAt })
     .from(posts)
-    .where(and(eq(posts.id, postId), isNull(posts.deletedAt)));
-  if (!post) return { ok: false, error: 'NOT_FOUND' };
+    .where(eq(posts.id, postId));
+  // The author's own post, already deleted: a retry whose answer was lost, or another tab. It is
+  // gone, as asked (#84, ADR-0066). Anyone else's deleted post stays not found.
+  if (post?.deletedAt && post.authorId === viewer.id) return { ok: true };
+  if (!post || post.deletedAt) return { ok: false, error: 'NOT_FOUND' };
   if (post.authorId !== viewer.id) return { ok: false, error: 'FORBIDDEN' };
   // The update itself re-checks deleted_at, so of concurrent deletes only one changes the counts.
   return db.transaction(async (tx): Promise<DeletePostResult> => {
@@ -28,7 +31,8 @@ export async function deletePost(postId: bigint): Promise<DeletePostResult> {
       .set({ deletedAt: new Date() })
       .where(and(eq(posts.id, postId), isNull(posts.deletedAt)))
       .returning({ id: posts.id });
-    if (deleted.length === 0) return { ok: false, error: 'NOT_FOUND' };
+    // Another delete of the same post won the race: it is gone all the same (#84).
+    if (deleted.length === 0) return { ok: true };
     if (post.replyToId !== null) {
       await tx
         .update(posts)
