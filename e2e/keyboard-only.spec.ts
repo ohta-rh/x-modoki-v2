@@ -66,8 +66,8 @@ test('キーボードだけで、登録・投稿・いいね・返信・フォ�
     page.getByRole('region', { name: 'プロフィール' }).getByRole('button', { name: /フォロー中/ }),
   ).toBeVisible();
 
-  // Open their post with j and Enter, and reply to it.
-  await page.goto(`/${them.username}`);
+  // Open their post with j and Enter, and reply to it: still on their profile, so no navigation
+  // races the profile reading itself again after the follow.
   const theirs = page.getByRole('article').filter({ hasText: 'キーボードで読む投稿' });
   // The keys work once the page is live: press j until the post is selected.
   await expect(async () => {

@@ -75,6 +75,28 @@ test('ビューアの URL を直接開くと詳細の上に出て、閉じると
   await expect(page).toHaveURL(detail);
 });
 
+// NFR-A11Y-05: フォーカスの輪がキーボードで動かしたときに見える
+test('ビューアのボタンへ Tab で来ると、背景と差のあるアクセントの色の輪が見える（#31 レビュー 2）', async ({
+  page,
+}) => {
+  await signUp(page);
+  const card = await postWithTwoImages(page, '輪を見る投稿');
+  await card.getByText('輪を見る投稿').click();
+  await expect(page).toHaveURL(/\/status\/\d+$/);
+  await page.goto(`${page.url()}/photo/1`);
+  const viewer = page.getByRole('dialog', { name: '画像' });
+  await expect(viewer.locator('img')).toBeVisible();
+  // Tab until a viewer button has the focus.
+  await expect(async () => {
+    await page.keyboard.press('Tab');
+    expect(await page.evaluate(() => document.activeElement?.tagName)).toBe('BUTTON');
+  }).toPass();
+  // The ring is the accent as text on the light page (ADR-0054), not a faint hover tint.
+  await expect
+    .poll(() => page.evaluate(() => getComputedStyle(document.activeElement!).boxShadow))
+    .toContain('rgb(12, 108, 174)');
+});
+
 test('無い画像の番号は 404', async ({ page }) => {
   await signUp(page);
   const card = await postWithTwoImages(page, '番号の投稿');

@@ -15,7 +15,7 @@ type Props = {
 };
 
 const step =
-  'absolute top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none';
+  'absolute top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
 
 /**
  * A post's images over the current screen (#25, routing.md): left/right keys and buttons move

@@ -81,7 +81,7 @@ export function ProfileImagePicker({ kind, currentUrl, onChange }: Props) {
         // eslint-disable-next-line @next/next/no-img-element -- served by the media host (ADR-0008)
         <img src={currentUrl} alt="" className="size-full object-cover" />
       ) : null}
-      <label className="absolute inset-0 m-auto flex size-11 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/70 has-focus-visible:ring-2 has-focus-visible:ring-accent">
+      <label className="absolute inset-0 m-auto flex size-11 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/70 has-focus-visible:ring-2 has-focus-visible:ring-ring">
         <ImagePlus aria-hidden="true" className="size-5" />
         <input
           ref={input}
