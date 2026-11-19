@@ -1,5 +1,6 @@
-# CI is mandatory (ADR-0020). A change is done only when this workflow is green on its commit.
-# The seven gates run in this order and the job stops at the first failure. Never add
+# CI is mandatory (ADR-0070, which replaces ADR-0020). A change is done only when this workflow is
+# green on its commit. The eight gates (the dependency audit first, then the seven of `pnpm verify`)
+# run in this order and the job stops at the first failure. Never add
 # `continue-on-error`, skip a gate, or lower a threshold to get green (.claude/rules/quality-gates.md).
 
 name: CI
@@ -18,7 +19,7 @@ permissions:
 
 jobs:
   verify:
-    name: verify (7 gates)
+    name: verify (8 gates)
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -33,7 +34,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # T-18 (docs/architecture/threat-model.md): a known high or critical vulnerability in a
       # production dependency stops the run (#33, NFR-SEC-11).
-      - name: Dependency audit (production, high and critical)
+      # The eighth check (ADR-0070), run first: it needs no build, and fails in seconds.
+      - name: 8. Dependency audit (production, high and critical)
         run: pnpm audit --prod --audit-level high
       - name: Services (PostgreSQL, Garage) and .env.local
         run: sh scripts/setup-local.sh

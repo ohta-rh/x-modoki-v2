@@ -31,7 +31,7 @@ status: stable
 | [0017](0017-cloudflare-workers-opennext.md) | 本番は Cloudflare Workers で、Next.js そのものを OpenNext のアダプターで動かす | 採用 | ユーザー／エージェント |
 | [0018](0018-resize-images-in-browser.md) | 画像の縮小と変換は送る前にブラウザで行い、サーバーでは変換しない | 採用（WebP にできないブラウザの扱いを ADR-0043 で置き換え） | エージェント |
 | [0019](0019-first-milestone-runs-locally.md) | 最初のマイルストーンは「ローカルで全部が動く」とし、Cloudflare への配備はその次にする | 採用 | ユーザー |
-| [0020](0020-ci-required-github-actions.md) | CI を必須とし、GitHub Actions で全部の確認を push と PR のたびに動かす | 採用（CI のコンテナの動かし方を ADR-0033 で置き換え） | ユーザー／エージェント |
+| [0020](0020-ci-required-github-actions.md) | CI を必須とし、GitHub Actions で全部の確認を push と PR のたびに動かす | 置き換え: ADR-0070 | ユーザー／エージェント |
 | [0021](0021-coverage-100-percent.md) | テストのカバレッジは 100% を必須とし、測れない非同期の Server Component だけを薄くして外す | 採用（外すファイルのパスを ADR-0022 で置き換え） | ユーザー／エージェント |
 | [0022](0022-feature-sliced-design.md) | コードは Feature-Sliced Design で分け、Next.js の `app/` はルートに置いてルーティングだけを持たせる | 採用（守らせ方の節を ADR-0030 で置き換え） | ユーザー／エージェント |
 | [0023](0023-delivery-loop-one-pbi-at-a-time.md) | EPIC の子 issue は、決まった手順のループで 1 件ずつ、閉じるまで終わらせる | 採用（前提が崩れたときの扱いと `blocked` を ADR-0028 で置き換え） | ユーザー／エージェント |
@@ -81,3 +81,5 @@ status: stable
 | [0067](0067-retried-deletes-and-profile-images-return-the-same-result.md) | 削除とプロフィールの画像の保存は、やり直しても同じ結果を返す | 採用 | エージェント |
 | [0068](0068-seed-people-sign-in-with-a-published-dev-password.md) | シードの人は、公開した開発用のパスワードでログインできる | 採用 | エージェント |
 | [0069](0069-ci-runs-the-local-guide-on-a-fresh-clone.md) | CI はまっさらなランナーで手順書のコマンドをそのまま流して確かめる | 採用 | エージェント |
+| [0070](0070-ci-has-eight-gates-with-the-dependency-audit.md) | CI の確認を 8 つにし、本番の依存の監査を最初に動かす | 採用 | エージェント |
+| [0071](0071-dependabot-weekly-updates-pinned-lines-by-adr.md) | 依存の更新は Dependabot が週に 1 回 PR にし、ADR が固定した系列は ADR でだけ上げる | 採用 | エージェント |

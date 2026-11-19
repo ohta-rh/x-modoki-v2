@@ -6,20 +6,27 @@ also requires a hands-on test in a real browser for every PBI. Green gates alone
 Applies to every change that touches code, tests, configuration, or CI.
 Decided in ADR-0017, ADR-0019, ADR-0020, ADR-0021; this file is the operating rule.
 
-## 1. CI is mandatory (ADR-0020)
+## 1. CI is mandatory (ADR-0070, replacing ADR-0020)
 
-- GitHub Actions runs on every push to `main` and every PR. The seven gates, in order:
-  `pnpm docs:check`, `pnpm typecheck`, `pnpm lint` (ESLint + Steiger), `pnpm format:check`,
-  `pnpm test --coverage`, `pnpm build`, `pnpm test:e2e`. Until the app scaffold exists, the
-  workflow runs the documentation gate only (`node scripts/check-docs.mjs`).
+- GitHub Actions runs on every push to `main` and every PR. The eight gates, in order: the
+  dependency audit `pnpm audit --prod --audit-level high` (first: it needs no build), then the
+  seven of `pnpm verify` — `pnpm docs:check`, `pnpm typecheck`, `pnpm lint` (ESLint + Steiger),
+  `pnpm format:check`, `pnpm test --coverage`, `pnpm build`, `pnpm test:e2e`. A separate job runs
+  the local guide on a fresh clone (ADR-0069).
 - **A change is not done until CI is green on the commit that contains it.** "Passes locally"
   is not a substitute, and a gate that did not run is not a gate that passed.
-- **Before pushing:** run `pnpm verify` (the same seven gates) and see it exit 0. While working,
+- **Before pushing:** run `pnpm verify` (the seven gates after the audit) and see it exit 0. The
+  audit is CI's alone: its result follows the advisory database, not the change. While working,
   run only the tests the change touches; the full run is once, right before the push (ADR-0056).
 - **Join a check and the commit after it with `&&`, never `;`.** A `;` lets the commit run
   after a failed check (it happened twice on 2026-11-18: a red `pnpm verify` before #48's commit,
   a red `check-docs` before #52's). If the check failed, there is no commit to undo.
   **After pushing:** watch the CI run to its end. Do not end the turn on "CI is running".
+- **Dependency update PRs (Dependabot, ADR-0071):** a weekly patch-and-minor PR is taken when its
+  CI is green (look at the app in Chrome as for any change). A major update is taken only after an
+  ADR for it; a line an ADR pinned (Next.js 16, TypeScript 6.0, Node.js 24, Drizzle 0.45) is moved
+  by a superseding ADR, never by merging the PR. A red audit is fixed by updating the dependency,
+  never by an `--ignore` or a lower `--audit-level`.
 - **Red `main` is fixed first.** Nothing else starts until it is green; if it cannot be fixed
   quickly, revert the commit.
 - **Never weaken a gate to get green:** no `continue-on-error`, no `.skip` / `.only` / `.todo`

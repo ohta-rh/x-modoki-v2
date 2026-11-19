@@ -24,7 +24,7 @@ status: stable
 ├── docker-compose.yml          ローカルの PostgreSQL と Garage
 ├── e2e/                        Playwright のテスト
 ├── scripts/                    check-docs.mjs など
-├── .github/workflows/ci.yml    CI（7 つの確認）
+├── .github/workflows/ci.yml    CI（8 つの確認と、まっさらな clone の確かめ）
 ├── docs/                       OKF のバンドル
 └── src/                        Feature-Sliced Design の層だけ
     ├── _app/

@@ -1,0 +1,34 @@
+# Dependency updates (#37, ADR-0071). Patch and minor updates come as one PR a week per ecosystem;
+# a major update comes as its own PR and is taken only with an ADR (.claude/rules/quality-gates.md).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # ADR-0004: Next.js 16 line (moving to 17 is a new ADR).
+      - dependency-name: next
+        update-types: ['version-update:semver-major']
+      # ADR-0005: TypeScript 6.0 line; TypeScript 7 waits for typescript-eslint.
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      # ADR-0005: Node.js 24 line; its types follow it.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+      # ADR-0006: Drizzle ORM 0.45 line until 1.0 is released (a new ADR then).
+      - dependency-name: drizzle-orm
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      # ADR-0006: drizzle-kit 0.31 line, paired with Drizzle ORM 0.45.
+      - dependency-name: drizzle-kit
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]

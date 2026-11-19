@@ -50,7 +50,7 @@ pnpm dev
 | `pnpm test` | Vitest（単体と、本物の PostgreSQL に対するデータアクセス層）。テストはワーカーごとに自分のデータベースを作る |
 | `pnpm test --coverage` | カバレッジつき。4 つとも 100% でなければ落ちる |
 | `PORT=3300 pnpm test:e2e` | Playwright（Chromium・Firefox・WebKit）。`pnpm build` のあとに。アプリを 3300 番で立ち上げる（3000 で開発のサーバーが動いていてもぶつからない） |
-| `PORT=3300 pnpm verify` | CI と同じ 7 つの確認を順に全部。push の前に流す |
+| `PORT=3300 pnpm verify` | CI の 8 つの確認のうち、依存の監査を除く 7 つを順に全部。push の前に流す |
 
 - 画面のテストのブラウザは `pnpm exec playwright install chromium firefox` で入れる。macOS の WebKit は、`setup-local.sh` が立ち上げる `webkit` のコンテナ（CI と同じイメージ）で動く
 

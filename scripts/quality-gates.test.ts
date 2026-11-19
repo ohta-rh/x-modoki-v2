@@ -80,6 +80,37 @@ describe('品質の確認の設定（#30）', () => {
     expect(job).not.toMatch(/^\s*continue-on-error:/m);
   });
 
+  it('Dependabot が npm と GitHub Actions を週に 1 回調べ、パッチとマイナーは 1 つの PR、ADR が固定した系列は上げない（#37、ADR-0071）', () => {
+    const config = readFileSync('.github/dependabot.yml', 'utf8');
+    for (const ecosystem of ['npm', 'github-actions']) {
+      expect(config).toMatch(
+        new RegExp(
+          `package-ecosystem: ${ecosystem}\\n\\s+directory: /\\n\\s+schedule:\\n\\s+interval: weekly`,
+        ),
+      );
+    }
+    expect(config).toMatch(/update-types: \[minor, patch\]/);
+    // Each pinned line names the ADR that pinned it.
+    for (const [name, adr] of [
+      ['next', 'ADR-0004'],
+      ['typescript', 'ADR-0005'],
+      ['@types/node', 'ADR-0005'],
+      ['drizzle-orm', 'ADR-0006'],
+      ['drizzle-kit', 'ADR-0006'],
+    ]) {
+      expect(config).toMatch(
+        new RegExp(`# ${adr}[^\\n]*\\n\\s+- dependency-name: '?${name.replace('/', '\\/')}'?\\n`),
+      );
+    }
+  });
+
+  it('依存の監査は 8 つ目の確認で、ほかの 7 つより先に動く（#37、ADR-0070）', () => {
+    const ci = readFileSync('.github/workflows/ci.yml', 'utf8');
+    expect(ci).toMatch(
+      /- name: 8\. Dependency audit[^\n]*\n\s+run: pnpm audit --prod --audit-level high$/m,
+    );
+  });
+
   // NFR-SEC-11: 本番の依存に、高と重大の脆弱性が無い
   it('CI は、本番の依存の高と重大の脆弱性を監査し、あれば止まる（#33）', () => {
     const ci = readFileSync('.github/workflows/ci.yml', 'utf8');

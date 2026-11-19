@@ -91,10 +91,11 @@ pnpm dev                    # http://localhost:3000（使われていれば PORT
 
 ## 6. CI
 
-GitHub Actions が、`main` への push と全ての PR で動かす（[ADR-0020](../adr/0020-ci-required-github-actions.md)）。
+GitHub Actions が、`main` への push と全ての PR で動かす（[ADR-0070](../adr/0070-ci-has-eight-gates-with-the-dependency-audit.md)。ADR-0020 を置き換え）。依存の更新の PR は Dependabot が週に 1 回作る（[ADR-0071](../adr/0071-dependabot-weekly-updates-pinned-lines-by-adr.md)）。
 
 | 順 | 確認 | コマンド | 落ちる条件 |
 |---|---|---|---|
+| 8（最初に動かす） | 本番の依存の監査 | `pnpm audit --prod --audit-level high` | 本番の依存に、高か重大の脆弱性がある（ビルドが要らないので最初に動かし、数秒で止める） |
 | 1 | ドキュメント | `pnpm docs:check` | frontmatter の `type` が無い、リンクが切れている、ADR のステータスがずれている |
 | 2 | 型 | `pnpm typecheck` | 型のエラー |
 | 3 | lint | `pnpm lint` | ESLint の警告を含む全ての指摘、FSD の層・公開 API の違反 |
@@ -105,7 +106,7 @@ GitHub Actions が、`main` への push と全ての PR で動かす（[ADR-0020
 
 - PostgreSQL と S3 互換のストレージは、CI でも `scripts/setup-local.sh` の Docker Compose で動かす。GitHub Actions の `services:` は、リポジトリの Garage の設定をマウントする前に立ち上がるので使わない。手元と CI が同じ手順になる（[ADR-0033](../adr/0033-ci-services-via-docker-compose.md)）
 - Node.js と pnpm の版は、`.nvmrc` と `package.json` の `packageManager` から読む
-- 手元では `pnpm verify` が同じ 7 つを動かす。通してから push し、push のあと CI の結果を最後まで見る
+- 手元では `pnpm verify` が 1〜7 を動かす（監査は CI だけ。結果が変更ではなく脆弱性のデータベースで決まるため）。別のジョブ `fresh-clone` が、まっさらな clone で手順書を流す（[ADR-0069](../adr/0069-ci-runs-the-local-guide-on-a-fresh-clone.md)）。通してから push し、push のあと CI の結果を最後まで見る
 - CI が緑でも、完了ではない。`pnpm build && pnpm start` のアプリを本物の Chrome で操作して確かめ、エビデンスつきの試験レポートを `docs/test-reports/` に残すまでが完了（[ADR-0024](../adr/0024-definition-of-done-requires-browser-testing.md)、[ADR-0025](../adr/0025-test-report-with-evidence.md)）
 
 ## 7. 本番への配備（マイルストーン 2 で作る）
