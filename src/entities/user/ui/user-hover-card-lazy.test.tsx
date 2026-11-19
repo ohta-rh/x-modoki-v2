@@ -77,4 +77,21 @@ describe('UserHoverCard の読み込み（#32）', () => {
     expect(loaded).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole('dialog')).toBeNull();
   });
+
+  it('キーボードでフォーカスしても 0.5 秒でカードを出し、フォーカスはプロフィールへのリンクに残る（3 回目のレビュー）', async () => {
+    render(await card());
+    screen.getByRole('link', { name: 'hanako のプロフィール' }).focus();
+    expect(await screen.findByRole('dialog', {}, { timeout: 2000 })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'hanako のプロフィール' })).toHaveFocus();
+  });
+
+  it('0.5 秒より早くフォーカスが離れたら、カードは出ない', async () => {
+    render(await card());
+    const link = screen.getByRole('link', { name: 'hanako のプロフィール' });
+    link.focus();
+    await wait(100);
+    link.blur();
+    await wait(600);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
 });

@@ -3,7 +3,7 @@
 import { PreviewCard } from '@base-ui/react/preview-card';
 import type { Route } from 'next';
 import Link from 'next/link';
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Avatar } from '@/shared/ui/avatar';
 import type { Profile } from '../model/types';
 
@@ -34,8 +34,14 @@ export function UserHoverCardLive({
   className,
   children,
   defaultOpen = false,
-}: Props & { defaultOpen?: boolean }) {
+  focusOnMount = false,
+}: Props & { defaultOpen?: boolean; focusOnMount?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
+  // Swapped in for a link that had keyboard focus: keep the person's place (#32 review 3).
+  const trigger = useRef<HTMLAnchorElement>(null);
+  useEffect(() => {
+    if (focusOnMount) trigger.current!.focus();
+  }, [focusOnMount]);
   const [profile, setProfile] = useState<Profile | null>(null);
   useEffect(() => {
     if (!open || profile) return;
@@ -46,6 +52,7 @@ export function UserHoverCardLive({
   return (
     <PreviewCard.Root open={open} onOpenChange={setOpen}>
       <PreviewCard.Trigger
+        ref={trigger}
         delay={500}
         render={<Link href={href} aria-label={label} className={className} />}
       >
