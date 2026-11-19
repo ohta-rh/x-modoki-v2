@@ -56,13 +56,14 @@ h2 { font-size: 21px; font-weight: 700; }
 h3 { font-size: 15px; font-weight: 700; }
 p { margin: 0; max-width: 68ch; }
 a { color: var(--rule); }
-code, .mono { font-family: var(--mono); font-size: 0.86em; }
+code, .mono { font-family: var(--mono); font-size: 0.86em; overflow-wrap: anywhere; }
 .lede { color: var(--muted); }
 .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 header { display: grid; gap: 12px; }
 .facts { display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--muted); font-size: 13px; }
 .facts b { color: var(--ink); font-variant-numeric: tabular-nums; font-weight: 500; }
 section { display: grid; gap: 16px; }
+main > *, section > * { min-width: 0; }
 
 /* The four layers */
 .stack { display: grid; gap: 0; }
@@ -122,7 +123,7 @@ td .n { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var
 .who > div { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: grid; gap: 8px; }
 .who ul { margin: 0; padding-left: 1.1em; font-size: 13.5px; display: grid; gap: 3px; }
 .who .yes h3 { color: var(--record); } .who .no h3 { color: var(--stop); }
-footer { color: var(--muted); font-size: 12.5px; }
+footer { color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
 
 @media (max-width: 640px) {
   .layer { grid-template-columns: 1fr; gap: 10px; }
