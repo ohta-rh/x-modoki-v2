@@ -2,6 +2,7 @@
 
 ## 2026-11-20
 
+* **New**: [#36 の試験レポート](test-reports/issue-0036-v0-1-0-release.md)。
 * **New**: ルートに `CHANGELOG.md`（`0.1.0`、#36）。`package.json` の版を `0.1.0` にした。
 * **New**: [#35 の試験レポート](test-reports/issue-0035-readme-and-guide.md)。
 
