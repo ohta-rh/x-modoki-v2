@@ -39,6 +39,15 @@ describe('ProfileHeader（#23、ui-ux.md の 8 節）', () => {
       'noopener noreferrer nofollow',
     );
     expect(region).toHaveTextContent('2025年4月から利用しています');
+    // An unbroken string wraps instead of widening the column (#74).
+    expect(within(region).getByRole('heading', { level: 2, name: '花子' })).toHaveClass(
+      'break-words',
+    );
+    expect(within(region).getByText('猫が好き')).toHaveClass('break-words');
+    expect(within(region).getByRole('link', { name: 'example.com' })).toHaveClass('break-all');
+    expect(within(region).getByRole('link', { name: 'example.com' }).parentElement).toHaveClass(
+      'min-w-0',
+    );
     expect(region).toHaveTextContent('5 フォロー中');
     expect(region).toHaveTextContent('1,234 フォロワー');
     // The counts open the lists (#24).

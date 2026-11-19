@@ -46,7 +46,7 @@ describe('/compose/post（#28）', () => {
     const { rerender } = render(tree('visible'));
     await userEvent.type(await screen.findByRole('textbox', { name: '投稿の本文' }), '前の');
     rerender(tree('hidden'));
-    act(() => window.localStorage.setItem('x-modoki:compose-draft', '新しい下書き'));
+    act(() => window.localStorage.setItem('x-modoki:compose-draft:hanako', '新しい下書き'));
     rerender(tree('visible'));
     await waitFor(() => expect(box()).toHaveValue('新しい下書き'));
   });

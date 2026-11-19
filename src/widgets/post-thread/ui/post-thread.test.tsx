@@ -137,4 +137,36 @@ describe('PostThread（#20）', () => {
       expect(data!.pages[0].items.map((item) => item.counts.replies)).toEqual([1, 0]);
     });
   });
+
+  it('返信を消したら、一覧のキャッシュの親の返信の数を 1 減らし、残っている画面を読み直す（#78）', async () => {
+    replace.mockReset();
+    refresh.mockReset();
+    const client = new QueryClient();
+    const parent = { ...post('1', '親'), counts: { ...post('1', '親').counts, replies: 1 } };
+    client.setQueryData(['timeline', 'following'], {
+      pages: [{ items: [parent, post('9', 'ほか')], nextCursor: null }],
+      pageParams: [null],
+    });
+    const reply: PostDetail = {
+      ancestors: [post('1', '親')],
+      post: post('3', '返信', true),
+      replies: { items: [], nextCursor: null },
+    };
+    render(
+      <QueryClientProvider client={client}>
+        <PostThread detail={reply} now="2026-11-18T03:00:00.000Z" signedIn {...actions()} />
+      </QueryClientProvider>,
+    );
+    const main = screen.getByRole('article', { name: '投稿の本体' });
+    await userEvent.click(within(main).getByRole('button', { name: 'もっと見る' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: '削除' }));
+    await userEvent.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', { name: '削除' }),
+    );
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/home'));
+    const items = client.getQueryData<{ pages: { items: Post[] }[] }>(['timeline', 'following'])!
+      .pages[0].items;
+    expect(items.map((item) => item.counts.replies)).toEqual([0, 0]);
+    expect(refresh).toHaveBeenCalled();
+  });
 });

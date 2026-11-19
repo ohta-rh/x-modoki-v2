@@ -40,9 +40,11 @@ export function ProfileHeader({
             <div className="mt-3">{action}</div>
           )}
         </div>
-        <h2 className="mt-3 text-title font-extrabold">{profile.name}</h2>
+        <h2 className="mt-3 text-title font-extrabold break-words">{profile.name}</h2>
         <p className="text-body text-text-muted">@{profile.username}</p>
-        {profile.bio ? <p className="mt-3 text-body whitespace-pre-wrap">{profile.bio}</p> : null}
+        {profile.bio ? (
+          <p className="mt-3 text-body break-words whitespace-pre-wrap">{profile.bio}</p>
+        ) : null}
         <p className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-body text-text-muted">
           {profile.location ? (
             <span className="flex items-center gap-1">
@@ -51,13 +53,13 @@ export function ProfileHeader({
             </span>
           ) : null}
           {profile.website ? (
-            <span className="flex items-center gap-1">
-              <Link2 aria-hidden="true" className="size-[18px]" />
+            <span className="flex min-w-0 items-center gap-1">
+              <Link2 aria-hidden="true" className="size-[18px] shrink-0" />
               <a
                 href={profile.website}
                 target="_blank"
                 rel="noopener noreferrer nofollow"
-                className="text-brand hover:underline"
+                className="min-w-0 break-all text-brand hover:underline"
               >
                 {link}
               </a>

@@ -52,4 +52,12 @@ describe('Dialog（#32）', () => {
     render(await dialog(true));
     expect(screen.getByRole('dialog', { name: 'ポストを削除しますか？' })).toBeInTheDocument();
   });
+
+  it('画面より高い中身でも、上下が切れず中を送れる（#75）', async () => {
+    render(await dialog(true));
+    expect(await screen.findByRole('dialog')).toHaveClass(
+      'max-h-[calc(100dvh-2rem)]',
+      'overflow-y-auto',
+    );
+  });
 });

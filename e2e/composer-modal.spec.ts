@@ -102,3 +102,21 @@ test('送ったあと、下の中央に「ポストを送信しました」と�
   await expect(page).toHaveURL(new RegExp(`/${me.username}/status/\\d+$`));
   await expect(page.getByRole('article', { name: '投稿の本体' })).toContainText('モーダルから投稿');
 });
+
+test('下書きは、同じブラウザの別の人に出ない（#79）', async ({ page, context }) => {
+  await signUp(page);
+  const open = async () => {
+    await page.getByRole('navigation').getByRole('link', { name: 'ポストする' }).click();
+    await expect(box(page)).toBeVisible();
+  };
+  await open();
+  await box(page).fill('ほかの人に見せない下書き');
+  await page.keyboard.press('Escape');
+  await page.getByRole('alertdialog').getByRole('button', { name: '保存' }).click();
+  await expect(composer(page)).toBeHidden();
+  // Another person signs in on the same browser.
+  await context.clearCookies();
+  await signUp(page);
+  await open();
+  await expect(box(page)).toHaveValue('');
+});

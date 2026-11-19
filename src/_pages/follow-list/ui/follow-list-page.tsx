@@ -17,7 +17,9 @@ export function FollowListPage({ profile, type, firstPage, signedIn }: Props) {
   return (
     <>
       <PageHeader title={profile.name}>
-        <span className="ml-3 text-[13px] text-text-muted">@{profile.username}</span>
+        <span className="ml-3 shrink-0 text-[13px] whitespace-nowrap text-text-muted">
+          @{profile.username}
+        </span>
       </PageHeader>
       <div role="tablist" className="flex border-b border-line">
         {TABS.map((tab) => {

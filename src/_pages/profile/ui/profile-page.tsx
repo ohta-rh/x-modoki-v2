@@ -32,7 +32,7 @@ export function ProfilePage({ profile, tab, firstPage, now, signedIn }: Props) {
   return (
     <>
       <PageHeader title={profile.name}>
-        <span className="ml-3 text-[13px] text-text-muted">
+        <span className="ml-3 shrink-0 text-[13px] whitespace-nowrap text-text-muted">
           {profile.postsCount.toLocaleString('ja-JP')} 件のポスト
         </span>
       </PageHeader>

@@ -91,3 +91,21 @@ test('アバターに約 0.5 秒ホバーすると、プロフィールの小さ
   await expect(card).toBeVisible();
   await expect(card).toContainText(`@${me.username}`);
 });
+
+test('保存の途中で押したリンクの先へ行く（保存のあとにプロフィールへ戻さない、#77）', async ({
+  page,
+}) => {
+  await signUp(page);
+  await page.goto('/settings/profile');
+  // The save takes a while: the person moves on before it ends.
+  await page.route('**/settings/profile', async (route) => {
+    if (route.request().method() === 'POST') await new Promise((done) => setTimeout(done, 1500));
+    await route.fallback();
+  });
+  await page.getByRole('textbox', { name: '場所' }).fill('大阪');
+  await page.getByRole('button', { name: '保存' }).click();
+  await page.getByRole('navigation').getByRole('link', { name: '話題を検索' }).click();
+  await expect(page).toHaveURL(/\/explore$/);
+  await page.waitForTimeout(2500);
+  await expect(page).toHaveURL(/\/explore$/);
+});

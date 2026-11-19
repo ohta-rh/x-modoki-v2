@@ -38,7 +38,9 @@ describe('UserHoverCard（#23）', () => {
       { timeout: 2000 },
     );
     expect(fetchSpy).toHaveBeenCalledWith('/api/users/hanako');
-    expect(await screen.findByText('猫が好き')).toBeInTheDocument();
+    expect(await screen.findByText('猫が好き')).toHaveClass('break-words');
+    // An unbroken string wraps instead of widening the column (#74).
+    expect(screen.getByText('花子', { selector: 'p' })).toHaveClass('break-words');
     expect(card).toHaveTextContent('@hanako');
     expect(card).toHaveTextContent('2 フォロー中');
     expect(card).toHaveTextContent('3 フォロワー');

@@ -9,6 +9,7 @@ import {
 } from '@/features/profile-edit';
 import { Dialog, DialogContent, DialogTitle } from '@/shared/ui/kit';
 import { PageHeader } from '@/widgets/app-shell';
+import { useMovedAway } from '../lib/use-moved-away';
 import { type ProfileImages, useProfileImages } from './profile-images';
 
 type Props = {
@@ -22,6 +23,7 @@ type Props = {
 export function ProfileEditDialog({ initial, images, action }: Props) {
   const router = useRouter();
   const pickers = useProfileImages(images);
+  const movedAway = useMovedAway();
   return (
     <Dialog open onOpenChange={() => router.back()}>
       <DialogContent className="max-h-[90dvh] max-w-[calc(100%-2rem)] overflow-y-auto rounded-card p-0 sm:max-w-[600px]">
@@ -31,7 +33,7 @@ export function ProfileEditDialog({ initial, images, action }: Props) {
           action={action}
           images={pickers}
           onSaved={() => {
-            router.back();
+            if (!movedAway.current) router.back();
             router.refresh();
           }}
         />
@@ -44,6 +46,7 @@ export function ProfileEditDialog({ initial, images, action }: Props) {
 export function ProfileEditScreen({ username, initial, images, action }: Props) {
   const router = useRouter();
   const pickers = useProfileImages(images);
+  const movedAway = useMovedAway();
   return (
     <>
       <PageHeader title="プロフィールを編集" />
@@ -52,7 +55,7 @@ export function ProfileEditScreen({ username, initial, images, action }: Props) 
         action={action}
         images={pickers}
         onSaved={() => {
-          router.push(`/${username}` as Route);
+          if (!movedAway.current) router.push(`/${username}` as Route);
           // The shell's account menu (name, avatar) lives in the layout, which a push keeps.
           router.refresh();
         }}

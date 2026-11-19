@@ -60,7 +60,7 @@ function Row({
             <FollowButton following={following} onToggle={() => void toggle()} />
           )}
         </div>
-        {person.bio ? <p className="mt-1">{person.bio}</p> : null}
+        {person.bio ? <p className="mt-1 break-words">{person.bio}</p> : null}
       </div>
     </li>
   );

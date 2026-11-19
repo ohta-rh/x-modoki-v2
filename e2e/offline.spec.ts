@@ -60,3 +60,26 @@ test.describe('通信が切れたとき（#34 の探索的テスト）', () => {
     await expect(page.getByText('オフラインです。つながると続きを読み込みます')).toHaveCount(0);
   });
 });
+
+test('投稿の応答が届かずにやり直しても、投稿は 1 つだけ（#76）', async ({ page }) => {
+  await signUp(page);
+  await page.goto('/home?tab=following');
+  await page.getByRole('textbox', { name: '投稿の本文' }).fill('応答が届かない投稿');
+  // The post reaches the server; only its answer is lost.
+  let cut = true;
+  await page.route('**/home?tab=following', async (route) => {
+    if (cut && route.request().method() === 'POST') {
+      cut = false;
+      await route.fetch();
+      return route.abort('connectionreset');
+    }
+    return route.fallback();
+  });
+  await page.getByRole('button', { name: 'ポストする' }).click();
+  await expect(page.getByText('通信できませんでした。もう一度お試しください')).toBeVisible();
+  await page.getByRole('button', { name: 'ポストする' }).click();
+  await expect(page.getByRole('article').first()).toContainText('応答が届かない投稿');
+  await page.reload();
+  await expect(page.getByRole('article').first()).toContainText('応答が届かない投稿');
+  await expect(page.getByRole('article')).toHaveCount(1);
+});

@@ -132,3 +132,32 @@ test('詳細で返信して戻ると、ホームのカードの返信と表示�
   await expect(card.getByText('返信 1', { exact: true })).toHaveCount(1);
   await expect(card.getByText('表示 1', { exact: true })).toHaveCount(1);
 });
+
+test('返信を詳細で消して戻ると、親の詳細と一覧のカードの返信の数が減っている（#78）', async ({
+  page,
+}) => {
+  await signUp(page);
+  await postFromHome(page, '返信を消される親');
+  await page.getByRole('article').first().getByText('返信を消される親').click();
+  await expect(page).toHaveURL(/\/status\//);
+  await page.getByRole('textbox', { name: '返信の本文' }).fill('あとで消す返信');
+  await page.getByRole('button', { name: '返信', exact: true }).click();
+  await expect(page.getByText('1 件の返信')).toBeVisible();
+  await page
+    .getByRole('article')
+    .filter({ hasText: 'あとで消す返信' })
+    .getByText('あとで消す返信')
+    .click();
+  const main = page.getByRole('article', { name: '投稿の本体' });
+  await expect(main).toContainText('あとで消す返信');
+  await main.getByRole('button', { name: 'もっと見る' }).click();
+  await page.getByRole('menuitem', { name: '削除' }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: '削除' }).click();
+  await expect(page).toHaveURL(/\/home$/);
+  await page.goBack();
+  await expect(page.getByRole('article', { name: '投稿の本体' })).toContainText('返信を消される親');
+  await expect(page.getByText('0 件の返信').filter({ visible: true })).toBeVisible();
+  await page.goBack();
+  const card = page.getByRole('article').filter({ hasText: '返信を消される親' }).first();
+  await expect(card.getByText('返信 0', { exact: true })).toHaveCount(1);
+});

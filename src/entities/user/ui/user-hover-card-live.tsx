@@ -66,11 +66,11 @@ export function UserHoverCardLive({
             className="w-72 rounded-card bg-bg p-4 text-body shadow-lg ring-1 ring-line"
           >
             <Avatar name={name} src={profile?.avatarUrl ?? null} size={64} />
-            <p className="mt-2 font-bold">{name}</p>
+            <p className="mt-2 font-bold break-words">{name}</p>
             <p className="text-text-muted">@{username}</p>
             {profile ? (
               <>
-                {profile.bio ? <p className="mt-2">{profile.bio}</p> : null}
+                {profile.bio ? <p className="mt-2 break-words">{profile.bio}</p> : null}
                 <p className="mt-2 flex gap-4 text-text-muted">
                   <span>
                     <span className="font-bold text-text">{profile.followingCount}</span> フォロー中

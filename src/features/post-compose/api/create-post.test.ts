@@ -132,6 +132,60 @@ describe('createPost（FR-POST、NFR-SEC-01・02・05）', () => {
   });
 });
 
+describe('createPost のやり直し（#76）', () => {
+  const count = async () => (await testDb().select().from(posts)).length;
+
+  it('応答が届かずに同じ投稿をもう一度送ると、新しく作らず、前の投稿の ID で成功を返す（数も増やさない）', async () => {
+    const me = await makeUser();
+    signInAs(me);
+    const first = await createPost('届いたか分からない投稿');
+    const again = await createPost('  届いたか分からない投稿\n');
+    expect(again).toEqual(first);
+    expect(await count()).toBe(1);
+    const [row] = await testDb().select().from(user).where(eq(user.id, me.id));
+    expect(row.postsCount).toBe(1);
+  });
+
+  it('同じ返信・同じ画像の投稿のやり直しも 1 つにまとめる。親の返信の数も 1 のまま', async () => {
+    const me = await makeUser();
+    signInAs(me);
+    const root = await makePost({ authorId: me.id, text: '親' });
+    const upload = await makeUpload(me.id);
+    const options = { replyToId: root.id, media: [{ id: upload.id, alt: '' }] };
+    const first = await createPost('画像つきの返信', options);
+    expect(first.ok).toBe(true);
+    expect(await createPost('画像つきの返信', options)).toEqual(first);
+    const [parent] = await testDb().select().from(posts).where(eq(posts.id, root.id));
+    expect(parent.replyCount).toBe(1);
+  });
+
+  it('返信先・引用元・画像が違う、ほかの人の、60 秒を過ぎた、消した同じ本文は、別の投稿になる', async () => {
+    const me = await makeUser();
+    const other = await makeUser();
+    signInAs(me);
+    const root = await makePost({ authorId: other.id, text: '親' });
+    await createPost('同じ本文');
+    await createPost('同じ本文', { replyToId: root.id });
+    await createPost('同じ本文', { quoteOfId: root.id });
+    await createPost('同じ本文', { media: [{ id: (await makeUpload(me.id)).id, alt: '' }] });
+    signInAs(other);
+    await createPost('同じ本文');
+    signInAs(me);
+    await testDb()
+      .update(posts)
+      .set({ createdAt: new Date(Date.now() - 61_000) })
+      .where(eq(posts.authorId, other.id));
+    signInAs(other);
+    expect((await createPost('同じ本文')).ok).toBe(true);
+    const mine = await makePost({ authorId: me.id, text: '消した本文' });
+    await testDb().update(posts).set({ deletedAt: new Date() }).where(eq(posts.id, mine.id));
+    signInAs(me);
+    expect((await createPost('消した本文')).ok).toBe(true);
+    // 4 of mine, 2 of the other person's, the deleted one and the new one after it, and the parent.
+    expect(await count()).toBe(9);
+  });
+});
+
 describe('createPost の返信（#20）', () => {
   it('返信は reply_to_id と root_id を持ち、相手の返信の数を同じトランザクションで 1 増やす', async () => {
     const me = await makeUser();

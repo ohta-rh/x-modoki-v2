@@ -39,7 +39,7 @@ describe('UserResults（#27）', () => {
     for (const link of screen.getAllByRole('link', { name: /名前 aa/ })) {
       expect(link).toHaveAttribute('href', '/aa');
     }
-    expect(screen.getByText('aa の自己紹介')).toBeInTheDocument();
+    expect(screen.getByText('aa の自己紹介')).toHaveClass('break-words'); // #74
     // An empty bio draws no paragraph.
     expect(screen.getByText('@me').closest('li')!.querySelector('p')).toBeNull();
     expect(screen.getAllByRole('button', { name: 'フォロー' })).toHaveLength(1);

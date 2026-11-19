@@ -56,6 +56,53 @@ describe('プロフィールの編集の画面（#23）', () => {
   });
 });
 
+describe('保存の途中で、ほかへ移ったとき（#77）', () => {
+  const slowSave = () => {
+    let finish!: () => void;
+    updateProfileAction.mockImplementationOnce(
+      () => new Promise((done) => (finish = () => done({ ok: true }))),
+    );
+    return () => finish();
+  };
+
+  // The modal keeps the screen behind it out of reach: there, only Back can move away.
+  it('ページ: 保存の間にリンクを押したら、保存のあとに移らず、読み直すだけ', async () => {
+    router.push.mockClear();
+    router.refresh.mockClear();
+    const finish = slowSave();
+    render(
+      <>
+        <a href="https://example.test/elsewhere" onClick={(event) => event.preventDefault()}>
+          話題を検索
+        </a>
+        <ProfileEditPage {...data} />
+      </>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: '保存' }));
+    await userEvent.click(screen.getByRole('link', { name: '話題を検索' }));
+    finish();
+    await waitFor(() => expect(router.refresh).toHaveBeenCalled());
+    expect(router.push).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['ページ', ProfileEditPage],
+    ['モーダル', ProfileEditModal],
+  ])('%s: 保存の間に「戻る」を押したときも、保存のあとに移らない', async (_kind, Screen) => {
+    router.push.mockClear();
+    router.back.mockClear();
+    router.refresh.mockClear();
+    const finish = slowSave();
+    render(<Screen {...data} />);
+    await userEvent.click(screen.getByRole('button', { name: '保存' }));
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    finish();
+    await waitFor(() => expect(router.refresh).toHaveBeenCalled());
+    expect(router.push).not.toHaveBeenCalled();
+    expect(router.back).not.toHaveBeenCalled();
+  });
+});
+
 describe('プロフィールの編集の画像（#25）', () => {
   it('アバターとバナーを選ぶ欄があり、選んだ画像の ID を一緒に保存する', async () => {
     render(<ProfileEditPage {...data} />);

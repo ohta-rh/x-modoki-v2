@@ -11,7 +11,7 @@ import { ComposerDialog, ComposerScreen } from './composer';
 
 type Action = Parameters<typeof ComposerDialog>[0]['action'];
 const posted = () => vi.fn<Action>(async () => ({ ok: true, id: '42' }));
-const DRAFT = 'x-modoki:compose-draft';
+const DRAFT = 'x-modoki:compose-draft:me'; // one per person (#79)
 
 function wrap(children: ReactNode) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });

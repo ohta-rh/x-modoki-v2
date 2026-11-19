@@ -1,6 +1,7 @@
 # ドキュメントの更新の履歴
 
 ## 2026-11-19
+* **New**: [ADR-0064](adr/0064-a-repeated-post-within-a-minute-returns-the-first.md)（1 分以内の同じ投稿のやり直しは前の投稿を返す）（#76）。
 * **New**: #65〜#73 の試験レポート（#34 の探索的テストで見つけた 9 件のバグ: [#65](test-reports/issue-0065-floating-button-overlap.md)、[#66](test-reports/issue-0066-nfc-normalize-input.md)、[#67](test-reports/issue-0067-trim-post-body.md)、[#68](test-reports/issue-0068-back-after-delete.md)、[#69](test-reports/issue-0069-counts-after-back.md)、[#70](test-reports/issue-0070-offline-server-actions.md)、[#71](test-reports/issue-0071-japanese-error-screen.md)、[#72](test-reports/issue-0072-offline-next-page.md)、[#73](test-reports/issue-0073-malformed-url-404.md)）。
 * **New**: [ADR-0063](adr/0063-proxy-answers-undecodable-paths-with-404.md)（解読できない % を含むパスは proxy.ts で 404 へ）。[アプリケーションの構成](architecture/application-structure.md)と[全体の構成](architecture/overview.md)の proxy.ts の役目を直した（#73）。
 * **New**: [マイルストーン 1 の探索的テスト](research/exploratory-m1.md)（6 つの見方の 1 巡目と、見つけた 9 件の不具合 #65〜#73 の直し方）（#34）。

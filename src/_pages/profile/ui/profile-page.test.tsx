@@ -78,7 +78,8 @@ describe('ProfilePage（#23）', () => {
   it('ヘッダーに名前と投稿の数、プロフィール、タブ、一覧。本人には固定の項目', async () => {
     page({});
     expect(screen.getByRole('heading', { level: 1, name: '花子' })).toBeInTheDocument();
-    expect(screen.getByText('12 件のポスト')).toBeInTheDocument();
+    // Beside a long name it keeps its width and one line (#74).
+    expect(screen.getByText('12 件のポスト')).toHaveClass('shrink-0', 'whitespace-nowrap');
     expect(screen.getByRole('region', { name: 'プロフィール' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'ポスト' })).toHaveAttribute('aria-selected', 'true');
     const article = within(screen.getByRole('article'));

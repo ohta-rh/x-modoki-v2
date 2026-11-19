@@ -68,7 +68,17 @@ export function PostThread({
               // Replace, not push, and out of every list: Back must not bring it back (#68).
               onDeleted={() => {
                 removePostFromCaches(queryClient, post.id);
+                // A reply: its parent has one fewer in the lists, and its page in the history
+                // is read again rather than shown as it was (#78).
+                const parent = detail.ancestors.at(-1);
+                if (parent && !('deleted' in parent)) {
+                  updatePostInCaches(queryClient, parent.id, (target) => ({
+                    ...target,
+                    counts: { ...target.counts, replies: Math.max(target.counts.replies - 1, 0) },
+                  }));
+                }
                 router.replace('/home');
+                router.refresh();
               }}
             />
           ) : undefined

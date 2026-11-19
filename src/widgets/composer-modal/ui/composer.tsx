@@ -37,7 +37,11 @@ type ComposerProps = {
  * saved, discarded or posted since then gives a fresh box holding it.
  */
 function Composer(props: ComposerProps) {
-  const draft = useSyncExternalStore(subscribeDraft, readDraft, () => null);
+  const draft = useSyncExternalStore(
+    subscribeDraft,
+    () => readDraft(props.username),
+    () => null,
+  );
   if (draft === null) return null;
   return <ComposerBody key={draft} draft={draft} {...props} />;
 }
@@ -62,7 +66,7 @@ function ComposerBody({
       onTextChange={setText}
       attachments={{ ...attachments, node: <ImageAttachments attachments={attachments} /> }}
       onPosted={(id) => {
-        clearDraft();
+        clearDraft(username);
         void queryClient.resetQueries({ queryKey: ['timeline'] });
         toast.add({
           title: 'ポストを送信しました',
@@ -126,8 +130,8 @@ export function ComposerDialog({ username, action, onClose }: DialogProps) {
   // The question closes first; the composer goes once it has: leaving with both dialogs still
   // open left the screen behind hidden from assistive technology.
   const answer = (choice: 'keep' | 'discard') => {
-    if (choice === 'keep') saveDraft(content.text);
-    else clearDraft();
+    if (choice === 'keep') saveDraft(username, content.text);
+    else clearDraft(username);
     answered.current = true;
     setAsking(false);
   };

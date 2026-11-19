@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { and, desc, eq, gt, inArray, isNull, sql } from 'drizzle-orm';
 import twitterText from 'twitter-text';
 import { sealUploads } from '@/entities/media/index.server';
 import { type NewNotification, notify } from '@/entities/notification/index.server';
@@ -88,6 +88,26 @@ export async function createPost(
     quoted = target.repostOfId ?? target.id;
   }
   const mediaIds = items.map((item) => item.id);
+  // A retry of a post whose answer was lost (#76): the same person sending the same thing within a
+  // minute gets the post already made, not a second one (ADR-0064).
+  const [repeat] = await getDb()
+    .select({ id: posts.id })
+    .from(posts)
+    .where(
+      and(
+        eq(posts.authorId, viewer.id),
+        eq(posts.text, body),
+        parent ? eq(posts.replyToId, parent.id) : isNull(posts.replyToId),
+        quoted !== undefined ? eq(posts.quoteOfId, quoted) : isNull(posts.quoteOfId),
+        isNull(posts.repostOfId),
+        isNull(posts.deletedAt),
+        gt(posts.createdAt, sql`now() - interval '60 seconds'`),
+        sql`coalesce((select array_agg(${postMedia.mediaId} order by ${postMedia.position}) from ${postMedia} where ${postMedia.postId} = ${posts.id}), '{}') = ${`{${mediaIds.join(',')}}`}::bigint[]`,
+      ),
+    )
+    .orderBy(desc(posts.createdAt))
+    .limit(1);
+  if (repeat) return { ok: true, id: toIdString(repeat.id) };
   const sealed = items.length > 0 ? await sealUploads(viewer.id, mediaIds) : new Map();
   if (sealed === null) {
     return { ok: false, error: 'VALIDATION' };

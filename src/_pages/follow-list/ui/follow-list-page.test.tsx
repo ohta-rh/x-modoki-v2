@@ -43,6 +43,11 @@ describe('FollowListPage（#24）', () => {
   it('見出しとタブ（フォロワー / フォロー中）、各行に名前・@・自己紹介・フォローのボタン（自分には無し）', () => {
     show();
     expect(screen.getByRole('heading', { level: 1, name: '花' })).toBeInTheDocument();
+    // Beside a long name the @ keeps its width and one line (#74).
+    expect(screen.getByRole('banner').querySelector('span')).toHaveClass(
+      'shrink-0',
+      'whitespace-nowrap',
+    );
     expect(screen.getByRole('tab', { name: 'フォロワー' })).toHaveAttribute(
       'aria-selected',
       'true',
@@ -53,6 +58,7 @@ describe('FollowListPage（#24）', () => {
     );
     const [first, mine] = screen.getAllByRole('listitem');
     for (const part of ['名前 aa', '@aa', '自己紹介']) expect(first).toHaveTextContent(part);
+    expect(within(first).getByText('自己紹介')).toHaveClass('break-words'); // #74
     expect(within(first).getByRole('button', { name: 'フォロー' })).toBeInTheDocument();
     expect(within(mine).queryByRole('button')).toBeNull();
   });
