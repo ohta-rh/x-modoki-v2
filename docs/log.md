@@ -2,6 +2,7 @@
 
 ## 2026-11-20
 
+* **New**: [#115 の試験レポート](test-reports/issue-0115-quoted-post-images.md)（引用の中の画像）。
 * **Update**: [ハーネスの全体像](architecture/harness.md)と図解の CI の時間を、見込みから測った値（コードの push で約 6 分）にした。
 * **New**: [ハーネスの見直し（2026-11）](research/harness-review-2026-11.md)、[ADR-0073](adr/0073-ci-scope-docs-only-and-e2e-per-browser.md)（CI の範囲と、ブラウザごとの画面のテスト。ADR-0070 を置き換え）、[ADR-0074](adr/0074-harness-short-claude-md-path-scoped-rules-skills-and-hooks.md)（短い CLAUDE.md・触ったときだけ読む決まり・skill・フック）。環境と配備・全体像・技術の一覧・要件の NFR-MAINT-02・ハーネスの全体像を合わせた。
 * **New**: [ハーネスの全体像](architecture/harness.md)と、その図解 `architecture/harness.html`。README の「進め方」からリンクした。
