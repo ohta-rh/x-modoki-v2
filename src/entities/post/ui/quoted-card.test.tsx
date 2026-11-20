@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { PostCard } from './post-card';
@@ -16,9 +16,41 @@ const quoted = {
   links: [],
   createdAt: '2026-11-18T02:00:00.000Z',
   quotesAnother: false,
+  media: [],
 };
 
 describe('QuotedCard（#22）', () => {
+  it('引用した投稿の画像を、本文の下に順に出す。押すとその投稿へ（#115）', async () => {
+    push.mockReset();
+    render(
+      <QuotedCard
+        quoted={{
+          ...quoted,
+          media: [
+            { url: 'https://m.example/a.webp', width: 30, height: 40, alt: '一枚目' },
+            { url: 'https://m.example/b.webp', width: 10, height: 20, alt: '二枚目' },
+          ],
+        }}
+        now={now}
+      />,
+    );
+    const card = screen.getByRole('article', { name: '引用した投稿' });
+    const images = within(card)
+      .getAllByRole('img')
+      .filter((img) => img.getAttribute('alt'));
+    expect(images.map((img) => img.getAttribute('alt'))).toEqual(['一枚目', '二枚目']);
+    expect(images[0]).toHaveAttribute('src', 'https://m.example/a.webp');
+    // The images open the quoted post, not a photo viewer of the outer one.
+    expect(within(card).queryByRole('link', { name: /一枚目/ })).toBeNull();
+    await userEvent.click(images[0]);
+    expect(push).toHaveBeenCalledWith('/hana/status/7');
+  });
+
+  it('画像が無ければ画像の枠を出さない', () => {
+    render(<QuotedCard quoted={quoted} now={now} />);
+    expect(screen.queryByTestId('post-media')).toBeNull();
+  });
+
   it('1px の線と 16px の角の入れ子で、作者・本文を出し、押すとその投稿へ', async () => {
     push.mockReset();
     render(<QuotedCard quoted={quoted} now={now} />);

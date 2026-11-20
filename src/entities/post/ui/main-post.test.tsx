@@ -57,6 +57,7 @@ describe('MainPost の引用（#22）', () => {
             links: [],
             createdAt: '2026-11-18T05:04:00.000Z',
             quotesAnother: false,
+            media: [],
           },
         }}
         now={new Date('2026-11-18T07:04:00.000Z')}

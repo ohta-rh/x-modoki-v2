@@ -36,6 +36,7 @@ export function QuoteDialog({ post, now, action, onClose, onPosted }: Props) {
               links: post.links,
               createdAt: post.createdAt,
               quotesAnother: post.quoted !== null,
+              media: post.media,
             }}
           />
         </div>

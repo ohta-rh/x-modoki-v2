@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { relativeTime } from '@/shared/lib/format';
 import { Avatar } from '@/shared/ui/avatar';
 import type { QuotedPost } from '../model/types';
+import { PostMedia } from './post-media';
 import { PostText } from './post-text';
 
 /**
@@ -44,6 +45,8 @@ export function QuotedCard({ quoted, now }: { quoted: QuotedPost; now: Date }) {
         </time>
       </div>
       <PostText text={quoted.text} links={quoted.links} />
+      {/* No `photos`: pressing an image opens the quoted post through the card's click (#115). */}
+      <PostMedia media={quoted.media} />
       {quoted.quotesAnother ? (
         <Link href={detail} className="text-body text-brand hover:underline">
           ポストを表示

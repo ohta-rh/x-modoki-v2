@@ -63,6 +63,7 @@ describe('一覧のリポストと引用（#22）', () => {
       links: [],
       createdAt: quote.createdAt.toISOString(),
       quotesAnother: true,
+      media: [],
     });
     expect(ofGone.quoted).toEqual({ id: gone.id.toString(), deleted: true });
     expect(plain.quoted).toMatchObject({ text: '最初', quotesAnother: false });
@@ -81,6 +82,46 @@ describe('一覧のリポストと引用（#22）', () => {
     const second = await getTimeline('for-you', BigInt(first.page.nextCursor!));
     if (!second.ok) throw new Error('expected ok');
     expect(first.page.items.length + second.page.items.length).toBe(22);
+  });
+
+  it('引用した投稿の画像も、位置の順に、公開の URL・縦横・代替テキストで返す（#115）', async () => {
+    const me = await makeUser();
+    const pictured = await makePost({ id: at(1), authorId: me.id, text: '写真' });
+    const [second, first] = await testDb()
+      .insert(media)
+      .values(
+        [
+          ['media/q2.webp', 10, 20, '二枚目'],
+          ['media/q1.webp', 30, 40, '一枚目'],
+        ].map(([key, width, height, alt]) => ({
+          id: newId(),
+          ownerId: me.id,
+          key: key as string,
+          mime: 'image/webp',
+          width: width as number,
+          height: height as number,
+          alt: alt as string,
+          status: 'ready' as const,
+        })),
+      )
+      .returning();
+    await testDb()
+      .insert(postMedia)
+      .values([
+        { postId: pictured.id, mediaId: second.id, position: 1 },
+        { postId: pictured.id, mediaId: first.id, position: 0 },
+      ]);
+    await makePost({ id: at(2), authorId: me.id, text: '引用', quoteOfId: pictured.id });
+    signInAs(me);
+    const result = await getTimeline('for-you', null);
+    if (!result.ok) throw new Error('expected ok');
+    const quote = result.page.items[0];
+    if (!quote.quoted || 'deleted' in quote.quoted) throw new Error('expected a quoted post');
+    const base = process.env.NEXT_PUBLIC_MEDIA_BASE_URL;
+    expect(quote.quoted.media).toEqual([
+      { url: `${base}/media/q1.webp`, width: 30, height: 40, alt: '一枚目' },
+      { url: `${base}/media/q2.webp`, width: 10, height: 20, alt: '二枚目' },
+    ]);
   });
 
   it('画像は位置の順に、公開の URL・縦横・代替テキストで返す（#25）', async () => {

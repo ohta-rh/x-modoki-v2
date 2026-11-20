@@ -9,6 +9,10 @@ import type { Post, QuotedPost } from '../model/types';
 
 const FALSE = sql<boolean>`false`;
 
+/** A post's images as JSON, in their position order; `id` is the post's id column. */
+const imagesOf = (id: unknown) =>
+  sql`(select coalesce(json_agg(json_build_object('key', m.key, 'width', m.width, 'height', m.height, 'alt', m.alt) order by pm.position), '[]'::json) from post_media pm join media m on m.id = pm.media_id where pm.post_id = ${id})`;
+
 /** `posts`, or the alias the timeline reads a row's shown post through. */
 type PostTable = typeof posts | ReturnType<typeof alias<typeof posts, 'shown'>>;
 
@@ -33,10 +37,9 @@ export function postColumns(viewerId: string | null, t: PostTable = posts) {
     reposted: viewer(
       sql`select 1 from posts r where r.repost_of_id = ${t.id} and r.author_id = ${viewerId}`,
     ),
-    images: sql<
-      Image[]
-    >`(select coalesce(json_agg(json_build_object('key', m.key, 'width', m.width, 'height', m.height, 'alt', m.alt) order by pm.position), '[]'::json) from post_media pm join media m on m.id = pm.media_id where pm.post_id = ${t.id})`,
-    quoted: sql<QuotedJson | null>`(select json_build_object('id', q.id::text, 'deleted', q.deleted_at is not null, 'text', q.text, 'createdAt', q.created_at, 'quotesAnother', q.quote_of_id is not null, 'username', qu.username, 'name', qu.name, 'image', qu.image) from posts q join users qu on qu.id = q.author_id where q.id = ${t.quoteOfId})`,
+    images: sql<Image[]>`${imagesOf(t.id)}`,
+    // The quoted post's images too, in the same statement (#115).
+    quoted: sql<QuotedJson | null>`(select json_build_object('id', q.id::text, 'deleted', q.deleted_at is not null, 'text', q.text, 'createdAt', q.created_at, 'quotesAnother', q.quote_of_id is not null, 'username', qu.username, 'name', qu.name, 'image', qu.image, 'images', ${imagesOf(sql`q.id`)}) from posts q join users qu on qu.id = q.author_id where q.id = ${t.quoteOfId})`,
   };
 }
 
@@ -52,6 +55,7 @@ type QuotedJson = {
   username: string | null;
   name: string;
   image: string | null;
+  images: Image[];
 };
 
 export type Row = {
@@ -80,8 +84,12 @@ function toQuoted(quoted: QuotedJson): QuotedPost {
     links: findLinks(quoted.text),
     createdAt: new Date(quoted.createdAt).toISOString(),
     quotesAnother: quoted.quotesAnother,
+    media: toMedia(quoted.images),
   };
 }
+
+const toMedia = (images: Image[]): Post['media'] =>
+  images.map(({ key, width, height, alt }) => ({ url: mediaUrl(key)!, width, height, alt }));
 
 /** One row as the post DTO (application-structure.md 5). */
 export function toPost(row: Row, viewerId: string | null, repostedBy: Post['repostedBy']): Post {
@@ -92,12 +100,7 @@ export function toPost(row: Row, viewerId: string | null, repostedBy: Post['repo
     text: post.text,
     links: findLinks(post.text),
     createdAt: post.createdAt.toISOString(),
-    media: row.images.map(({ key, width, height, alt }) => ({
-      url: mediaUrl(key)!,
-      width,
-      height,
-      alt,
-    })),
+    media: toMedia(row.images),
     counts: {
       replies: post.replyCount,
       reposts: post.repostCount,

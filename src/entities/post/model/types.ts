@@ -31,6 +31,8 @@ export type QuotedPost =
       links: PostLink[];
       createdAt: string;
       quotesAnother: boolean;
+      /** Its images, shown inside the quote (#115). */
+      media: Post['media'];
     }
   | { id: string; deleted: true };
 
