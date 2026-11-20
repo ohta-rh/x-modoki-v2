@@ -15,6 +15,8 @@ X（x.com）の Web 版の見た目と操作を再現する、Next.js の 1 つ�
 
 * [architecture/](architecture/index.md) - 今の設計（構成・技術・構造・ルーティング・データ・UI・環境）
 * [adr/](adr/) - 決定とその理由
+* [requirements/](requirements/index.md) - ID の付いた要件（機能・機能でない）
+* [guides/](guides/index.md) - 動かし方と困ったときの手順
 * [research/](research/index.md) - 決定の根拠にした調査（日付つきの記録）
 * [test-reports/](test-reports/index.md) - 何を確かめ、何が見えたかの記録（画面の写真つき）
 

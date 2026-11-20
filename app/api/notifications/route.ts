@@ -1,0 +1,1 @@
+export { getNotificationList as GET } from '@/_app/api-routes';

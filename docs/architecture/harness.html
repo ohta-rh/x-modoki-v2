@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>x-modoki のハーネス</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one column read top to bottom, like a control panel's wiring diagram — rules feed the loop, the loop passes the gates, the gates leave records. */
+:root {
+  --bg: #f4f6f8;
+  --panel: #ffffff;
+  --ink: #18212b;
+  --muted: #5a6876;
+  --line: #d3dbe3;
+  --rule: #2f5d8a;      /* rules: steel blue */
+  --loop: #6a4fb3;      /* loop: violet */
+  --gate: #b9700a;      /* gates: signal amber */
+  --record: #2f7a55;    /* records: green */
+  --stop: #b23a3a;
+  --tint-rule: #e7eef6;
+  --tint-loop: #efebf8;
+  --tint-gate: #fbf1e1;
+  --tint-record: #e6f2ec;
+  --sans: "IBM Plex Sans JP", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11161c; --panel: #182029; --ink: #e3e9ef; --muted: #9aa8b5; --line: #2c3946;
+    --rule: #7fb0e0; --loop: #b6a1ec; --gate: #e8a94a; --record: #6cc499; --stop: #ec7d7d;
+    --tint-rule: #1b2836; --tint-loop: #231f33; --tint-gate: #2d2416; --tint-record: #182a22;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11161c; --panel: #182029; --ink: #e3e9ef; --muted: #9aa8b5; --line: #2c3946;
+  --rule: #7fb0e0; --loop: #b6a1ec; --gate: #e8a94a; --record: #6cc499; --stop: #ec7d7d;
+  --tint-rule: #1b2836; --tint-loop: #231f33; --tint-gate: #2d2416; --tint-record: #182a22;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.7;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+main { max-width: 1040px; margin: 0 auto; display: grid; gap: 40px; }
+h1, h2, h3 { text-wrap: balance; line-height: 1.3; margin: 0; }
+h1 { font-size: clamp(26px, 4vw, 36px); font-weight: 700; }
+h2 { font-size: 21px; font-weight: 700; }
+h3 { font-size: 15px; font-weight: 700; }
+p { margin: 0; max-width: 68ch; }
+a { color: var(--rule); }
+code, .mono { font-family: var(--mono); font-size: 0.86em; overflow-wrap: anywhere; }
+.lede { color: var(--muted); }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+header { display: grid; gap: 12px; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--muted); font-size: 13px; }
+.facts b { color: var(--ink); font-variant-numeric: tabular-nums; font-weight: 500; }
+section { display: grid; gap: 16px; }
+main > *, section > * { min-width: 0; }
+
+.mapwrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+.map { display: block; width: 100%; min-width: 760px; height: auto; font-family: var(--sans); }
+.map .t-h { font-size: 17px; font-weight: 700; }
+.map .t-n { font-size: 13.5px; font-weight: 500; fill: var(--ink); }
+.map .t-c { font-size: 15px; font-weight: 700; fill: var(--ink); }
+.map .t-s { font-size: 11.5px; fill: var(--ink); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+
+/* The four layers */
+.stack { display: grid; gap: 0; }
+.layer { display: grid; grid-template-columns: 150px 1fr; gap: 20px; padding: 18px 20px; background: var(--panel); border: 1px solid var(--line); border-left: 5px solid var(--c); }
+.layer + .flow { display: flex; align-items: center; gap: 10px; padding: 6px 0 6px 170px; color: var(--muted); font-size: 13px; }
+.flow::before { content: "↓"; font-size: 18px; color: var(--muted); }
+.layer .name { display: grid; align-content: start; gap: 4px; }
+.layer .name h3 { color: var(--c); font-size: 17px; }
+.layer .name span { font-size: 12px; color: var(--muted); }
+.items { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; min-width: 0; }
+.item { background: var(--t); border-radius: 6px; padding: 10px 12px; display: grid; gap: 2px; min-width: 0; }
+.item b { font-weight: 500; }
+.item small { color: var(--muted); font-size: 12.5px; line-height: 1.55; overflow-wrap: anywhere; }
+.rule { --c: var(--rule); --t: var(--tint-rule); }
+.loop { --c: var(--loop); --t: var(--tint-loop); }
+.gate { --c: var(--gate); --t: var(--tint-gate); }
+.record { --c: var(--record); --t: var(--tint-record); }
+
+/* The PBI loop */
+.cycle { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; counter-reset: step; }
+.step { counter-increment: step; background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--sc); border-radius: 6px; padding: 10px 12px; display: grid; gap: 4px; min-width: 0; }
+.step::before { content: counter(step); font-family: var(--mono); font-size: 12px; color: var(--sc); }
+.step b { font-weight: 500; font-size: 14px; }
+.step small { color: var(--muted); font-size: 12.5px; line-height: 1.5; }
+.step.r { --sc: var(--rule); } .step.l { --sc: var(--loop); } .step.g { --sc: var(--gate); } .step.c { --sc: var(--record); }
+.backs { display: grid; gap: 6px; font-size: 13.5px; }
+.back { display: flex; gap: 10px; align-items: baseline; }
+.back .tag { font-family: var(--mono); font-size: 12px; color: var(--stop); white-space: nowrap; }
+
+/* Gates */
+.gates { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--panel); }
+.g { padding: 14px 16px; display: grid; gap: 6px; align-content: start; border-right: 1px solid var(--line); position: relative; min-width: 0; }
+.g:last-child { border-right: 0; }
+.g .when { font-family: var(--mono); font-size: 12px; color: var(--gate); }
+.g h3 { font-size: 15px; }
+.g ul { margin: 0; padding-left: 1.1em; font-size: 13px; color: var(--muted); display: grid; gap: 2px; }
+.g .cost { font-family: var(--mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* DoD */
+.dod { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 8px; counter-reset: dod; padding: 0; margin: 0; list-style: none; }
+.dod li { counter-increment: dod; display: grid; grid-template-columns: 26px 1fr; gap: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 9px 12px; font-size: 13.5px; }
+.dod li::before { content: counter(dod); font-family: var(--mono); color: var(--record); font-size: 13px; }
+
+/* Lessons table */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 13.5px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 500; color: var(--muted); font-size: 12.5px; background: var(--tint-rule); }
+tr:last-child td { border-bottom: 0; }
+td .n { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--stop); }
+.kind { font-family: var(--mono); font-size: 12px; padding: 1px 7px; border-radius: 4px; white-space: nowrap; }
+.kind.m { color: var(--gate); background: var(--tint-gate); }
+.kind.t { color: var(--rule); background: var(--tint-rule); }
+
+/* Who decides */
+.who { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.who > div { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: grid; gap: 8px; }
+.who ul { margin: 0; padding-left: 1.1em; font-size: 13.5px; display: grid; gap: 3px; }
+.who .yes h3 { color: var(--record); } .who .no h3 { color: var(--stop); }
+footer { color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
+
+@media (max-width: 640px) {
+  .layer { grid-template-columns: 1fr; gap: 10px; }
+  .layer + .flow { padding-left: 4px; }
+  .g { border-right: 0; border-bottom: 1px solid var(--line); }
+  .g:last-child { border-bottom: 0; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .step, .item { transition: border-color .15s, background-color .15s; }
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">ohta-rh/x-modoki-v2 · 2026-11-20 の時点</div>
+    <h1>x-modoki のハーネス</h1>
+    <p class="lede">人が寝ている間に、エージェント（Claude Code）が要件から運用まで 1 件ずつ進めて、間違えたら自分で止まるための仕組み。決まりを読み、決まった 1 周を回し、関所で機械に止められ、全部を記録に残す。</p>
+    <div class="facts">
+      <span>毎回読む決まり <b>CLAUDE.md（約 60 行）</b></span>
+      <span>skill <b>2</b> · フック <b>3</b></span>
+      <span>レビュアー <b>1 体（opus）</b></span>
+      <span>CI の確認 <b>8 + まっさらな clone</b>（文書だけは軽く）</span>
+      <span>ADR <b>72</b></span>
+      <span>試験レポート <b>83</b></span>
+      <span>単体のテスト <b>1,123</b> · 画面のテスト <b>387</b></span>
+    </div>
+  </header>
+
+  <section aria-labelledby="s-map">
+    <h2 id="s-map">全体図</h2>
+    <div class="mapwrap">
+<svg class="map" viewBox="0 0 1000 610" role="img" aria-labelledby="map-t map-d">
+<title id="map-t">x-modoki のハーネスの全体図</title><desc id="map-d">決まりを読んで PBI の 1 周に入り、関所を通って記録に残し、振り返りで決まりへ戻る。アカウント・支払い・秘密の値・マージはユーザーのもの。下で機械全体のゲートがいつでも効く。</desc>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker><marker id="ahr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--stop)"/></marker></defs>
+<path d="M367.4,225.3 A170,170 0 0 1 379.9,195.2" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M450.2,124.9 A170,170 0 0 1 480.3,112.4" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M579.7,112.4 A170,170 0 0 1 609.8,124.9" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M680.1,195.2 A170,170 0 0 1 692.6,225.3" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M692.6,324.7 A170,170 0 0 1 680.1,354.8" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M609.8,425.1 A170,170 0 0 1 579.7,437.6" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M480.3,437.6 A170,170 0 0 1 450.2,425.1" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M379.9,354.8 A170,170 0 0 1 367.4,324.7" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M629,374 Q570,275 544,165" fill="none" stroke="var(--stop)" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ahr)"/>
+<text x="588" y="315" class="t-s" fill="var(--stop)">指摘 → 直す</text>
+<path d="M524,407 Q500,285 518,165" fill="none" stroke="var(--stop)" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ahr)"/>
+<text x="438" y="347" class="t-s" fill="var(--stop)">赤い CI → 直す</text>
+<text x="502" y="253" text-anchor="middle" class="t-c">PBI を 1 件ずつ</text>
+<text x="502" y="275" text-anchor="middle" class="t-s" fill="var(--muted)">見つけたバグも</text>
+<text x="502" y="291" text-anchor="middle" class="t-s" fill="var(--muted)">この輪の中で直す</text>
+<g><rect x="292" y="251" width="136" height="48" rx="7" fill="var(--tint-rule)" stroke="var(--rule)" stroke-width="1.5"/>
+<text x="360" y="271" text-anchor="middle" class="t-n">選ぶ・読む</text><text x="360" y="289" text-anchor="middle" class="t-s" fill="var(--muted)">issue と ADR</text></g>
+<g><rect x="342" y="131" width="136" height="48" rx="7" fill="var(--tint-loop)" stroke="var(--loop)" stroke-width="1.5"/>
+<text x="410" y="151" text-anchor="middle" class="t-n">テストを先に</text><text x="410" y="169" text-anchor="middle" class="t-s" fill="var(--muted)">Playwright で赤</text></g>
+<g><rect x="462" y="81" width="136" height="48" rx="7" fill="var(--tint-loop)" stroke="var(--loop)" stroke-width="1.5"/>
+<text x="530" y="101" text-anchor="middle" class="t-n">TDD で作る</text><text x="530" y="119" text-anchor="middle" class="t-s" fill="var(--muted)">赤 → 緑 → 整理</text></g>
+<g><rect x="582" y="131" width="136" height="48" rx="7" fill="var(--tint-gate)" stroke="var(--gate)" stroke-width="1.5"/>
+<text x="650" y="151" text-anchor="middle" class="t-n">pnpm verify</text><text x="650" y="169" text-anchor="middle" class="t-s" fill="var(--muted)">7 つ・約 10 分</text></g>
+<g><rect x="632" y="251" width="136" height="48" rx="7" fill="var(--tint-gate)" stroke="var(--gate)" stroke-width="1.5"/>
+<text x="700" y="271" text-anchor="middle" class="t-n">Chrome で見る</text><text x="700" y="289" text-anchor="middle" class="t-s" fill="var(--muted)">3 幅 + 640×400</text></g>
+<g><rect x="582" y="371" width="136" height="48" rx="7" fill="var(--tint-gate)" stroke="var(--gate)" stroke-width="1.5"/>
+<text x="650" y="391" text-anchor="middle" class="t-n">独立レビュー</text><text x="650" y="409" text-anchor="middle" class="t-s" fill="var(--muted)">opus・差分だけ</text></g>
+<g><rect x="462" y="421" width="136" height="48" rx="7" fill="var(--tint-gate)" stroke="var(--gate)" stroke-width="1.5"/>
+<text x="530" y="441" text-anchor="middle" class="t-n">push と CI</text><text x="530" y="459" text-anchor="middle" class="t-s" fill="var(--muted)">8 つ + clone・約 20 分</text></g>
+<g><rect x="342" y="371" width="136" height="48" rx="7" fill="var(--tint-record)" stroke="var(--record)" stroke-width="1.5"/>
+<text x="410" y="391" text-anchor="middle" class="t-n">レポート・閉じる</text><text x="410" y="409" text-anchor="middle" class="t-s" fill="var(--muted)">写真・TDD の記録</text></g>
+<rect x="634" y="486" width="112" height="24" rx="12" fill="var(--tint-gate)" stroke="var(--gate)"/><text x="690" y="502" text-anchor="middle" class="t-s" fill="var(--gate)">commit: フック 1 秒</text>
+<rect x="20" y="40" width="215" height="200" rx="8" fill="var(--panel)" stroke="var(--rule)" stroke-width="1.5"/><rect x="20" y="40" width="6" height="200" rx="3" fill="var(--rule)"/><text x="40" y="70" class="t-h" fill="var(--rule)">決まり</text><text x="40" y="96" class="t-s">CLAUDE.md（入口）</text><text x="40" y="117" class="t-s">触ったときだけ読む 4 ルール</text><text x="40" y="138" class="t-s">skill: deliver-pbi・file-issues</text><text x="40" y="159" class="t-s">（完了の定義・レビュー・バグ）</text><text x="40" y="180" class="t-s">フック: Bash の前・編集のあと</text><text x="40" y="201" class="t-s">.claude/agents/code-reviewer</text>
+<rect x="20" y="330" width="215" height="165" rx="8" fill="var(--panel)" stroke="var(--record)" stroke-width="1.5"/><rect x="20" y="330" width="6" height="165" rx="3" fill="var(--record)"/><text x="40" y="360" class="t-h" fill="var(--record)">記録</text><text x="40" y="386" class="t-s">ADR 72（書き換えず置き換え）</text><text x="40" y="407" class="t-s">試験レポート 83（写真つき）</text><text x="40" y="428" class="t-s">issue を閉じる根拠のコメント</text><text x="40" y="449" class="t-s">振り返り（retrospective-m1）</text>
+<path d="M235,190 Q250,215 290,267" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/><text x="248" y="176" class="t-s" fill="var(--muted)">読んだとおりに</text>
+<path d="M342,401 Q300,425 237,420" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/><text x="250" y="458" class="t-s" fill="var(--muted)">通ったら残す</text>
+<path d="M127,328 L127,244" fill="none" stroke="var(--record)" stroke-width="1.8" marker-end="url(#ah)"/><text x="137" y="292" class="t-s" fill="var(--record)">振り返り → 決まりへ</text>
+<rect x="800" y="40" width="180" height="455" rx="10" fill="none" stroke="var(--stop)" stroke-width="1.4" stroke-dasharray="6 5"/>
+<text x="890" y="70" text-anchor="middle" class="t-h" fill="var(--stop)">ユーザーのもの</text>
+<text x="890" y="108" text-anchor="middle" class="t-n">アカウント</text>
+<text x="890" y="138" text-anchor="middle" class="t-n">支払い</text>
+<text x="890" y="168" text-anchor="middle" class="t-n">秘密の値</text>
+<text x="890" y="198" text-anchor="middle" class="t-n">マージ</text>
+<text x="890" y="228" text-anchor="middle" class="t-n">リリースの公開</text>
+<text x="890" y="258" text-anchor="middle" class="t-n">確認を弱める判断</text>
+<text x="890" y="300" text-anchor="middle" class="t-s" fill="var(--muted)">ここに当たる PBI は</text><text x="890" y="318" text-anchor="middle" class="t-s" fill="var(--muted)">blocked で待つ。</text><text x="890" y="344" text-anchor="middle" class="t-s" fill="var(--muted)">それ以外は聞かずに</text><text x="890" y="362" text-anchor="middle" class="t-s" fill="var(--muted)">決めて ADR に残す</text>
+<path d="M770,245 L795,195" fill="none" stroke="var(--stop)" stroke-width="1.2" stroke-dasharray="3 4" marker-end="url(#ahr)"/>
+<rect x="20" y="530" width="960" height="58" rx="8" fill="var(--tint-gate)" stroke="var(--gate)"/><text x="40" y="555" class="t-n" fill="var(--gate)">機械全体のゲート（いつでも効く）</text><text x="40" y="577" class="t-s">リポジトリの外の validate-bash と permissions.deny が、強制の push・rm -rf・秘密の値に触る操作を、許可の確認より前に止める</text>
+</svg>
+    </div>
+    <div class="legend"><span><i style="background:var(--rule)"></i>決まり</span><span><i style="background:var(--loop)"></i>作る</span><span><i style="background:var(--gate)"></i>関所（機械と、人の代わりの目）</span><span><i style="background:var(--record)"></i>記録</span><span><i style="background:var(--stop)"></i>戻る・ユーザーのもの</span></div>
+  </section>
+
+  <section aria-labelledby="s-layers">
+    <h2 id="s-layers">全体: 4 つの層</h2>
+    <div class="stack">
+      <div class="layer rule">
+        <div class="name"><h3>決まり</h3><span>毎回読むのは CLAUDE.md だけ。ほかは必要なときに</span></div>
+        <div class="items">
+          <div class="item"><b><code>CLAUDE.md</code></b><small>毎回読むのはここだけ（約 60 行）。要点と、どの決まりがいつ読まれるかの道しるべ</small></div>
+          <div class="item"><b>skill: file-issues</b><small>EPIC と PBI、根本原因を 1 文、完了の定義 10 項目。起票の前に呼ぶ</small></div>
+          <div class="item"><b>構造</b><small><code>architecture-fsd.md</code>（<code>src/</code>・<code>app/</code> を開いたとき）: FSD の 6 層、DB は <code>api</code> だけ</small></div>
+          <div class="item"><b>品質の関所</b><small><code>quality-gates.md</code>（コード・テスト・CI を開いたとき）: CI 必須、カバレッジ 100%、Workers で動くコード</small></div>
+          <div class="item"><b>TDD</b><small><code>tdd.md</code>（コードを開いたとき）: 赤 → 緑 → 整理、赤を記録に残す</small></div>
+          <div class="item"><b>skill: deliver-pbi</b><small>PBI を 1 件ずつ閉じるまで。参照のファイルに、完了の定義・レビュー・バグの扱い</small></div>
+
+          <div class="item"><b>文書と決定</b><small><code>documentation.md</code>（<code>docs/</code> を開いたとき）: OKF、決定は ADR</small></div>
+        </div>
+      </div>
+      <div class="flow">読んだ決まりのとおりに</div>
+      <div class="layer loop">
+        <div class="name"><h3>ループ</h3><span>PBI を 1 件ずつ</span></div>
+        <div class="items">
+          <div class="item"><b>EPIC の順に 1 件</b><small>開いていて、依存が閉じている最初の PBI を取る</small></div>
+          <div class="item"><b>テストを先に</b><small>受け入れ条件の Playwright を落としてから、振る舞いごとに赤 → 緑</small></div>
+          <div class="item"><b>本物の Chrome で見る</b><small>1280 / 768 / 375px と 640×400、コンソールのエラー 0、写真を残す</small></div>
+          <div class="item"><b>独立したレビュー</b><small><code>.claude/agents/code-reviewer.md</code>。渡すのは issue の番号と差分の範囲だけ</small></div>
+          <div class="item"><b>探索的テスト</b><small>読むだけの別の打鍵役が、6 つの見方で探す（M1 は 9 巡）</small></div>
+        </div>
+      </div>
+      <div class="flow">push の前と後に</div>
+      <div class="layer gate">
+        <div class="name"><h3>関所</h3><span>機械が止める</span></div>
+        <div class="items">
+          <div class="item"><b>Claude Code のフック</b><small><code>.claude/settings.json</code>: Bash の前に <code>guard-bash</code>、編集のあとに <code>format-edited</code></small></div>
+          <div class="item"><b>commit の前のフック</b><small><code>.githooks/pre-commit</code> → ステージした木でドキュメントと要件の結びつき</small></div>
+          <div class="item"><b><code>pnpm verify</code></b><small>ドキュメント・型・lint・整形・テスト 100%・ビルド・3 ブラウザ</small></div>
+          <div class="item"><b>GitHub Actions</b><small>文書だけなら軽い確認。それ以外は監査 + 上の 7 つ（画面のテストはブラウザごとに同時）、まっさらな clone</small></div>
+          <div class="item"><b>自前の lint とスクリプト</b><small><code>local/settle-server-actions</code>・<code>check-authz</code>・<code>check-src-layers</code>・<code>check-docs</code>・<code>check-traceability</code></small></div>
+          <div class="item"><b>機械全体のゲート</b><small>リポジトリの外の <code>validate-bash</code> と <code>permissions.deny</code>: 強制の push、<code>rm -rf</code> を止める</small></div>
+        </div>
+      </div>
+      <div class="flow">通ったら</div>
+      <div class="layer record">
+        <div class="name"><h3>記録</h3><span>次のセッションが読む</span></div>
+        <div class="items">
+          <div class="item"><b>ADR</b><small><code>docs/adr/</code>。受け入れたものは書き換えず、置き換える</small></div>
+          <div class="item"><b>試験レポート</b><small><code>docs/test-reports/</code>。TDD の記録・レビュー・Chrome の写真</small></div>
+          <div class="item"><b>issue のコメント</b><small>commit・CI の URL・レポートへのリンクを付けて閉じる</small></div>
+          <div class="item"><b>振り返り</b><small><code>retrospective-m1.md</code> から決まりへ戻す（上の層へ）</small></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-loop">
+    <h2 id="s-loop">PBI ごとの 1 周</h2>
+    <p class="lede">skill <code>deliver-pbi</code>（<code>.claude/skills/deliver-pbi/SKILL.md</code>）の 12 の手順。どこかで止まったら戻る所が決まっていて、ユーザーには聞かない。</p>
+    <div class="cycle">
+      <div class="step r"><b>土台を確かめる</b><small><code>git fetch</code>、<code>main</code> の CI が緑</small></div>
+      <div class="step r"><b>選ぶ</b><small>EPIC の順で、依存が閉じた最初</small></div>
+      <div class="step r"><b>読む</b><small>issue が仕様。関係する ADR も</small></div>
+      <div class="step g"><b>基準を確かめる</b><small>出発点の commit の CI が緑</small></div>
+      <div class="step l"><b>TDD で作る</b><small>赤の出力をその場で記録</small></div>
+      <div class="step g"><b>確かめる</b><small><code>pnpm verify</code>、受け入れ条件、Chrome</small></div>
+      <div class="step l"><b>独立したレビュー</b><small><code>APPROVE</code> まで新しいレビュアーで</small></div>
+      <div class="step c"><b>決定を残す</b><small>同じ commit に ADR</small></div>
+      <div class="step g"><b>commit と push</b><small>パスを名指しでステージ</small></div>
+      <div class="step g"><b>CI を最後まで見る</b><small>待つ間は次の PBI を読むだけ。赤なら直す</small></div>
+      <div class="step c"><b>試験レポート</b><small>写真つきで push、その CI も緑</small></div>
+      <div class="step c"><b>閉じる</b><small>完了の定義に印、根拠のコメント</small></div>
+    </div>
+    <div class="backs">
+      <div class="back"><span class="tag">レビューの指摘</span><span>自分で確かめ、本物なら落ちるテストを先に書いて直す。3 回通らなければ、最後に緑だった所へ戻って小さく分ける。</span></div>
+      <div class="back"><span class="tag">赤い CI</span><span>その場で直す。原因を 1 文で言えるまで直さない。記録はその PBI の試験レポートへ。</span></div>
+      <div class="back"><span class="tag">見つけたバグ</span><span>重さも範囲も問わず、今の PBI の中で最後まで直す（ADR-0056）。</span></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-gates">
+    <h2 id="s-gates">関所の順番</h2>
+    <p class="lede">早い関所ほど安く、遅い関所ほど本物に近い。どれも飛ばさず、ゆるめない。</p>
+    <div class="gates">
+      <div class="g"><span class="when">コマンドと編集のたび</span><h3>Claude Code のフック</h3><ul><li>全部をまとめたステージ</li><li>確認を飛ばす commit</li><li><code>;</code>・<code>||</code>・改行のあとの commit と push</li><li>名前でのプロセスの停止</li><li>編集したファイルを整える</li></ul><span class="cost">一瞬〜約 1 秒</span></div>
+      <div class="g"><span class="when">commit のとき</span><h3>pre-commit のフック</h3><ul><li>ステージした木を書き出す</li><li>ドキュメントの形とリンク</li><li>要件とテストの結びつき</li><li>引いた ADR の番号があるか</li></ul><span class="cost">約 1 秒</span></div>
+      <div class="g"><span class="when">push の前</span><h3><code>pnpm verify</code></h3><ul><li>型・ESLint・Steiger・整形</li><li>単体とデータアクセス層（本物の PostgreSQL）</li><li>カバレッジ 4 つとも 100%</li><li>ビルドと 3 ブラウザの e2e</li></ul><span class="cost">約 10 分</span></div>
+      <div class="g"><span class="when">push の前</span><h3>人の代わりの目</h3><ul><li>本物の Chrome で 3 つの幅と低い画面</li><li>独立した code-reviewer（opus）</li></ul><span class="cost">数分〜</span></div>
+      <div class="g"><span class="when">push の後</span><h3>GitHub Actions</h3><ul><li>まず範囲を決める（文書だけか）</li><li>文書だけ: 文書と整形</li><li>それ以外: 監査と上の 7 つ、画面のテストはブラウザごとに同時</li><li><code>fresh-clone</code>: 手順書をそのまま流す</li></ul><span class="cost">文書だけ: 数分 · それ以外: 約 6 分（2026-11-20 に測った）</span></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-dod">
+    <h2 id="s-dod">完了の定義（10 項目、例外なし）</h2>
+    <ol class="dod">
+      <li>受け入れ条件を、書いた方法で 1 つずつ確かめた</li>
+      <li>TDD で作り、赤を記録した</li>
+      <li><code>pnpm verify</code> が 0 で終わった</li>
+      <li>画面で見える条件に Playwright があり、3 ブラウザで通った</li>
+      <li>本物の Chrome で触り、写真を残した</li>
+      <li>独立したレビューが <code>APPROVE</code> を返した</li>
+      <li>その commit の CI が緑</li>
+      <li>決定は同じ commit に ADR</li>
+      <li>試験レポートと写真を push し、CI が緑</li>
+      <li>commit・CI・レポートを書いて閉じた</li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="s-lessons">
+    <h2 id="s-lessons">間違いから生まれた決まり</h2>
+    <p class="lede">同じ間違いが 2 回起きたら、決まりか機械の確認にする。マイルストーン 1 の振り返りから。</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>起きたこと</th><th>回数</th><th>いまの止め方</th><th>種類</th></tr></thead>
+        <tbody>
+          <tr><td>作業中のファイルでは通るのに、commit した木で CI が落ちた</td><td><span class="n">2</span></td><td>commit の前のフックが、ステージした木を確かめる（ADR-0072）</td><td><span class="kind m">機械</span></td></tr>
+          <tr><td>番号を付け直したあと、古い ADR の番号がコメントに残った</td><td><span class="n">4</span></td><td><code>check-docs.mjs</code> が、引いた番号が本当にあるかを見る</td><td><span class="kind m">機械</span></td></tr>
+          <tr><td>オフラインで Server Action が失敗し、画面が英語の誤りになった</td><td><span class="n">2</span></td><td>ESLint の <code>local/settle-server-actions</code>（ADR-0065）</td><td><span class="kind m">機械</span></td></tr>
+          <tr><td>e2e がマウスのホイールでスクロールし、位置を読み違えた</td><td><span class="n">2</span></td><td><code>e2e/</code> で <code>.wheel()</code> を ESLint が拒む（ADR-0049）</td><td><span class="kind m">機械</span></td></tr>
+          <tr><td>Server Action の終わる前に、e2e が次の画面へ移った</td><td><span class="n">7</span></td><td>応答が終わるのを待ってから移る</td><td><span class="kind t">決まり</span></td></tr>
+          <tr><td>3 つの幅では、低い画面の届かないボタンが見つからなかった</td><td><span class="n">7</span></td><td>Chrome の確かめに 640×400 を足した</td><td><span class="kind t">決まり</span></td></tr>
+          <tr><td>受け入れ条件にテストが無い、または消しても通るテスト</td><td><span class="n">14</span></td><td>レビューの前に、条件ごとに振る舞いを消して落ちるのを見る</td><td><span class="kind t">決まり</span></td></tr>
+          <tr><td>1 つの原因に 3 つの issue を立て、方法を替えなかった</td><td><span class="n">1</span></td><td>「同じバグ」は同じ根本原因で数える</td><td><span class="kind t">決まり</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-who">
+    <h2 id="s-who">エージェントが決めること、決めないこと</h2>
+    <div class="who">
+      <div class="yes"><h3>自分で決めて、ADR に残す</h3><ul><li>設計と道具の選び方（決定者: エージェント）</li><li>バグの直し方と、直す順番</li><li>前提が崩れたときの代わりの方法</li><li>テストと文書の書き方</li></ul></div>
+      <div class="no"><h3>決めない（ユーザーのもの）</h3><ul><li>アカウント・支払い・秘密の値（その PBI は <code>blocked</code>）</li><li>強制の push、作っていない物を消す</li><li>確認を弱める（ブラウザを外すのも ADR とユーザーの判断）</li><li>マージとリリースの公開（ADR-0029）</li></ul></div>
+    </div>
+  </section>
+
+  <footer>文書: <a href="harness.md">ハーネスの全体像</a>。出典: リポジトリの <code>CLAUDE.md</code>・<code>.claude/rules/</code>・<code>.claude/agents/</code>・<code>.github/workflows/ci.yml</code>・<code>.githooks/</code>・<code>docs/research/retrospective-m1.md</code>（ブランチ <code>m1/local-app</code>、2026-11-20）。</footer>
+</main>
+</body>
+</html>

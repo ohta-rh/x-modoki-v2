@@ -3,12 +3,12 @@ type: ADR
 title: "ADR-0020: CI を必須とし、GitHub Actions で全部の確認を push と PR のたびに動かす"
 description: "GitHub Actions で、ドキュメント・型・lint・整形・テストとカバレッジ・ビルド・画面を通したテストを push と PR のたびに動かし、通っていない変更を完了としない。"
 tags: [process, ci, quality]
-status: stable
+status: deprecated
 ---
 
 # ADR-0020: CI を必須とし、GitHub Actions で全部の確認を push と PR のたびに動かす
 
-- ステータス: 採用
+- ステータス: 置き換え: ADR-0070
 - 日付: 2026-11-18
 - 決定者: ユーザー（CI は必須）／エージェント（中身）
 - 関連: ADR-0005、ADR-0013、ADR-0019、ADR-0021、[環境と配備](../architecture/environments.md)

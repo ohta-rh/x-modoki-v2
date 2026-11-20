@@ -1,3 +1,10 @@
+---
+paths:
+  - "docs/**"
+  - "README.md"
+  - "CHANGELOG.md"
+---
+
 # Documentation — `docs/` is an OKF bundle, decisions are ADRs
 
 Applies whenever a Markdown document is added, changed, moved, or removed in this repository.
@@ -50,7 +57,7 @@ Spec: `GoogleCloudPlatform/open-knowledge-format` `SPEC.md` (v0.2, verified 2026
 | Current design (what it is now) | `Architecture` / `Design` | `docs/architecture/` |
 | Evidence gathered for a decision | `Research` | `docs/research/` |
 | How to run / operate | `Guide` | `docs/guides/`; root `README.md` only links to it |
-| What was tested and what was seen | `TestReport` | `docs/test-reports/`, evidence under `docs/test-reports/evidence/` (`.claude/rules/definition-of-done.md`) |
+| What was tested and what was seen | `TestReport` | `docs/test-reports/`, evidence under `docs/test-reports/evidence/` (`.claude/skills/deliver-pbi/definition-of-done.md`) |
 | Work to do | — | GitHub EPIC / PBI issues, **never a document** |
 
 - Architecture documents describe the present state and link to the ADR that decided each
@@ -65,6 +72,10 @@ Spec: `GoogleCloudPlatform/open-knowledge-format` `SPEC.md` (v0.2, verified 2026
 
 The global rule `~/.claude/rules/adr.md` applies; these are the local conventions.
 
+- **The number is given in the commit that adds the ADR** (write `ADR-XXXX` while drafting); after
+  any renumbering, `git grep` the old number. `check-docs.mjs` fails on a cited ADR number that does
+  not exist in `src/`, `app/`, `e2e/`, `scripts/`, configs, and `.claude/` (#39; four stale numbers
+  in M1).
 - Location `docs/adr/`, file `NNNN-kebab-title.md`, template `docs/adr/template.md`, index
   `docs/adr/README.md` (a table with the status column; `docs/adr/` has no `index.md`).
 - Written in Japanese. Frontmatter `type: ADR`, `title` identical to the H1 (`ADR-NNNN: …`).
@@ -76,9 +87,13 @@ The global rule `~/.claude/rules/adr.md` applies; these are the local convention
 ## 4. Before committing a documentation change
 
 Run `node scripts/check-docs.mjs` (also `pnpm docs:check`, and the first CI gate). It must
-exit 0. Its own tests are `node --test scripts/check-docs.test.mjs`.
+exit 0. Its own tests are `scripts/check-docs.test.mjs`, run by `pnpm test` (Vitest).
 
-**Checked by the script** — do not re-check by hand, and do not weaken:
+**Checked by the script** — do not re-check by hand, and do not weaken. It also runs on the staged
+tree before every commit (`.githooks/pre-commit`, ADR-0072):
+
+- Every `ADR-NNNN` cited in `src/`, `app/`, `e2e/`, `scripts/`, `eslint-rules/`, `docker/`,
+  `.claude/`, `.github/` and the root files exists in `docs/adr/` (#39).
 
 - Every non-reserved `.md` under `docs/` has frontmatter in the accepted form, with `type`
   (listed in `docs/index.md`), `title` equal to the H1, a one-sentence `description`, `tags`
@@ -95,6 +110,13 @@ exit 0. Its own tests are `node --test scripts/check-docs.test.mjs`.
   JPEG/WebP screenshot under `evidence/<report name>/` (≤ 300KB, ≤ 12), linked from
   `docs/log.md`; `issue-NNNN-*` reports also need `### TDD の記録` under `## 自動のテスト` and
   a `## コードレビュー` section.
+- Requirements trace to tests (`scripts/check-traceability.mjs`, the second half of
+  `pnpm docs:check`, ADR-0053): every `FR-` / `NFR-` ID and every routing URL has a row in
+  `docs/requirements/traceability.md` naming a test that exists, by its exact name, in a file
+  that mentions the ID (`// FR-POST-01: …` above the test); URL rows name a Playwright test.
+  `#NN で確かめる` is allowed only for a PBI that owns the requirement. Adding a requirement
+  or renaming a test means updating that table in the same commit; a PBI that owns a
+  `#NN で確かめる` row replaces it with its test before it closes.
 
 **Not checked by the script — check by hand:**
 

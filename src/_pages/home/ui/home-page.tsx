@@ -1,0 +1,38 @@
+import type { PostPage, TimelineKind } from '@/entities/post';
+import { createPostAction, createQuoteAction } from '@/features/post-compose/index.server';
+import { setBookmarkAction } from '@/features/post-bookmark/index.server';
+import { deletePostAction } from '@/features/post-delete/index.server';
+import { setLikeAction } from '@/features/post-like/index.server';
+import { setRepostAction } from '@/features/post-repost/index.server';
+import { PageHeader } from '@/widgets/app-shell';
+import { HomeTimeline } from '@/widgets/timeline-feed';
+import { HomeTabs } from './home-tabs';
+
+type Props = { kind: TimelineKind; firstPage: PostPage; now: string };
+
+/** /home: the header with tabs, the composer and the timeline (ui-ux.md 6–7). */
+export function HomePage({ kind, firstPage, now }: Props) {
+  return (
+    <>
+      {/* The header and the tabs stick together, taller than 53px (#86). */}
+      <div data-tall-sticky className="sticky top-0 z-10">
+        <PageHeader title="ホーム" />
+        <div className="bg-[var(--header-bg)] backdrop-blur-[12px]">
+          <HomeTabs kind={kind} />
+        </div>
+      </div>
+      <HomeTimeline
+        key={kind}
+        kind={kind}
+        firstPage={firstPage}
+        now={now}
+        action={createPostAction}
+        deleteAction={deletePostAction}
+        likeAction={setLikeAction}
+        bookmarkAction={setBookmarkAction}
+        repostAction={setRepostAction}
+        quoteAction={createQuoteAction}
+      />
+    </>
+  );
+}

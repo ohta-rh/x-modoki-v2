@@ -1,0 +1,109 @@
+import { expect, type Page, test } from '@playwright/test';
+import { signUp } from './support/auth';
+import { pngFile } from './support/images';
+
+async function postFromHome(page: Page, text: string) {
+  await page.goto('/home?tab=following');
+  await page.getByRole('textbox', { name: '投稿の本文' }).fill(text);
+  await page.getByRole('button', { name: 'ポストする' }).click();
+  await expect(page.getByRole('article').first()).toContainText(text);
+}
+
+const card = (page: Page, text: string) => page.getByRole('article').filter({ hasText: text });
+const actionDone = (page: Page) =>
+  page.waitForResponse((response) => response.request().headers()['next-action'] !== undefined);
+
+// FR-CONV-06: リポストの表示
+test('リポストすると、タイムラインに「〜さんがリポスト」と出る', async ({ page }) => {
+  const me = await signUp(page);
+  await postFromHome(page, 'リポストされる投稿');
+  const repost = card(page, 'リポストされる投稿').first().getByRole('button', { name: 'リポスト' });
+  await repost.click();
+  const done = actionDone(page);
+  await page.getByRole('menuitem', { name: 'リポスト' }).click();
+  // The repost green as text on the light page: the shade with 4.5:1 against it (ADR-0054).
+  await expect(repost).toHaveCSS('color', 'rgb(0, 119, 79)');
+  await expect(repost).toContainText('1');
+  await done;
+  await page.reload();
+  const reposted = page.getByRole('article').filter({ hasText: `${me.name}さんがリポスト` });
+  await expect(reposted).toContainText('リポストされる投稿');
+  // Undo from the menu: the repost row goes away.
+  await reposted.getByRole('button', { name: 'リポスト' }).click();
+  const undone = actionDone(page);
+  await page.getByRole('menuitem', { name: 'リポストを取り消す' }).click();
+  await undone;
+  await page.reload();
+  await expect(page.getByText(`${me.name}さんがリポスト`)).toHaveCount(0);
+});
+
+// FR-CONV-08: 引用
+test('引用すると、入れ子のカードの付いた入力欄が開き、投稿すると引用が出る', async ({ page }) => {
+  await signUp(page);
+  await postFromHome(page, '引用される投稿');
+  await card(page, '引用される投稿').getByRole('button', { name: 'リポスト' }).click();
+  await page.getByRole('menuitem', { name: '引用' }).click();
+  const dialog = page.getByRole('dialog', { name: '引用' });
+  const nested = dialog.getByRole('article', { name: '引用した投稿' });
+  await expect(nested).toContainText('引用される投稿');
+  await expect(nested).toHaveCSS('border-top-width', '1px');
+  await expect(nested).toHaveCSS('border-top-left-radius', '16px');
+  // As wide as X's composer, not the kit's small dialog (#22, Chrome).
+  expect((await dialog.boundingBox())!.width).toBeGreaterThanOrEqual(560);
+  await dialog.getByRole('textbox', { name: '引用の本文' }).fill('意見を添える');
+  await dialog.getByRole('button', { name: 'ポストする' }).click();
+  await expect(dialog).toHaveCount(0);
+  const quote = card(page, '意見を添える');
+  await expect(quote.getByRole('article', { name: '引用した投稿' })).toContainText(
+    '引用される投稿',
+  );
+});
+
+// FR-CONV-08: 引用（#115）
+test('画像つきの投稿を引用すると、引用の中に画像が出る', async ({ page }) => {
+  await signUp(page);
+  await page.goto('/home?tab=following');
+  await page.getByLabel('画像を追加').setInputFiles([await pngFile(page, 300, 200)]);
+  await page.getByRole('button', { name: '1 枚目の代替テキスト' }).click();
+  await page.getByRole('textbox', { name: '代替テキスト' }).fill('青い四角');
+  await page.getByRole('button', { name: '代替テキストを保存' }).click();
+  await page.getByRole('textbox', { name: '投稿の本文' }).fill('画像を引用される投稿');
+  await page.getByRole('button', { name: 'ポストする' }).click();
+  await expect(
+    card(page, '画像を引用される投稿').getByRole('img', { name: '青い四角' }),
+  ).toBeVisible();
+
+  await card(page, '画像を引用される投稿').getByRole('button', { name: 'リポスト' }).click();
+  await page.getByRole('menuitem', { name: '引用' }).click();
+  const dialog = page.getByRole('dialog', { name: '引用' });
+  await expect(
+    dialog.getByRole('article', { name: '引用した投稿' }).getByRole('img', { name: '青い四角' }),
+  ).toBeVisible();
+  await dialog.getByRole('textbox', { name: '引用の本文' }).fill('画像に意見を添える');
+  await dialog.getByRole('button', { name: 'ポストする' }).click();
+  await expect(dialog).toHaveCount(0);
+
+  // After a reload the timeline reads it from the database.
+  await page.reload();
+  const nested = card(page, '画像に意見を添える').getByRole('article', { name: '引用した投稿' });
+  const image = nested.getByRole('img', { name: '青い四角' });
+  await expect(image).toBeVisible();
+  // Inside the card, not wider than it.
+  const [box, inner] = [await nested.boundingBox(), await image.boundingBox()];
+  expect(inner!.x).toBeGreaterThanOrEqual(box!.x);
+  expect(inner!.x + inner!.width).toBeLessThanOrEqual(box!.x + box!.width);
+
+  // The quoting post's own detail page shows the image inside its quote too (#115 review).
+  await card(page, '画像に意見を添える').locator('time').first().click();
+  await expect(page).toHaveURL(/\/status\/\d+$/);
+  const detail = page.getByRole('article').filter({ hasText: '画像に意見を添える' }).first();
+  const inDetail = detail
+    .getByRole('article', { name: '引用した投稿' })
+    .getByRole('img', { name: '青い四角' });
+  await expect(inDetail).toBeVisible();
+
+  // Pressing the image opens the quoted post, not the outer one.
+  await inDetail.click();
+  await expect(page.getByRole('article').first()).toContainText('画像を引用される投稿');
+  await expect(page.getByRole('article').first()).not.toContainText('画像に意見を添える');
+});

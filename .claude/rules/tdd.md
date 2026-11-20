@@ -1,7 +1,17 @@
+---
+paths:
+  - "src/**"
+  - "app/**"
+  - "proxy.ts"
+  - "e2e/**"
+  - "scripts/**"
+  - "eslint-rules/**"
+---
+
 # Test-driven development — always
 
 Applies to every change to executable code in this repository (ADR-0026). It is item 2 of the
-Definition of Done (`.claude/rules/definition-of-done.md`): work that was not test-driven is
+Definition of Done (`.claude/skills/deliver-pbi/definition-of-done.md`): work that was not test-driven is
 not done, however green it is.
 
 If the `superpowers:test-driven-development` skill is available, load it before implementing;
@@ -46,7 +56,7 @@ several tests ahead.
 | Helpers under `e2e/` | `src/shared/db/schema/` (declarations) and type-only files |
 | | Throwaway investigation code outside the repository |
 
-`app/**/{page,layout,default}.tsx` cannot be unit-tested (ADR-0021): write the Playwright test
+`app/**/{page,layout,default,not-found,error,global-error}.tsx` cannot be unit-tested (ADR-0021, ADR-0039, ADR-0062): write the Playwright test
 for the route first and watch it fail, then add the route file.
 
 Adding to the "not covered" column requires a new ADR.

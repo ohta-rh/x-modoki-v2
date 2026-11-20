@@ -8,14 +8,14 @@ status: stable
 
 # アプリケーションの構造
 
-- 決定: [ADR-0022](../adr/0022-feature-sliced-design.md)（Feature-Sliced Design）、[ADR-0010](../adr/0010-dal-server-actions-route-handlers.md)（データアクセス層）、[ADR-0017](../adr/0017-cloudflare-workers-opennext.md)、[ADR-0021](../adr/0021-coverage-100-percent.md)
+- 決定: [ADR-0022](../adr/0022-feature-sliced-design.md)（Feature-Sliced Design）、[ADR-0030](../adr/0030-fsd-lint-exceptions-and-own-layer-check.md)（守らせ方）、[ADR-0010](../adr/0010-dal-server-actions-route-handlers.md)（データアクセス層）、[ADR-0017](../adr/0017-cloudflare-workers-opennext.md)、[ADR-0021](../adr/0021-coverage-100-percent.md)
 
 ## 1. ディレクトリ
 
 ```
 .
 ├── app/                        Next.js のルーティングだけ（中身は _pages と _app を呼ぶ）
-├── proxy.ts                    ログインしていなければログインへ送る
+├── proxy.ts                    ログインしていなければログインへ送る。解読できないパスは 404（ADR-0063）
 ├── next.config.ts              cacheComponents / partialPrefetching / typedRoutes
 ├── steiger.config.ts           FSD のリンターの設定
 ├── vitest.config.ts            カバレッジのしきい値（100%）と、外すものの一覧
@@ -24,11 +24,11 @@ status: stable
 ├── docker-compose.yml          ローカルの PostgreSQL と Garage
 ├── e2e/                        Playwright のテスト
 ├── scripts/                    check-docs.mjs など
-├── .github/workflows/ci.yml    CI（7 つの確認）
+├── .github/workflows/ci.yml    CI（8 つの確認と、まっさらな clone の確かめ）
 ├── docs/                       OKF のバンドル
 └── src/                        Feature-Sliced Design の層だけ
     ├── _app/
-    │   ├── providers/          TanStack Query・テーマの Provider
+    │   ├── entrypoint/         TanStack Query・テーマの Provider（目的で名前を付ける。ADR-0030）
     │   ├── styles/             Tailwind の入口とテーマの変数
     │   └── api-routes/         Route Handler の実装
     ├── _pages/
@@ -88,12 +88,13 @@ app/ ──▶ _app, _pages ──▶ widgets ──▶ features ──▶ entit
 | `src/` の直下に、6 つの層のほかのフォルダを作らない | 置き場所を迷わせない |
 | ルートの `app/` が読めるのは `_pages` と `_app` だけ | ルーティングと中身を分ける |
 | `@/shared/db` を読めるのは、`api` セグメントと `shared/db`・`shared/auth` だけ | 認可を通らない読み書きを作らない |
-| `process.env` を読めるのは `src/shared/config/env.ts` だけ | 検証していない値を使わない |
-| 非同期の Server Component は、ルートの `app/` の `page.tsx`・`layout.tsx`・`default.tsx` だけに書く。`src/` のコンポーネントは全部、同期にする | Vitest で測れないファイルに判断を置かない（[ADR-0021](../adr/0021-coverage-100-percent.md)） |
+| `process.env` を読めるのは `src/shared/config/env.ts` だけ。`env` は `@/shared/config/index.server` からだけ読む（[ADR-0059](../adr/0059-load-popups-and-parsers-on-first-use.md)） | 検証していない値を使わない。検証の仕組みをブラウザに送らない |
+| 非同期の Server Component は、ルートの `app/` の `page.tsx`・`layout.tsx`・`default.tsx` だけに書く。`not-found.tsx` も同じ薄い殻で、`_pages` の画面を出すだけ（[ADR-0039](../adr/0039-not-found-route-file-is-a-thin-shell.md)）。`error.tsx`・`global-error.tsx` も同じで、`_pages/error` の画面を出すだけ（[ADR-0062](../adr/0062-error-screens-are-thin-route-shells.md)）。`src/` のコンポーネントは全部、同期にする | Vitest で測れないファイルに判断を置かない（[ADR-0021](../adr/0021-coverage-100-percent.md)） |
 | `'use client'` は葉の部品に付ける。クライアントのファイルから `index.server` を読まない | クライアントへ送る量を小さくし、サーバーのコードを漏らさない |
+| 開くまで要らないメニュー・ダイアログ・ホバーカード・トーストは、`@/shared/ui/dropdown-menu`・`dialog`・`toast` を通して使うときに読む。投稿の解析（twitter-text）は `@/shared/lib/text-parse` に置き、ブラウザでは使うときに読む（[ADR-0059](../adr/0059-load-popups-and-parsers-on-first-use.md)） | 最初に送る JavaScript を 200KB（gzip）以下に保つ |
 | モジュールの一番上で、接続・プール・リクエストをまたぐ値を作らない | Cloudflare Workers で動かない（[ADR-0017](../adr/0017-cloudflare-workers-opennext.md)） |
 
-Steiger（`fsd` の推奨の設定）と ESLint の `no-restricted-imports` が、`pnpm lint` でこれを守らせる。`sharp` と `node:fs` への書き込みをサーバーのコードから使うことも禁じる。
+Steiger（`fsd` の推奨の設定。止めた 2 つの決まりは [ADR-0030](../adr/0030-fsd-lint-exceptions-and-own-layer-check.md)）、ESLint の `no-restricted-imports` とローカルの決まり `local/no-server-import-in-client`、`scripts/check-src-layers.mjs` が、`pnpm lint` でこれを守らせる。`sharp` と `node:fs` への書き込みをサーバーのコードから使うことも禁じる。
 
 ### ルートの `app/` のファイルの形
 
@@ -144,7 +145,7 @@ export { getFollowingTimeline as GET } from '@/_app/api-routes';
 | 一覧の続き | Route Handler（GET）を `useInfiniteQuery` から呼ぶ。最初のページは `initialData` で渡す |
 | 新着と未読の確認 | Route Handler（GET）を `useQuery` の `refetchInterval`（30 秒）で呼ぶ（[ADR-0011](../adr/0011-polling-and-after-no-queue.md)） |
 | 変更 | Server Action（`features/*/api/actions.ts`）。Zod で確かめ、変更の関数を呼び、結果の DTO を返す |
-| 誰が見ても同じ読み取り | `'use cache'`・`cacheLife('minutes')`・`cacheTag(…)`。対象はトレンドとおすすめのユーザーだけ |
+| 誰が見ても同じ読み取り | M1 では要求ごとに読む（トレンドとおすすめのユーザー。`'use cache'` は Chromium で通信が途切れなくなったので使わない: [ADR-0048](../adr/0048-read-trends-and-suggestions-per-request.md)） |
 | ユーザーごとに違う読み取り | キャッシュしない |
 | 変更のあとの描き直し | サーバーが描いた部分は `updateTag()` か `refresh()`。一覧は TanStack Query のキャッシュを書き換える |
 
@@ -179,7 +180,7 @@ Server Action は例外を投げずに、上の形で返す。想定していな
 | `features/notifications-read` | `markNotificationsRead` |
 | `features/display-settings` | `updateDisplaySettings`（テーマとアクセント） |
 
-登録・ログイン・ログアウトは、`features/auth` の Better Auth のクライアントが `/api/auth/*` を呼ぶ。
+登録・ログイン・ログアウトは、`features/account-access` の Server Action が、サーバーの Better Auth（`src/shared/auth`）を呼ぶ（スライスの名前は、`shared/auth` と紛らわしくならないように `account-access` にした。#18）。
 
 ### Route Handler
 
@@ -190,13 +191,14 @@ Server Action は例外を投げずに、上の形で返す。想定していな
 | `GET /api/timeline/following?cursor=` | 「フォロー中」の続き |
 | `GET /api/timeline/for-you?cursor=` | 「おすすめ」の続き |
 | `GET /api/timeline/following/new-count?since=` | 新しい投稿の数 |
-| `GET /api/users/{username}/posts?tab=&cursor=` | プロフィールの各タブの続き |
-| `GET /api/users/{username}/follows?type=&cursor=` | フォロー中とフォロワーの続き |
+| `GET /api/users/{username}` | プロフィール（ホバーのカード。#23） |
+| `GET /api/users/{username}/posts?tab=&cursor=` | プロフィールの各タブの続き。`tab` は `posts`・`with_replies`・`media`・`likes`（本人だけ、403）。`likes` のカーソルは [ADR-0040](../adr/0040-bookmark-cursor-is-time-and-post-id.md) の形。ポストのタブの 1 ページ目の先頭に、固定した投稿が `pinned: true` で 1 回だけ出る |
+| `GET /api/users/{username}/follows?type=&cursor=` | フォロー中（`following`）とフォロワー（`followers`）の続き。フォローした順の新しい順で、カーソルは `<マイクロ秒>_<相手のユーザーの ID>`（[ADR-0040](../adr/0040-bookmark-cursor-is-time-and-post-id.md) の形）。各行に、見ている人がフォローしているか（#24） |
 | `GET /api/posts/{id}/replies?cursor=` | 返信の続き |
 | `GET /api/search?q=&f=&cursor=` | 検索の結果の続き |
 | `GET /api/notifications?tab=&cursor=` | 通知の続き |
 | `GET /api/notifications/unread-count` | 未読の数 |
-| `GET /api/bookmarks?cursor=` | ブックマークの続き |
+| `GET /api/bookmarks?cursor=` | ブックマークの続き。付けた順の新しい順で、カーソルは `<マイクロ秒>_<投稿の ID>`（[ADR-0040](../adr/0040-bookmark-cursor-is-time-and-post-id.md)） |
 | `POST /api/uploads/presign` | 画像の署名つき URL を出す |
 | `POST /api/posts/{id}/view` | 表示の回数を足す（`after()` で書く） |
 | `GET / POST /api/auth/[...all]` | Better Auth |
@@ -215,7 +217,7 @@ Server Action は例外を投げずに、上の形で返す。想定していな
       "createdAt": "2026-11-18T03:12:45.000Z",
       "media": [{ "url": "https://…", "width": 1200, "height": 675, "alt": "" }],
       "counts": { "replies": 2, "reposts": 1, "likes": 14, "bookmarks": 0, "views": 320 },
-      "viewer": { "liked": true, "reposted": false, "bookmarked": false },
+      "viewer": { "liked": true, "reposted": false, "bookmarked": false, "isAuthor": false },
       "repostedBy": null,
       "replyTo": null,
       "quoted": null
@@ -225,7 +227,9 @@ Server Action は例外を投げずに、上の形で返す。想定していな
 }
 ```
 
-`nextCursor` が `null` なら、続きは無い。
+`nextCursor` が `null` なら、続きは無い。`viewer.isAuthor` は見ている人がその投稿の作者かどうかで、削除のメニューを出すかを決める（#20）。返信の一覧（`/api/posts/{id}/replies`）は古い順で、`replyTo` に相手のユーザー名が入る。
+
+リポストと引用（#22、[ADR-0041](../adr/0041-repost-and-quote-target-the-original.md)）: リポストの行は元の投稿として返し、`repostedBy` にリポストした人（`username`・`name`・`avatarUrl`）を入れる。`id` は元の投稿の ID なので、操作は元に対して行われる。続きのカーソルは行の ID。`quoted` は 1 段だけで、`{ id, author, text, createdAt, quotesAnother }`、元が削除されていれば `{ id, deleted: true }`。
 
 ## 6. 安全のための規則
 

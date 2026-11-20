@@ -1,0 +1,39 @@
+# Local and CI services (ADR-0019). Run `sh scripts/setup-local.sh` instead of `docker compose up`
+# the first time: it writes the Garage config and the .env.local keys.
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: xmodoki
+      POSTGRES_PASSWORD: xmodoki
+      POSTGRES_DB: xmodoki
+    ports: ['127.0.0.1:54320:5432'] # localhost only: the password is a fixed dev value
+    # The e2e run three browsers in parallel and every request opens its own small pool (ADR-0037);
+    # the default 100 ran out (#49). Production pools through Hyperdrive.
+    command: ['postgres', '-c', 'max_connections=300']
+    volumes: ['db-data:/var/lib/postgresql']
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'xmodoki']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  storage:
+    image: dxflrs/garage:v2.5.0
+    volumes:
+      - ./docker/garage/garage.toml:/etc/garage.toml:ro
+      - storage-meta:/var/lib/garage/meta
+      - storage-data:/var/lib/garage/data
+    ports: ['127.0.0.1:3900:3900', '127.0.0.1:3902:3902']
+  # WebKit for `pnpm test:e2e` on macOS, where concurrent headless WebKit stops getting
+  # requestAnimationFrame (#61, ADR-0052). The same image CI runs in; the version follows
+  # @playwright/test.
+  webkit:
+    image: mcr.microsoft.com/playwright:v1.65.0-noble
+    # Reaps the browsers' child processes; npm as PID 1 does not (Playwright's Docker guide, #34).
+    init: true
+    command: npx -y playwright@1.65.0 run-server --port 3333 --host 0.0.0.0
+    ports: ['127.0.0.1:3333:3333']
+volumes:
+  db-data:
+  storage-meta:
+  storage-data:

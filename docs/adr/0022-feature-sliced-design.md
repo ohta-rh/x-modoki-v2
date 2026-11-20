@@ -8,7 +8,7 @@ status: stable
 
 # ADR-0022: コードは Feature-Sliced Design で分け、Next.js の `app/` はルートに置いてルーティングだけを持たせる
 
-- ステータス: 採用
+- ステータス: 採用（守らせ方の節を ADR-0030 で置き換え）
 - 日付: 2026-11-18
 - 決定者: ユーザー（FSD を使う）／エージェント（層の中身と細目）
 - 関連: [アプリケーションの構造](../architecture/application-structure.md)、ADR-0004、ADR-0010（置き場所の節をこの ADR で置き換え）、ADR-0021（外すファイルのパスをこの ADR で置き換え）

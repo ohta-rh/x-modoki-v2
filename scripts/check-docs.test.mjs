@@ -1,16 +1,18 @@
-// Tests for scripts/check-docs.mjs. Run with `node --test scripts/check-docs.test.mjs`.
+// Tests for scripts/lib/check-docs.mjs. Run with `pnpm test` (Vitest).
 // Each test builds a small valid docs/ bundle in a temp directory, breaks one thing, and runs
-// the script against it with `--root`.
+// the check against it in-process (so it is measured by coverage, ADR-0021).
 
-import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { test } from 'node:test';
-import { fileURLToPath } from 'node:url';
+import { expect, test, vi } from 'vitest';
+import { main } from './lib/check-docs.mjs';
 
-const script = join(dirname(fileURLToPath(import.meta.url)), 'check-docs.mjs');
+const assert = {
+  equal: (actual, expected, message) => expect(actual, message).toBe(expected),
+  match: (actual, re) => expect(actual).toMatch(re),
+  ok: (value, message) => expect(value, message).toBeTruthy(),
+};
 
 const fm = (type, title, description, status = 'stable') =>
   `---\ntype: ${type}\ntitle: "${title}"\ndescription: "${description}"\ntags: [x]\nstatus: ${status}\n---\n\n# ${title}\n`;
@@ -70,8 +72,10 @@ function run(mutate) {
       mkdirSync(dirname(join(root, path)), { recursive: true });
       writeFileSync(join(root, path), content);
     }
-    const result = spawnSync(process.execPath, [script, '--root', root], { encoding: 'utf8' });
-    return { status: result.status, output: result.stdout + result.stderr };
+    const lines = [];
+    const log = { log: (line) => lines.push(line), error: (line) => lines.push(line) };
+    const status = main(['--root', root], log);
+    return { status, output: lines.join('\n') };
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -93,9 +97,39 @@ test('a valid bundle passes', () => {
   assert.equal(status, 0, output);
 });
 
+// NFR-MAINT-05: `docs/` が OKF の形で、`node scripts/check-docs.mjs` が通る
 test('the repository itself passes', () => {
-  const result = spawnSync(process.execPath, [script], { encoding: 'utf8' });
-  assert.equal(result.status, 0, result.stdout + result.stderr);
+  const lines = [];
+  const status = main([], { log: (l) => lines.push(l), error: (l) => lines.push(l) });
+  assert.equal(status, 0, lines.join('\n'));
+});
+
+test('scripts/check-docs.mjs sets the exit code when run as a command', async () => {
+  const argv = process.argv;
+  vi.spyOn(console, 'log').mockImplementation(() => {});
+  process.argv = ['node', 'check-docs.mjs'];
+  try {
+    await import('./check-docs.mjs');
+    expect(process.exitCode).toBe(0);
+  } finally {
+    process.argv = argv;
+    process.exitCode = undefined;
+  }
+});
+
+test('a missing docs/ directory is reported', () => {
+  const root = mkdtempSync(join(tmpdir(), 'check-docs-test-'));
+  try {
+    const lines = [];
+    const status = main(['--root', root], {
+      log: (l) => lines.push(l),
+      error: (l) => lines.push(l),
+    });
+    assert.equal(status, 1);
+    assert.match(lines.join('\n'), /docs\/ does not exist/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
 
 // --- behavior that existed before the review: pinned ---------------------------------------
@@ -116,7 +150,10 @@ rejects(
 rejects(
   'an ADR whose body status differs from its frontmatter is rejected',
   (f) => {
-    f['docs/adr/0001-first.md'] = f['docs/adr/0001-first.md'].replace('status: stable', 'status: draft');
+    f['docs/adr/0001-first.md'] = f['docs/adr/0001-first.md'].replace(
+      'status: stable',
+      'status: draft',
+    );
   },
   /does not match frontmatter/,
 );
@@ -169,7 +206,10 @@ rejects(
 rejects(
   'a subdirectory that its parent index does not link is rejected',
   (f) => {
-    f['docs/index.md'] = f['docs/index.md'].replace('* [architecture/](architecture/index.md) - 設計\n', '');
+    f['docs/index.md'] = f['docs/index.md'].replace(
+      '* [architecture/](architecture/index.md) - 設計\n',
+      '',
+    );
   },
   /does not list architecture\//,
 );
@@ -217,7 +257,8 @@ rejects(
 rejects(
   'a TDD record outside 自動のテスト is rejected',
   (f) => {
-    f[report] = f[report].replace('### TDD の記録\n\nコードの変更なし\n\n', '') + '\n### TDD の記録\n';
+    f[report] =
+      f[report].replace('### TDD の記録\n\nコードの変更なし\n\n', '') + '\n### TDD の記録\n';
   },
   /TDD の記録.*自動のテスト/,
 );
@@ -226,7 +267,10 @@ rejects(
   (f) => {
     f['docs/test-reports/My_Report.md'] = f[report];
     f[report] = null;
-    f['docs/test-reports/index.md'] = f['docs/test-reports/index.md'].replace(`${REPORT}.md`, 'My_Report.md');
+    f['docs/test-reports/index.md'] = f['docs/test-reports/index.md'].replace(
+      `${REPORT}.md`,
+      'My_Report.md',
+    );
     f['docs/log.md'] = f['docs/log.md'].replace(`${REPORT}.md`, 'My_Report.md');
   },
   /must be named/,
@@ -265,7 +309,10 @@ rejects(
   'a description with two sentences is rejected',
   (f) => {
     f[overview] = f[overview].replace('全体の説明。', '一つ目。二つ目。');
-    f['docs/architecture/index.md'] = f['docs/architecture/index.md'].replace('全体の説明。', '一つ目。二つ目。');
+    f['docs/architecture/index.md'] = f['docs/architecture/index.md'].replace(
+      '全体の説明。',
+      '一つ目。二つ目。',
+    );
   },
   /one sentence/,
 );
@@ -285,21 +332,54 @@ const swap = (path, from, to) => (f) => {
   f[path] = f[path].replace(from, to);
 };
 
-rejects('a type not listed in docs/index.md is rejected', swap(overview, 'type: Architecture', 'type: Unknown'), /not listed in docs\/index\.md/);
-rejects('a title that differs from the H1 is rejected', swap(overview, '# Overview', '# Something else'), /H1 must equal/);
-rejects('a missing required key is rejected', swap(overview, 'status: stable\n', ''), /missing `status`/);
-rejects('tags that are not a list are rejected', swap(overview, 'tags: [x]', 'tags: x'), /`tags` must be a YAML list/);
-rejects('an unknown status is rejected', swap(overview, 'status: stable', 'status: final'), /is not draft \| stable \| deprecated/);
+rejects(
+  'a type not listed in docs/index.md is rejected',
+  swap(overview, 'type: Architecture', 'type: Unknown'),
+  /not listed in docs\/index\.md/,
+);
+rejects(
+  'a title that differs from the H1 is rejected',
+  swap(overview, '# Overview', '# Something else'),
+  /H1 must equal/,
+);
+rejects(
+  'a missing required key is rejected',
+  swap(overview, 'status: stable\n', ''),
+  /missing `status`/,
+);
+rejects(
+  'tags that are not a list are rejected',
+  swap(overview, 'tags: [x]', 'tags: x'),
+  /`tags` must be a YAML list/,
+);
+rejects(
+  'an unknown status is rejected',
+  swap(overview, 'status: stable', 'status: final'),
+  /is not draft \| stable \| deprecated/,
+);
 rejects(
   'frontmatter in a directory index.md is rejected',
   (f) => {
-    f['docs/architecture/index.md'] = `---\ntype: Reference\n---\n${f['docs/architecture/index.md']}`;
+    f['docs/architecture/index.md'] =
+      `---\ntype: Reference\n---\n${f['docs/architecture/index.md']}`;
   },
   /must not have frontmatter/,
 );
-rejects('an extra key in the root index frontmatter is rejected', swap('docs/index.md', 'okf_version: "0.2"', 'okf_version: "0.2"\ntype: Reference'), /exactly `okf_version`/);
-rejects('a log heading that is not a date is rejected', swap('docs/log.md', '## 2026-11-17', '## Nov 17'), /is not YYYY-MM-DD/);
-rejects('an index description that differs from the document is rejected', swap('docs/architecture/index.md', '全体の説明。', '別の説明。'), /differs from that document/);
+rejects(
+  'an extra key in the root index frontmatter is rejected',
+  swap('docs/index.md', 'okf_version: "0.2"', 'okf_version: "0.2"\ntype: Reference'),
+  /exactly `okf_version`/,
+);
+rejects(
+  'a log heading that is not a date is rejected',
+  swap('docs/log.md', '## 2026-11-17', '## Nov 17'),
+  /is not YYYY-MM-DD/,
+);
+rejects(
+  'an index description that differs from the document is rejected',
+  swap('docs/architecture/index.md', '全体の説明。', '別の説明。'),
+  /differs from that document/,
+);
 rejects(
   'a bundle-absolute link is rejected',
   (f) => {
@@ -317,10 +397,18 @@ rejects(
   },
   /must be named NNNN-kebab-title\.md/,
 );
-rejects('an ADR title without its number is rejected', (f) => {
-  f[adr] = f[adr].replaceAll('ADR-0001: First', 'First');
-}, /title must start with "ADR-0001: "/);
-rejects('an ADR missing a section is rejected', swap(adr, '## 結果\n', ''), /missing section "## 結果"/);
+rejects(
+  'an ADR title without its number is rejected',
+  (f) => {
+    f[adr] = f[adr].replaceAll('ADR-0001: First', 'First');
+  },
+  /title must start with "ADR-0001: "/,
+);
+rejects(
+  'an ADR missing a section is rejected',
+  swap(adr, '## 結果\n', ''),
+  /missing section "## 結果"/,
+);
 rejects(
   'a task list in an ADR is rejected',
   (f) => {
@@ -328,14 +416,25 @@ rejects(
   },
   /must not contain a task list/,
 );
-rejects('an ADR status that differs in README is rejected', swap(readme, '| 採用 |', '| 提案 |'), /status in docs\/adr\/README\.md differs/);
-rejects('an ADR missing from README is rejected', swap(readme, '| [0001](0001-first.md) | First | 採用 |\n', ''), /is not listed in docs\/adr\/README\.md/);
+rejects(
+  'an ADR status that differs in README is rejected',
+  swap(readme, '| 採用 |', '| 提案 |'),
+  /status in docs\/adr\/README\.md differs/,
+);
+rejects(
+  'an ADR missing from README is rejected',
+  swap(readme, '| [0001](0001-first.md) | First | 採用 |\n', ''),
+  /is not listed in docs\/adr\/README\.md/,
+);
 rejects(
   'a gap in ADR numbers is rejected',
   (f) => {
     f['docs/adr/0003-third.md'] = f[adr].replaceAll('0001', '0003');
     f[readme] += '| [0003](0003-third.md) | Third | 採用 |\n';
-    f['docs/log.md'] = f['docs/log.md'].replace('[ADR-0001]', '[ADR-0003](adr/0003-third.md)、[ADR-0001]');
+    f['docs/log.md'] = f['docs/log.md'].replace(
+      '[ADR-0001]',
+      '[ADR-0003](adr/0003-third.md)、[ADR-0001]',
+    );
   },
   /must be sequential \(expected 0002\)/,
 );
@@ -343,12 +442,23 @@ rejects(
   'a test report title without the prefix is rejected',
   (f) => {
     f[report] = f[report].replaceAll('試験レポート: サンプル', 'サンプル');
-    f['docs/test-reports/index.md'] = f['docs/test-reports/index.md'].replace('試験レポート: サンプル', 'サンプル');
+    f['docs/test-reports/index.md'] = f['docs/test-reports/index.md'].replace(
+      '試験レポート: サンプル',
+      'サンプル',
+    );
   },
   /title must start with "試験レポート: "/,
 );
-rejects('a test report that docs/log.md does not link is rejected', swap('docs/log.md', `、[report](test-reports/${REPORT}.md)`, ''), /issue-0007-sample\.md: is not linked from docs\/log\.md/);
-rejects('a test report missing a section is rejected', swap(report, '## 環境\n\n', ''), /missing section "## 環境"/);
+rejects(
+  'a test report that docs/log.md does not link is rejected',
+  swap('docs/log.md', `、[report](test-reports/${REPORT}.md)`, ''),
+  /issue-0007-sample\.md: is not linked from docs\/log\.md/,
+);
+rejects(
+  'a test report missing a section is rejected',
+  swap(report, '## 環境\n\n', ''),
+  /missing section "## 環境"/,
+);
 rejects(
   'evidence larger than 300KB is rejected',
   (f) => {
@@ -359,7 +469,9 @@ rejects(
 rejects(
   'more than 12 screenshots are rejected',
   (f) => {
-    f[report] = reportBody(Array.from({ length: 13 }, () => `![s](evidence/${REPORT}/a-375.jpg)`).join('\n'));
+    f[report] = reportBody(
+      Array.from({ length: 13 }, () => `![s](evidence/${REPORT}/a-375.jpg)`).join('\n'),
+    );
   },
   /at most 12 screenshots/,
 );
@@ -393,3 +505,62 @@ rejects(
   },
   /must be under evidence\/issue-0007-sample\//,
 );
+
+// --- pinned while bringing scripts under coverage (#15) -------------------------------------
+rejects(
+  'a frontmatter line without a key is rejected',
+  swap(overview, 'status: stable', 'status: stable\njust some text'),
+  /not valid YAML: just some text/,
+);
+rejects(
+  'an ADR without a status line is rejected',
+  swap(adr, '- ステータス: 採用\n', ''),
+  /no `- ステータス:` line/,
+);
+rejects(
+  'frontmatter that is never closed counts as missing',
+  (f) => {
+    f[overview] = '---\ntype: Architecture\n\n# Overview\n';
+  },
+  /missing YAML frontmatter/,
+);
+rejects(
+  'a root index without frontmatter is rejected',
+  (f) => {
+    f['docs/index.md'] = f['docs/index.md'].replace('---\nokf_version: "0.2"\n---\n\n', '');
+  },
+  /exactly `okf_version`/,
+);
+test('a bundle without docs/adr passes', () => {
+  const { status, output } = run((f) => {
+    for (const key of Object.keys(f)) if (key.startsWith('docs/adr/')) f[key] = null;
+    f['docs/index.md'] = f['docs/index.md']
+      .replace('* [adr/](adr/) - 決定\n', '')
+      .replace('* `ADR` - a\n', '');
+    f['docs/log.md'] = f['docs/log.md'].replace('[ADR-0001](adr/0001-first.md)、', '');
+  });
+  assert.equal(status, 0, output);
+});
+
+// #39 (W9 in docs/research/retrospective-m1.md): after renumbering, code and harness files kept
+// citing ADR numbers that did not exist. The number is built at run time so that this file does
+// not cite a missing ADR itself.
+const missingAdr = `ADR-${'00'}${'02'}`;
+rejects(
+  'code, tests, configs and the harness cite only ADRs that exist',
+  (f) => {
+    f['src/a.ts'] = `// ${missingAdr}: a decision that is not in docs/adr\n`;
+    f['.claude/rules/x.md'] = '# x\n\nDecided in ADR-0001.\n';
+  },
+  new RegExp(`src/a\\.ts: cites ${missingAdr}, which is not in docs/adr`),
+);
+
+test('citing an ADR that exists, or none, passes', () => {
+  const { status, output } = run((f) => {
+    f['src/a.ts'] = '// ADR-0001\n';
+    f['e2e/b.spec.ts'] = 'test("x", () => {}); // ADR-NNNN in a template is not a citation\n';
+    f['node_modules/pkg/c.js'] = `// ${missingAdr} in a dependency is not ours\n`;
+    f['src/d.png'] = `${missingAdr} inside an image's bytes is not read`;
+  });
+  assert.equal(status, 0, output);
+});

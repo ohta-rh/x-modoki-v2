@@ -1,0 +1,245 @@
+/* Design tokens and base styles: docs/architecture/ui-ux.md 4 and 10, ADR-0014. */
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+:root {
+  --accent: #1d9bf0;
+  --like: #f91880;
+  --repost: #00ba7c;
+  --danger: #f4212e;
+  /* What text and fills use (ADR-0054): the X colours above, moved to the nearest shade that has
+     4.5:1 against what is behind them (for text: the page and a hovered row). Blue is the default. */
+  --accent-fill: #0d7bc6;
+  --on-accent: #ffffff;
+  --danger-fill: #ec0c1a;
+  --radius-card: 16px;
+  --header-height: 53px;
+  --nav-width: 275px;
+  --nav-width-compact: 88px;
+  --main-width: 600px;
+  --sidebar-width: 350px;
+}
+
+[data-theme='light'] {
+  --bg: #ffffff;
+  --border: #eff3f4;
+  --text: #0f1419;
+  --text-muted: #536471;
+  --hover: rgb(15 20 25 / 0.1);
+  --header-bg: rgb(255 255 255 / 0.85);
+  --accent-text: #0c6cae;
+  --like-text: #cd0562;
+  --repost-text: #00774f;
+  --danger-text: #d20a17;
+  color-scheme: light;
+}
+
+[data-theme='dim'] {
+  --bg: #15202b;
+  --border: #38444d;
+  --text: #f7f9f9;
+  --text-muted: #8b98a5;
+  --hover: rgb(255 255 255 / 0.03);
+  --header-bg: rgb(21 32 43 / 0.75);
+  --accent-text: #1d9bf0;
+  --like-text: #fa4096;
+  --repost-text: #00ba7c;
+  --danger-text: #f6515b;
+  color-scheme: dark;
+}
+
+[data-theme='dark'] {
+  --bg: #000000;
+  --border: #2f3336;
+  --text: #e7e9ea;
+  --text-muted: #7b8086;
+  --hover: rgb(231 233 234 / 0.1);
+  --header-bg: rgb(0 0 0 / 0.65);
+  --accent-text: #1d9bf0;
+  --like-text: #f91880;
+  --repost-text: #00ba7c;
+  --danger-text: #f52b38;
+  color-scheme: dark;
+}
+
+/* The accent colours chosen in /settings/display (#29, ui-ux.md 4); blue is the default above. */
+[data-accent='yellow'] {
+  --accent: #ffd400;
+  /* Darkened, yellow turns olive: the fill stays yellow and its text turns dark instead. */
+  --accent-fill: #ffd400;
+  --on-accent: #0f1419;
+}
+[data-accent='pink'] {
+  --accent: #f91880;
+  --accent-fill: #e7066e;
+}
+[data-accent='purple'] {
+  --accent: #7856ff;
+  --accent-fill: #7856ff;
+}
+[data-accent='orange'] {
+  --accent: #ff7a00;
+  --accent-fill: #bd5b00;
+}
+[data-accent='green'] {
+  --accent: #00ba7c;
+  --accent-fill: #00875a;
+}
+
+/* The accent as text, per theme (ADR-0054). Blue is set in each theme above; dark needs no change. */
+[data-theme='light'][data-accent='yellow'] {
+  --accent-text: #7c6700;
+}
+[data-theme='light'][data-accent='pink'] {
+  --accent-text: #cd0562;
+}
+[data-theme='light'][data-accent='purple'] {
+  --accent-text: #6741ff;
+}
+[data-theme='dark'][data-accent='purple'] {
+  --accent-text: #8465ff;
+}
+[data-theme='light'][data-accent='orange'] {
+  --accent-text: #a75000;
+}
+[data-theme='light'][data-accent='green'] {
+  --accent-text: #00774f;
+}
+[data-theme='dim'][data-accent='yellow'],
+[data-theme='dark'][data-accent='yellow'] {
+  --accent-text: #ffd400;
+}
+[data-theme='dim'][data-accent='pink'] {
+  --accent-text: #fa4096;
+}
+[data-theme='dark'][data-accent='pink'] {
+  --accent-text: #f91880;
+}
+[data-theme='dim'][data-accent='purple'] {
+  --accent-text: #9176ff;
+}
+[data-theme='dim'][data-accent='orange'],
+[data-theme='dark'][data-accent='orange'] {
+  --accent-text: #ff7a00;
+}
+[data-theme='dim'][data-accent='green'],
+[data-theme='dark'][data-accent='green'] {
+  --accent-text: #00ba7c;
+}
+
+@custom-variant dark (&:where([data-theme='dim'], [data-theme='dim'] *, [data-theme='dark'], [data-theme='dark'] *));
+
+/* Tailwind names. brand is the X accent; the shadcn names used by src/shared/ui/kit map onto ours. */
+@theme inline {
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hiragino Sans', 'Noto Sans JP',
+    Helvetica, Arial, sans-serif;
+  --color-bg: var(--bg);
+  --color-line: var(--border);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-hover: var(--hover);
+  --color-brand: var(--accent-text);
+  --color-brand-fill: var(--accent-fill);
+  --color-on-brand: var(--on-accent);
+  --color-like: var(--like-text);
+  --color-repost: var(--repost-text);
+  --color-danger: var(--danger-text);
+  --color-danger-fill: var(--danger-fill);
+  --radius-card: var(--radius-card);
+  --text-body: 15px;
+  --text-body--line-height: 20px;
+  --text-body-lg: 17px;
+  --text-body-lg--line-height: 24px;
+  --text-title: 20px;
+  --text-title--line-height: 24px;
+  /* The heart's pop when liked (#21); motion-safe: only, so reduced motion keeps it still. */
+  --animate-like-pop: like-pop 300ms ease-out;
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-border: var(--border);
+  --color-input: var(--border);
+  --color-ring: var(--accent-text);
+  --color-muted: var(--hover);
+  --color-muted-foreground: var(--text-muted);
+  --color-accent: var(--hover);
+  --color-accent-foreground: var(--text);
+  --color-popover: var(--bg);
+  --color-popover-foreground: var(--text);
+  --color-primary: var(--text);
+  --color-primary-foreground: var(--bg);
+  --color-secondary: var(--hover);
+  --color-secondary-foreground: var(--text);
+  --color-destructive: var(--danger-text);
+}
+
+html {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  /* What Tab brings into view stops below the sticky 53px header, not under it (#86). */
+  scroll-padding-top: 53px;
+}
+
+/* A screen whose sticky block is taller (home's tabs, the search box and its tabs: 114px). */
+html:has(main [data-tall-sticky]) {
+  scroll-padding-top: 116px;
+}
+
+/* A post brought into view (j / k, #29) stops below the sticky header of the column: 53px, plus the
+   tabs on /home. */
+main article {
+  scroll-margin-top: 120px;
+}
+
+/* Below 640px the home timeline has its own pull to refresh (#28): the browser's would reload the
+   whole page and lose a draft. */
+@media (max-width: 639px) {
+  html {
+    overscroll-behavior-y: contain;
+    /* …and above the tab bar and the floating post button: 136px, as main's padding (#65, #86). */
+    scroll-padding-bottom: 136px;
+  }
+}
+
+body {
+  margin: 0;
+}
+
+/* In the base layer, so a component's own outline utility (outline-none on text fields) wins. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--accent-text);
+    outline-offset: 2px;
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+}
+
+/* The heart's pop when liked (#21); used only through motion-safe:animate-like-pop. */
+@keyframes like-pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* NFR-A11Y-07: with reduced motion nothing moves (#63). 0.01ms, not 0: Base UI waits for
+   animationend to finish opening and closing, and an animation of 0 never ends in some browsers. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

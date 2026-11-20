@@ -1,3 +1,11 @@
+---
+paths:
+  - "src/**"
+  - "app/**"
+  - "proxy.ts"
+  - "eslint-rules/**"
+---
+
 # Architecture — Feature-Sliced Design on Next.js
 
 Applies to every file under `app/`, `src/`, and `proxy.ts`. Decided in ADR-0022 (structure),
@@ -8,9 +16,9 @@ is the reference. This file is the operating rule.
 
 ```
 app/            Next.js routing only (project root, NOT src/app)
-proxy.ts        coarse login redirect only
+proxy.ts        coarse login redirect, and undecodable paths → 404 (ADR-0063) only
 src/
-  _app/         app-wide init: providers, global styles, api-routes (Route Handler implementations)
+  _app/         app-wide init: entrypoint (providers), styles, api-routes (Route Handler implementations)
   _pages/       one screen: synchronous page component + its data loader
   widgets/      large self-contained blocks composed of features and entities
   features/     one user action: Server Action + its UI
@@ -54,13 +62,54 @@ src/
   segments, `src/shared/db`, and `src/shared/auth`. Queries are not written in `shared`.
 - Server Actions: `features/*/api/actions.ts` (`'use server'`) — Zod-validate, call the
   mutation, return `{ ok, … }`. No business logic in the action file itself.
+- **A Server Action called from the browser takes its failure (ADR-0065):** offline, its promise
+  rejects. Wrap it in `settle(…)` from `@/shared/lib/settle` with `OFFLINE_MESSAGE`, or use
+  `.catch`, `.then(ok, failed)` or a TanStack Query `mutationFn`; never hand it to `useActionState`
+  as is. Returning the call is allowed only from a function itself named as an action
+  (`action={…}`, `sendAction`), whose own call is then checked. A redirect rejects the promise too and is not a failure: a hand-written `.catch` calls
+  `unstable_rethrow(error)` first (`settle` does). Name Server Action props `action`, `…Action` or `signOut`, and nothing else so —
+  `local/settle-server-actions` finds them by name (found twice: #70, #82).
+- **Text a person typed goes through `cleanText` (`@/shared/lib/text`) before it is stored or
+  searched (#66, #67, #89):** it drops U+0000 (PostgreSQL's `text` refuses it), puts it in NFC and
+  trims it. A Zod field uses `.overwrite(cleanText)`. Found three times as separate places did
+  this by hand.
+- **Text a person typed wraps or truncates (#74, #80):** names, bios, places, URLs, hashtags and
+  any line that quotes them get `break-words` / `break-all` or `truncate` (with `min-w-0` inside a
+  flex row). A new place that shows such text is added to the 320px sweep in `e2e/narrow.spec.ts`
+  (「人が入れる全部の欄が長くても…」). Found twice: #74, #80.
 - Route Handlers: implement in `src/_app/api-routes/`; `app/api/**/route.ts` only re-exports
-  (`export { getTimeline as GET } from '@/_app/api-routes'`).
-- `process.env` is read only in `src/shared/config/env.ts`.
+  (`export { getTimeline as GET } from '@/_app/api-routes'`). A Route Handler that changes state as
+  the session's user is a POST that refuses an `Origin` naming another host than the one the
+  request reached (T-11). Public ones (`postView`) and server-to-server ones (`postCleanupMedia`,
+  its secret) have no session to ride on.
+- **A retried mutation returns the same result (ADR-0064, ADR-0067).** A response can be lost after
+  the change is made; the retry must not fail or duplicate. A new mutation gets an e2e that cuts
+  only its response and retries (#76, #84, #88).
+- **A mutation that changes a count or removes an item lists every cache and screen that shows it**
+  (`updatePostInCaches`, `removePostFromCaches`) and has an e2e "change on the detail → Back → the
+  list shows the new state" (#20, #21, #68, #69, #78).
+- **Better Auth's own endpoints stay closed unless the app calls them (ADR-0045).** After a Better
+  Auth upgrade or a new plugin, extend `src/_app/api-routes/auth.test.ts` with its write paths
+  (#18, #51).
+- **Every entry has tagged authorization tests (ADR-0060).** Each Server Action and Route Handler
+  needs a test marked `// AUTHZ: <name> UNAUTHORIZED` right above it; each mutation function also
+  one marked `FORBIDDEN` (it can name another person's thing) or `SELF` (only the caller's rows
+  change, checked with an author who is not the caller). An entry meant for people without a
+  session goes in section 6 of `docs/architecture/threat-model.md` with its reason instead.
+  A page that needs a login refuses at the data access layer too, not only in `proxy.ts`.
+- `process.env` is read only in `src/shared/config/env.ts`, and `env` is imported only from
+  `@/shared/config/index.server` (ADR-0059): through `@/shared/config` it shipped the validator
+  (zod) to every browser.
+- **Keep the first JavaScript under 200KB gzip (ADR-0059, `e2e/performance.spec.ts`).** Menus,
+  closed dialogs, hover cards and toasts go through `@/shared/ui/dropdown-menu`, `dialog`, `toast`
+  (loaded on first use), never `@/shared/ui/kit` or Base UI directly from a component on screen at
+  load. Parsing a post (twitter-text) lives in `@/shared/lib/text-parse`; the browser loads it with
+  `import()` when needed. If the budget test fails, find what grew with `next analyze`; never
+  raise the budget.
 
 ## 4. Next.js route files are a thin shell (ADR-0021)
 
-- `app/**/page.tsx`, `layout.tsx`, `default.tsx` may only: read `params` / `searchParams`,
+- `app/**/page.tsx`, `layout.tsx`, `default.tsx`, `not-found.tsx` (ADR-0039), `error.tsx`, `global-error.tsx` (ADR-0062) may only: read `params` / `searchParams`,
   call a loader from `_pages` (or `_app`), render the synchronous `_pages` component with the
   result, wrap in `<Suspense>`. No conditionals, no formatting, no data shaping.
 - **Async Server Components exist only in root `app/`.** Every component under `src/` is
@@ -68,13 +117,26 @@ src/
 - A loader is a plain async function in `_pages/<page>/api/` — tested against the real
   PostgreSQL like any other `api` function.
 - `'use client'` goes on leaf components. A client file never imports `index.server`.
+- A client component that keeps an `<input>` / `<textarea>` value (files included) in state reads
+  the DOM's value once on mount and takes it in: what was entered before hydration never reaches
+  `onChange` (ADR-0044; found three times, #47 and #25). Its unit test hydrates server HTML whose
+  input already holds a value (`renderToString` → set the value → `hydrateRoot`).
 
 ## 5. Enforcement
 
-- `pnpm lint` runs ESLint **and** `steiger ./src` (recommended `fsd` config); both fail CI.
-- ESLint `no-restricted-imports` blocks: `@/shared/db` outside `api` segments;
-  `index.server` from client files; anything but `_pages` / `_app` from root `app/`;
-  `sharp` and `node:fs` writes in server code (ADR-0017).
+- `pnpm lint` runs ESLint, `steiger ./src`, and `node scripts/check-src-layers.mjs`; all fail CI.
+- Steiger: the recommended `fsd` config, with only `typo-in-layer-name` (for `_app`/`_pages`)
+  and `insignificant-slice` turned off (ADR-0030).
+- ESLint `no-restricted-imports` blocks: `@/shared/db` outside `api` segments; anything but
+  `_pages` / `_app` from root `app/`; `sharp` and `fs` in server code (ADR-0017).
+- ESLint `local/no-server-import-in-client` blocks `index.server`, `server-only`, and
+  `@/shared/db` in `'use client'` files.
+- ESLint `local/settle-server-actions` blocks a Server Action call in a `'use client'` file that
+  does not take its failure (ADR-0065).
+- `scripts/check-src-layers.mjs` fails if `src/` holds anything but the six layers.
+- `scripts/check-authz.mjs` (in `pnpm lint`) fails on an entry without its tagged tests, and on a
+  threat-model row whose 確かめるテスト does not name an existing test.
+- Segment names describe purpose (`entrypoint`, not `providers`); no folder named `ui` inside a segment.
 - Do not turn off a Steiger or ESLint rule to make a violation pass. If a rule is wrong for
   this project, disable that one rule in the config with a one-line reason and record it in
   an ADR.
