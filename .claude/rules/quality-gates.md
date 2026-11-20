@@ -1,26 +1,44 @@
+---
+paths:
+  - "src/**"
+  - "app/**"
+  - "proxy.ts"
+  - "e2e/**"
+  - "scripts/**"
+  - "eslint-rules/**"
+  - ".github/**"
+  - "*.config.*"
+  - "package.json"
+  - "docker-compose.yml"
+---
+
 # Quality gates — CI, coverage, runtime constraints, milestones
 
-These gates are part of the Definition of Done (`.claude/rules/definition-of-done.md`), which
+These gates are part of the Definition of Done (`.claude/skills/deliver-pbi/definition-of-done.md`), which
 also requires a hands-on test in a real browser for every PBI. Green gates alone are not done.
 
 Applies to every change that touches code, tests, configuration, or CI.
 Decided in ADR-0017, ADR-0019, ADR-0020, ADR-0021; this file is the operating rule.
 
-## 1. CI is mandatory (ADR-0070, replacing ADR-0020)
+## 1. CI is mandatory (ADR-0073, replacing ADR-0070)
 
-- GitHub Actions runs on every push to `main` and every PR. The eight gates, in order: the
-  dependency audit `pnpm audit --prod --audit-level high` (first: it needs no build), then the
-  seven of `pnpm verify` — `pnpm docs:check`, `pnpm typecheck`, `pnpm lint` (ESLint + Steiger),
-  `pnpm format:check`, `pnpm test --coverage`, `pnpm build`, `pnpm test:e2e`. A separate job runs
-  the local guide on a fresh clone (ADR-0069).
+- GitHub Actions runs on every push to `main` and every PR. The `scope` job decides first: when
+  every file changed since the last fully verified commit is a document (`docs/`, `.claude/`,
+  `README.md`, `CHANGELOG.md`, `CLAUDE.md`, `LICENSE`), only `docs only` runs (`pnpm docs:check`,
+  `pnpm format:check`); otherwise the eight gates run — `verify` (the dependency audit, then
+  `pnpm docs:check`, `typecheck`, `lint`, `format:check`, `test --coverage`, `build`) and
+  `e2e (chromium|firefox|webkit)` at the same time. `fresh-clone` runs the local guide on every push
+  (ADR-0069). The scope rule is the user's decision; widening it is too.
 - **A change is not done until CI is green on the commit that contains it.** "Passes locally"
   is not a substitute, and a gate that did not run is not a gate that passed.
 - **Before pushing:** run `pnpm verify` (the seven gates after the audit) and see it exit 0. The
   audit is CI's alone: its result follows the advisory database, not the change. While working,
   run only the tests the change touches; the full run is once, right before the push (ADR-0056).
-- **Join a check and the commit after it with `&&`, never `;`.** A `;` lets the commit run
-  after a failed check (it happened twice on 2026-11-18: a red `pnpm verify` before #48's commit,
-  a red `check-docs` before #52's). If the check failed, there is no commit to undo.
+- **Join a check and the commit after it with `&&`.** The Bash hook (`scripts/guard-bash.mjs`,
+  ADR-0074) refuses `;`, `||` or a new line before `git commit`/`git push`, `--no-verify`, `git add`
+  of everything, and stopping processes by name; the pre-commit hook checks the docs on the staged
+  tree. If a hook refuses a command, fix the command; never reshape it to slip past the hook. To
+  edit a file, use the editing tools, not a shell heredoc (the hook reads the heredoc too).
   **After pushing:** watch the CI run to its end. Do not end the turn on "CI is running".
 - **Dependency update PRs (Dependabot, ADR-0071):** a weekly patch-and-minor PR is taken when its
   CI is green (look at the app in Chrome as for any change). A major update is taken only after an

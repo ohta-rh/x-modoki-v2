@@ -23,7 +23,7 @@ gh run view <実行の番号> --log-failed
 
 直す:
 
-- ほかの作業より先に直す（[ADR-0070](../adr/0070-ci-has-eight-gates-with-the-dependency-audit.md)）。手元で同じ確認を流して再現する: `PORT=3300 pnpm verify`（依存の監査は `pnpm audit --prod --audit-level high`）
+- ほかの作業より先に直す（[ADR-0073](../adr/0073-ci-scope-docs-only-and-e2e-per-browser.md)）。手元で同じ確認を流して再現する: `PORT=3300 pnpm verify`（依存の監査は `pnpm audit --prod --audit-level high`）
 - 落ちたテストを先に再現させ、根本原因を 1 文で言えるようにしてから直す（`.claude/rules/bug-handling.md`）
 - 1 回で直せないなら、落とした commit を取り消してから直す: `git revert <commit>` のあと、いつもどおり push する
 - 画面のテストが落ちたときは、CI の成果物 `playwright-report` に画面の写真と操作の記録がある: `gh run download <実行の番号> -n playwright-report -D <空のディレクトリ>`

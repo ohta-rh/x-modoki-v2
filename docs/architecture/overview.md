@@ -60,7 +60,7 @@ x-modoki は、X（x.com）の Web 版の見た目と操作を可能な限り再
 | S3 互換のストレージ | 画像 | [ADR-0008](../adr/0008-s3-compatible-media-storage.md) |
 | Cloudflare Workers と OpenNext | 本番の実行環境（マイルストーン 2） | [ADR-0017](../adr/0017-cloudflare-workers-opennext.md) |
 | Docker Compose | ローカルと CI の PostgreSQL とストレージ | [ADR-0019](../adr/0019-first-milestone-runs-locally.md) |
-| GitHub Actions | 全部の確認とカバレッジ 100% | [ADR-0070](../adr/0070-ci-has-eight-gates-with-the-dependency-audit.md)、[ADR-0021](../adr/0021-coverage-100-percent.md) |
+| GitHub Actions | 全部の確認とカバレッジ 100% | [ADR-0073](../adr/0073-ci-scope-docs-only-and-e2e-per-browser.md)、[ADR-0021](../adr/0021-coverage-100-percent.md) |
 
 詳しい構造は [アプリケーションの構造](application-structure.md)、版は [技術スタック](tech-stack.md)。
 
@@ -143,7 +143,7 @@ x-modoki は、X（x.com）の Web 版の見た目と操作を可能な限り再
 | コードは Feature-Sliced Design の層で分け、下の層だけを読む | [ADR-0022](../adr/0022-feature-sliced-design.md) |
 | 非同期の Server Component はルートの `app/` の中だけに書き、判断を持たせない | [ADR-0021](../adr/0021-coverage-100-percent.md)、[ADR-0022](../adr/0022-feature-sliced-design.md) |
 | EPIC の子 issue は 1 件ずつ、確認と CI を通して閉じる | [ADR-0023](../adr/0023-delivery-loop-one-pbi-at-a-time.md) |
-| CI が通り、カバレッジが 100% でなければ完了としない | [ADR-0070](../adr/0070-ci-has-eight-gates-with-the-dependency-audit.md)、[ADR-0021](../adr/0021-coverage-100-percent.md) |
+| CI が通り、カバレッジが 100% でなければ完了としない | [ADR-0073](../adr/0073-ci-scope-docs-only-and-e2e-per-browser.md)、[ADR-0021](../adr/0021-coverage-100-percent.md) |
 | バグは見つけた時点で、止めず・聞かずに、最後まで直す。先送りしない | [ADR-0028](../adr/0028-bugs-are-fixed-to-completion-without-asking.md) |
 | コードの変更は全部、push の前に、独立した sub agent（opus）のレビューで承認を得る | [ADR-0027](../adr/0027-independent-code-review-in-the-loop.md) |
 | 動くコードは全部、失敗するテストを先に書いてから実装する | [ADR-0026](../adr/0026-implementation-is-always-test-driven.md) |

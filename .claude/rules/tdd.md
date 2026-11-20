@@ -1,7 +1,17 @@
+---
+paths:
+  - "src/**"
+  - "app/**"
+  - "proxy.ts"
+  - "e2e/**"
+  - "scripts/**"
+  - "eslint-rules/**"
+---
+
 # Test-driven development — always
 
 Applies to every change to executable code in this repository (ADR-0026). It is item 2 of the
-Definition of Done (`.claude/rules/definition-of-done.md`): work that was not test-driven is
+Definition of Done (`.claude/skills/deliver-pbi/definition-of-done.md`): work that was not test-driven is
 not done, however green it is.
 
 If the `superpowers:test-driven-development` skill is available, load it before implementing;

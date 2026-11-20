@@ -1,6 +1,6 @@
 // Validates the docs/ OKF v0.2 bundle (ADR-0002) and the ADR conventions
-// (.claude/rules/documentation.md, .claude/rules/definition-of-done.md, .claude/rules/tdd.md,
-// .claude/rules/code-review.md). No dependencies. Entry point: scripts/check-docs.mjs.
+// (.claude/rules/documentation.md, .claude/skills/deliver-pbi/definition-of-done.md, .claude/rules/tdd.md,
+// .claude/skills/deliver-pbi/code-review.md). No dependencies. Entry point: scripts/check-docs.mjs.
 //
 //   node scripts/check-docs.mjs [--root <dir>]     tests: scripts/check-docs.test.mjs (Vitest)
 //

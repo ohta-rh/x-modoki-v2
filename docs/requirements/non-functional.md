@@ -76,7 +76,7 @@ status: stable
 | ID | 基準 | 確かめ方 | 満たす PBI |
 |---|---|---|---|
 | NFR-MAINT-01 | Vitest のカバレッジが、行・分岐・関数・文の全部で 100%（外してよいのは ADR-0021 と ADR-0022 の 4 種類だけ） | CI | #15 から全部 |
-| NFR-MAINT-02 | CI の 8 つの確認（本番の依存の監査と、`pnpm verify` の 7 つ: ドキュメント・型・lint・整形・テストとカバレッジ・ビルド・画面のテスト）が、全ての push で通る（ADR-0070） | CI | #15 から全部 |
+| NFR-MAINT-02 | CI の 8 つの確認（本番の依存の監査と、`pnpm verify` の 7 つ: ドキュメント・型・lint・整形・テストとカバレッジ・ビルド・画面のテスト）が、コードを変える全ての push で通る（ADR-0073。文書だけの push は文書と整形の確認） | CI | #15 から全部 |
 | NFR-MAINT-03 | Steiger（FSD）の違反と、ESLint の `no-restricted-imports` の違反が 0 | CI | #15 から全部 |
 | NFR-MAINT-04 | 全ての画面のルートに、Playwright のテストが 1 本以上ある | 画面 | #30 |
 | NFR-MAINT-05 | `docs/` が OKF の形で、`node scripts/check-docs.mjs` が通る | CI | 全部 |

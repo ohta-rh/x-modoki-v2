@@ -1,3 +1,11 @@
+---
+paths:
+  - "src/**"
+  - "app/**"
+  - "proxy.ts"
+  - "eslint-rules/**"
+---
+
 # Architecture — Feature-Sliced Design on Next.js
 
 Applies to every file under `app/`, `src/`, and `proxy.ts`. Decided in ADR-0022 (structure),

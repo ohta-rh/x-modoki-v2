@@ -1,3 +1,10 @@
+---
+paths:
+  - "docs/**"
+  - "README.md"
+  - "CHANGELOG.md"
+---
+
 # Documentation — `docs/` is an OKF bundle, decisions are ADRs
 
 Applies whenever a Markdown document is added, changed, moved, or removed in this repository.
@@ -50,7 +57,7 @@ Spec: `GoogleCloudPlatform/open-knowledge-format` `SPEC.md` (v0.2, verified 2026
 | Current design (what it is now) | `Architecture` / `Design` | `docs/architecture/` |
 | Evidence gathered for a decision | `Research` | `docs/research/` |
 | How to run / operate | `Guide` | `docs/guides/`; root `README.md` only links to it |
-| What was tested and what was seen | `TestReport` | `docs/test-reports/`, evidence under `docs/test-reports/evidence/` (`.claude/rules/definition-of-done.md`) |
+| What was tested and what was seen | `TestReport` | `docs/test-reports/`, evidence under `docs/test-reports/evidence/` (`.claude/skills/deliver-pbi/definition-of-done.md`) |
 | Work to do | — | GitHub EPIC / PBI issues, **never a document** |
 
 - Architecture documents describe the present state and link to the ADR that decided each

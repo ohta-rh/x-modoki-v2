@@ -8,7 +8,7 @@ status: stable
 
 # 環境と配備
 
-- 決定: [ADR-0017](../adr/0017-cloudflare-workers-opennext.md)、[ADR-0019](../adr/0019-first-milestone-runs-locally.md)、[ADR-0070](../adr/0070-ci-has-eight-gates-with-the-dependency-audit.md)、[ADR-0008](../adr/0008-s3-compatible-media-storage.md)、[ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md)
+- 決定: [ADR-0017](../adr/0017-cloudflare-workers-opennext.md)、[ADR-0019](../adr/0019-first-milestone-runs-locally.md)、[ADR-0073](../adr/0073-ci-scope-docs-only-and-e2e-per-browser.md)、[ADR-0008](../adr/0008-s3-compatible-media-storage.md)、[ADR-0005](../adr/0005-toolchain-node24-pnpm-ts6-eslint.md)
 - 手を動かす手順は [ローカルで動かす](../guides/local-development.md)。この文書は構成と、コマンドの一覧（`package.json` の `scripts` と同じ）を示す
 
 ## 1. マイルストーンと環境
@@ -91,7 +91,15 @@ pnpm dev                    # http://localhost:3000（使われていれば PORT
 
 ## 6. CI
 
-GitHub Actions が、`main` への push と全ての PR で動かす（[ADR-0070](../adr/0070-ci-has-eight-gates-with-the-dependency-audit.md)。ADR-0020 を置き換え）。依存の更新の PR は Dependabot が週に 1 回作る（[ADR-0071](../adr/0071-dependabot-weekly-updates-pinned-lines-by-adr.md)）。
+GitHub Actions が、`main` への push と全ての PR で動かす（[ADR-0073](../adr/0073-ci-scope-docs-only-and-e2e-per-browser.md)。ADR-0070 を置き換え）。依存の更新の PR は Dependabot が週に 1 回作る（[ADR-0071](../adr/0071-dependabot-weekly-updates-pinned-lines-by-adr.md)）。
+
+| ジョブ | いつ | すること |
+|---|---|---|
+| `scope` | 毎回、最初 | `scripts/ci-scope.mjs` が、最後に全部の確認が通った commit からの変更を見て、文書だけなら `docs`、それ以外は `full` に決める |
+| `docs only` | `docs` のとき | 1（ドキュメント）と 4（整形）だけ |
+| `verify` | `full` のとき | 8（監査）と 1〜6 |
+| `e2e (chromium)`・`e2e (firefox)`・`e2e (webkit)` | `full` のとき、`verify` と同時に | それぞれ自分でビルドし、7 をそのブラウザで |
+| `fresh clone (the local guide)` | 毎回 | まっさらな clone で手順書を流す |
 
 | 順 | 確認 | コマンド | 落ちる条件 |
 |---|---|---|---|

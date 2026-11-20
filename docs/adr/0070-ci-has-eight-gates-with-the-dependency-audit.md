@@ -3,12 +3,12 @@ type: ADR
 title: "ADR-0070: CI の確認を 8 つにし、本番の依存の監査を最初に動かす"
 description: "ADR-0020 の CI の決定を引き継ぎ、本番の依存の高と重大の脆弱性の監査（pnpm audit）を 8 つ目の確認として最初に動かし、手元の pnpm verify は残りの 7 つのままにする。"
 tags: [process, ci, quality, security]
-status: stable
+status: deprecated
 ---
 
 # ADR-0070: CI の確認を 8 つにし、本番の依存の監査を最初に動かす
 
-- ステータス: 採用
+- ステータス: 置き換え: ADR-0073
 - 日付: 2026-11-20
 - 決定者: エージェント（委任された判断。ADR-0028 によりユーザーに聞かずに決めた。CI を必須とすることはユーザーの決定のまま）
 - 関連: #37、#33（T-18、NFR-SEC-11）、ADR-0020（置き換える）、ADR-0033、ADR-0046、ADR-0047、ADR-0069、ADR-0071

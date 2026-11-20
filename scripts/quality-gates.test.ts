@@ -5,6 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync, statSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import playwright from '../playwright.config';
+import { FULL_JOBS } from './lib/ci-scope.mjs';
 import { guideCommands } from './lib/guide-commands.mjs';
 import vitestConfig from '../vitest.config';
 
@@ -141,6 +142,51 @@ describe('品質の確認の設定（#30）', () => {
     expect(readFileSync('scripts/setup-local.sh', 'utf8')).toMatch(
       /git config core\.hooksPath \.githooks/,
     );
+  });
+
+  it('CI は範囲を決めてから動く: 文書だけなら軽い確認、それ以外は全部。画面のテストはブラウザごとのジョブで同時に（ADR-0073）', () => {
+    const ci = readFileSync('.github/workflows/ci.yml', 'utf8');
+    const job = (id: string) => {
+      const start = ci.indexOf(`\n  ${id}:\n`);
+      expect(start, id).toBeGreaterThan(0);
+      const next = ci.slice(start + 1).search(/\n  [\w-]+:\n/);
+      return next < 0 ? ci.slice(start) : ci.slice(start, start + 1 + next);
+    };
+    expect(job('scope')).toContain('run: node scripts/ci-scope.mjs');
+    expect(job('scope')).toMatch(/fetch-depth: 0/);
+    // A pull request's own history, not the merge with main (whose parent is main's tip).
+    expect(job('scope')).toContain('ref: ${{ github.event.pull_request.head.sha || github.sha }}');
+    for (const id of ['verify', 'e2e']) {
+      expect(job(id)).toContain("if: needs.scope.outputs.scope == 'full'");
+    }
+    expect(job('docs')).toContain("if: needs.scope.outputs.scope == 'docs'");
+    expect(job('docs')).toMatch(/run: pnpm docs:check[\s\S]*run: pnpm format:check/);
+    // The job names a commit must pass to count as fully verified (scripts/lib/ci-scope.mjs).
+    expect(job('verify')).toMatch(/\n    name: verify\n/);
+    expect(job('e2e')).toMatch(/\n    name: e2e \(\$\{\{ matrix\.browser \}\}\)\n/);
+    expect(job('e2e')).toMatch(/browser: \[chromium, firefox, webkit\]/);
+    expect(job('e2e')).toContain('pnpm test:e2e --project=${{ matrix.browser }}');
+    expect(job('verify')).not.toContain('pnpm test:e2e');
+    expect(FULL_JOBS).toEqual([
+      'verify',
+      ...['chromium', 'firefox', 'webkit'].map((b) => `e2e (${b})`),
+    ]);
+  });
+
+  it('プロジェクトのフックが登録されている: Bash は guard-bash、編集は format-edited。.env.local は読まない（ADR-0074）', () => {
+    const settings = JSON.parse(readFileSync('.claude/settings.json', 'utf8'));
+    const hook = (event: string, matcher: string) =>
+      settings.hooks[event].find((entry: { matcher: string }) => entry.matcher === matcher)
+        .hooks[0];
+    expect(hook('PreToolUse', 'Bash')).toMatchObject({
+      type: 'command',
+      command: 'node "$CLAUDE_PROJECT_DIR/scripts/guard-bash.mjs"',
+    });
+    expect(hook('PostToolUse', 'Edit|Write')).toMatchObject({
+      type: 'command',
+      command: 'node "$CLAUDE_PROJECT_DIR/scripts/format-edited.mjs"',
+    });
+    expect(settings.permissions.deny).toContain('Read(./.env.local)');
   });
 
   // NFR-SEC-11: 本番の依存に、高と重大の脆弱性が無い

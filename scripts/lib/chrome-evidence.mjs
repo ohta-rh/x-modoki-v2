@@ -12,7 +12,7 @@
 // Exits 1 if any page did not load, has the wrong width, scrolls sideways, logs a console error,
 // or has a failed request; 2 on bad arguments. Locally it drives the installed Google Chrome;
 // in CI the Chromium bundled with Playwright. It complements — never replaces — looking at the
-// page yourself (.claude/rules/definition-of-done.md).
+// page yourself (.claude/skills/deliver-pbi/definition-of-done.md).
 
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';

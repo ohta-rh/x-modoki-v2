@@ -81,6 +81,8 @@ status: stable
 | [0067](0067-retried-deletes-and-profile-images-return-the-same-result.md) | 削除とプロフィールの画像の保存は、やり直しても同じ結果を返す | 採用 | エージェント |
 | [0068](0068-seed-people-sign-in-with-a-published-dev-password.md) | シードの人は、公開した開発用のパスワードでログインできる | 採用 | エージェント |
 | [0069](0069-ci-runs-the-local-guide-on-a-fresh-clone.md) | CI はまっさらなランナーで手順書のコマンドをそのまま流して確かめる | 採用 | エージェント |
-| [0070](0070-ci-has-eight-gates-with-the-dependency-audit.md) | CI の確認を 8 つにし、本番の依存の監査を最初に動かす | 採用 | エージェント |
+| [0070](0070-ci-has-eight-gates-with-the-dependency-audit.md) | CI の確認を 8 つにし、本番の依存の監査を最初に動かす | 置き換え: ADR-0073 | エージェント |
 | [0071](0071-dependabot-weekly-updates-pinned-lines-by-adr.md) | 依存の更新は Dependabot が週に 1 回 PR にし、ADR が固定した系列は ADR でだけ上げる | 採用 | エージェント |
 | [0072](0072-docs-checked-on-the-staged-tree-before-commit.md) | commit の前に、ステージした木でドキュメントの確認を動かす | 採用 | エージェント |
+| [0073](0073-ci-scope-docs-only-and-e2e-per-browser.md) | CI は範囲を決めてから動き、文書だけなら軽い確認、それ以外は画面のテストをブラウザごとに同時に流す | 採用 | ユーザー／エージェント |
+| [0074](0074-harness-short-claude-md-path-scoped-rules-skills-and-hooks.md) | ハーネスは、短い CLAUDE.md、触ったときだけ読む決まり、手順の skill、止めるフックで組む | 採用 | エージェント |

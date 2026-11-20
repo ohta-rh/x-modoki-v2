@@ -1,7 +1,9 @@
-# CI is mandatory (ADR-0070, which replaces ADR-0020). A change is done only when this workflow is
-# green on its commit. The eight gates (the dependency audit first, then the seven of `pnpm verify`)
-# run in this order and the job stops at the first failure. Never add
-# `continue-on-error`, skip a gate, or lower a threshold to get green (.claude/rules/quality-gates.md).
+# CI is mandatory (ADR-0073, which replaces ADR-0070). A change is done only when this workflow is
+# green on its commit. `scope` decides first: a push that changes only documents since the last fully
+# verified commit runs `docs` (the documentation and format checks); anything else, or any doubt, runs
+# every gate — `verify` (the dependency audit, then gates 1–6) and `e2e` (gate 7, one job per browser,
+# all at once). Never add `continue-on-error`, skip a gate, or lower a threshold to get green
+# (.claude/rules/quality-gates.md).
 
 name: CI
 
@@ -18,8 +20,32 @@ permissions:
   contents: read
 
 jobs:
+  # scripts/ci-scope.mjs: `docs` only when every file changed since the newest commit whose verify and
+  # three e2e jobs all passed is a document; otherwise `full`. It reads those check results (checks: read).
+  scope:
+    name: scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      checks: read
+    outputs:
+      scope: ${{ steps.decide.outputs.scope }}
+    steps:
+      # The pull request's own head, not the merge with main: its ancestors are this branch's commits.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - id: decide
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/ci-scope.mjs
+
   verify:
-    name: verify (8 gates)
+    name: verify
+    needs: scope
+    if: needs.scope.outputs.scope == 'full'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -39,12 +65,10 @@ jobs:
         run: pnpm audit --prod --audit-level high
       - name: Services (PostgreSQL, Garage) and .env.local
         run: sh scripts/setup-local.sh
-      # The app's own database needs the tables too: pnpm start serves the browser tests from it
-      # (Vitest builds its own databases). Same order as docs/architecture/environments.md.
+      # Vitest builds its own databases; the migrations also check that they apply cleanly.
       - name: Database migrations
         run: pnpm db:migrate
       # The browsers and their system packages come with the official Playwright image (ADR-0046),
-      # used by the two steps that launch a browser (5: a script's own test, 7: the browser tests),
       # so nothing is installed from apt, whose mirror stalled runs for minutes (#43–#45, #52). Its
       # version is @playwright/test's, and moves with it in the same change.
       - name: Playwright image
@@ -59,8 +83,8 @@ jobs:
         run: pnpm lint
       - name: 4. Format
         run: pnpm format:check
-      # In the image too: scripts/chrome-evidence.test.mjs launches Chromium (#52). Same options as
-      # step 7, which explains them.
+      # In the image: scripts/chrome-evidence.test.mjs launches Chromium (#52). The options are
+      # explained at gate 7.
       - name: 5. Tests and coverage (100%)
         run: |
           docker run --rm --network host --ipc=host --user "$(id -u):$(id -g)" \
@@ -71,9 +95,42 @@ jobs:
             sh -c 'node -v && pnpm test --coverage'
       - name: 6. Build
         run: pnpm build
+
+  # Gate 7, one browser per job and all three at once (ADR-0073): each job builds the app itself, so
+  # none waits for another, and a failure names its browser.
+  e2e:
+    name: e2e (${{ matrix.browser }})
+    needs: scope
+    if: needs.scope.outputs.scope == 'full'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    env:
+      PORT: '3000'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Services (PostgreSQL, Garage) and .env.local
+        run: sh scripts/setup-local.sh
+      # The app's own database needs the tables: pnpm start serves the browser tests from it.
+      - name: Database migrations
+        run: pnpm db:migrate
+      - name: Playwright image
+        timeout-minutes: 10
+        run: docker pull --quiet mcr.microsoft.com/playwright:v1.65.0-noble
+      - name: Build
+        run: pnpm build
       # Inside the image, on the runner's network (PostgreSQL and Garage are on localhost), with the
       # runner's Node.js from .nvmrc and pnpm at the same paths: the image's own Node.js is 26.
-      - name: 7. Browser tests (Chromium, Firefox, WebKit)
+      - name: 7. Browser tests (${{ matrix.browser }})
         run: |
           # The runner's home holds the workspace and pnpm (pnpm/action-setup), the tool cache Node.js.
           # As the runner's user: Firefox refuses to start as root with a $HOME owned by someone
@@ -83,20 +140,41 @@ jobs:
             -v "$RUNNER_TOOL_CACHE:$RUNNER_TOOL_CACHE:ro" \
             -e PATH="$PATH" -e HOME -e CI -e PORT \
             mcr.microsoft.com/playwright:v1.65.0-noble \
-            sh -c 'node -v && pnpm test:e2e'
-
+            sh -c 'node -v && pnpm test:e2e --project=${{ matrix.browser }}'
       - name: Keep screenshots and traces of a browser-test failure
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.browser }}
           path: |
             playwright-report/
             test-results/
           retention-days: 14
 
+  # A documents-only push (ADR-0073): the code is the fully verified commit's, so only the documents
+  # can have changed what the gates see.
+  docs:
+    name: docs only
+    needs: scope
+    if: needs.scope.outputs.scope == 'docs'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Documentation (OKF bundle, links, ADRs, test reports, requirements to tests)
+        run: pnpm docs:check
+      - name: Format
+        run: pnpm format:check
+
   # A fresh runner is a fresh clone: run the guide's own commands, read from the guide, then sign in
-  # as a seed person and open /home (#35, ADR-0069). Nothing here is copied from the guide.
+  # as a seed person and open /home (#35, ADR-0069). Nothing here is copied from the guide. It runs on
+  # every push, documents-only included, since the guide is a document.
   fresh-clone:
     name: fresh clone (the local guide)
     runs-on: ubuntu-latest
@@ -121,7 +199,7 @@ jobs:
           for i in $(seq 1 120); do curl -sf -o /dev/null http://localhost:3000/ && exit 0; sleep 1; done
           tail -50 "$RUNNER_TEMP/app.log"; exit 1
       # Through the sign-in screen: Better Auth's own sign-in endpoints are closed to outside calls
-      # (T-09, T-10). In the Playwright image, as steps 5 and 7 of verify (ADR-0046).
+      # (T-09, T-10). In the Playwright image, as the browser gates (ADR-0046).
       - name: Sign in as sample01 and open /home
         run: |
           cat > fresh-clone-check.mjs <<'JS'

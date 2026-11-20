@@ -152,9 +152,10 @@ footer { color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
     <h1>x-modoki のハーネス</h1>
     <p class="lede">人が寝ている間に、エージェント（Claude Code）が要件から運用まで 1 件ずつ進めて、間違えたら自分で止まるための仕組み。決まりを読み、決まった 1 周を回し、関所で機械に止められ、全部を記録に残す。</p>
     <div class="facts">
-      <span>決まり <b>CLAUDE.md + 9 ファイル</b></span>
+      <span>毎回読む決まり <b>CLAUDE.md（約 60 行）</b></span>
+      <span>skill <b>2</b> · フック <b>3</b></span>
       <span>レビュアー <b>1 体（opus）</b></span>
-      <span>CI の確認 <b>8 + まっさらな clone</b></span>
+      <span>CI の確認 <b>8 + まっさらな clone</b>（文書だけは軽く）</span>
       <span>ADR <b>72</b></span>
       <span>試験レポート <b>83</b></span>
       <span>単体のテスト <b>1,123</b> · 画面のテスト <b>387</b></span>
@@ -199,7 +200,7 @@ footer { color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
 <g><rect x="342" y="371" width="136" height="48" rx="7" fill="var(--tint-record)" stroke="var(--record)" stroke-width="1.5"/>
 <text x="410" y="391" text-anchor="middle" class="t-n">レポート・閉じる</text><text x="410" y="409" text-anchor="middle" class="t-s" fill="var(--muted)">写真・TDD の記録</text></g>
 <rect x="634" y="486" width="112" height="24" rx="12" fill="var(--tint-gate)" stroke="var(--gate)"/><text x="690" y="502" text-anchor="middle" class="t-s" fill="var(--gate)">commit: フック 1 秒</text>
-<rect x="20" y="40" width="215" height="200" rx="8" fill="var(--panel)" stroke="var(--rule)" stroke-width="1.5"/><rect x="20" y="40" width="6" height="200" rx="3" fill="var(--rule)"/><text x="40" y="70" class="t-h" fill="var(--rule)">決まり</text><text x="40" y="96" class="t-s">CLAUDE.md（入口）</text><text x="40" y="117" class="t-s">.claude/rules/ の 9 ファイル</text><text x="40" y="138" class="t-s">issue・FSD・品質・TDD</text><text x="40" y="159" class="t-s">レビュー・バグ・完了の定義</text><text x="40" y="180" class="t-s">ループ・文書と ADR</text><text x="40" y="201" class="t-s">.claude/agents/code-reviewer</text>
+<rect x="20" y="40" width="215" height="200" rx="8" fill="var(--panel)" stroke="var(--rule)" stroke-width="1.5"/><rect x="20" y="40" width="6" height="200" rx="3" fill="var(--rule)"/><text x="40" y="70" class="t-h" fill="var(--rule)">決まり</text><text x="40" y="96" class="t-s">CLAUDE.md（入口）</text><text x="40" y="117" class="t-s">触ったときだけ読む 4 ルール</text><text x="40" y="138" class="t-s">skill: deliver-pbi・file-issues</text><text x="40" y="159" class="t-s">（完了の定義・レビュー・バグ）</text><text x="40" y="180" class="t-s">フック: Bash の前・編集のあと</text><text x="40" y="201" class="t-s">.claude/agents/code-reviewer</text>
 <rect x="20" y="330" width="215" height="165" rx="8" fill="var(--panel)" stroke="var(--record)" stroke-width="1.5"/><rect x="20" y="330" width="6" height="165" rx="3" fill="var(--record)"/><text x="40" y="360" class="t-h" fill="var(--record)">記録</text><text x="40" y="386" class="t-s">ADR 72（書き換えず置き換え）</text><text x="40" y="407" class="t-s">試験レポート 83（写真つき）</text><text x="40" y="428" class="t-s">issue を閉じる根拠のコメント</text><text x="40" y="449" class="t-s">振り返り（retrospective-m1）</text>
 <path d="M235,190 Q250,215 290,267" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/><text x="248" y="176" class="t-s" fill="var(--muted)">読んだとおりに</text>
 <path d="M342,401 Q300,425 237,420" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/><text x="250" y="458" class="t-s" fill="var(--muted)">通ったら残す</text>
@@ -224,16 +225,16 @@ footer { color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
     <h2 id="s-layers">全体: 4 つの層</h2>
     <div class="stack">
       <div class="layer rule">
-        <div class="name"><h3>決まり</h3><span>セッションの最初に読む</span></div>
+        <div class="name"><h3>決まり</h3><span>毎回読むのは CLAUDE.md だけ。ほかは必要なときに</span></div>
         <div class="items">
-          <div class="item"><b><code>CLAUDE.md</code></b><small>入口。各決まりの要点と、詳しいファイルへのリンク</small></div>
-          <div class="item"><b>issue の書き方</b><small><code>issue-authoring.md</code>: EPIC と PBI、根本原因を 1 文、完了の定義 10 項目</small></div>
-          <div class="item"><b>構造</b><small><code>architecture-fsd.md</code>: Feature-Sliced Design の 6 層、DB は <code>api</code> だけ</small></div>
-          <div class="item"><b>品質の関所</b><small><code>quality-gates.md</code>: CI 必須、カバレッジ 100%、Workers で動くコード</small></div>
-          <div class="item"><b>TDD</b><small><code>tdd.md</code>: 赤 → 緑 → 整理、赤を記録に残す</small></div>
-          <div class="item"><b>レビューとバグ</b><small><code>code-review.md</code>・<code>bug-handling.md</code>: 止めない、聞かない、最後まで直す</small></div>
-          <div class="item"><b>完了とループ</b><small><code>definition-of-done.md</code>・<code>delivery-loop.md</code>: 1 件ずつ閉じるまで</small></div>
-          <div class="item"><b>文書と決定</b><small><code>documentation.md</code>: <code>docs/</code> は OKF、決定は ADR</small></div>
+          <div class="item"><b><code>CLAUDE.md</code></b><small>毎回読むのはここだけ（約 60 行）。要点と、どの決まりがいつ読まれるかの道しるべ</small></div>
+          <div class="item"><b>skill: file-issues</b><small>EPIC と PBI、根本原因を 1 文、完了の定義 10 項目。起票の前に呼ぶ</small></div>
+          <div class="item"><b>構造</b><small><code>architecture-fsd.md</code>（<code>src/</code>・<code>app/</code> を開いたとき）: FSD の 6 層、DB は <code>api</code> だけ</small></div>
+          <div class="item"><b>品質の関所</b><small><code>quality-gates.md</code>（コード・テスト・CI を開いたとき）: CI 必須、カバレッジ 100%、Workers で動くコード</small></div>
+          <div class="item"><b>TDD</b><small><code>tdd.md</code>（コードを開いたとき）: 赤 → 緑 → 整理、赤を記録に残す</small></div>
+          <div class="item"><b>skill: deliver-pbi</b><small>PBI を 1 件ずつ閉じるまで。参照のファイルに、完了の定義・レビュー・バグの扱い</small></div>
+
+          <div class="item"><b>文書と決定</b><small><code>documentation.md</code>（<code>docs/</code> を開いたとき）: OKF、決定は ADR</small></div>
         </div>
       </div>
       <div class="flow">読んだ決まりのとおりに</div>
@@ -251,9 +252,10 @@ footer { color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
       <div class="layer gate">
         <div class="name"><h3>関所</h3><span>機械が止める</span></div>
         <div class="items">
+          <div class="item"><b>Claude Code のフック</b><small><code>.claude/settings.json</code>: Bash の前に <code>guard-bash</code>、編集のあとに <code>format-edited</code></small></div>
           <div class="item"><b>commit の前のフック</b><small><code>.githooks/pre-commit</code> → ステージした木でドキュメントと要件の結びつき</small></div>
           <div class="item"><b><code>pnpm verify</code></b><small>ドキュメント・型・lint・整形・テスト 100%・ビルド・3 ブラウザ</small></div>
-          <div class="item"><b>GitHub Actions</b><small>依存の監査 + 上の 7 つ、別のジョブでまっさらな clone の手順書</small></div>
+          <div class="item"><b>GitHub Actions</b><small>文書だけなら軽い確認。それ以外は監査 + 上の 7 つ（画面のテストはブラウザごとに同時）、まっさらな clone</small></div>
           <div class="item"><b>自前の lint とスクリプト</b><small><code>local/settle-server-actions</code>・<code>check-authz</code>・<code>check-src-layers</code>・<code>check-docs</code>・<code>check-traceability</code></small></div>
           <div class="item"><b>機械全体のゲート</b><small>リポジトリの外の <code>validate-bash</code> と <code>permissions.deny</code>: 強制の push、<code>rm -rf</code> を止める</small></div>
         </div>
@@ -273,18 +275,18 @@ footer { color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
 
   <section aria-labelledby="s-loop">
     <h2 id="s-loop">PBI ごとの 1 周</h2>
-    <p class="lede"><code>.claude/rules/delivery-loop.md</code> の 12 の手順。どこかで止まったら戻る所が決まっていて、ユーザーには聞かない。</p>
+    <p class="lede">skill <code>deliver-pbi</code>（<code>.claude/skills/deliver-pbi/SKILL.md</code>）の 12 の手順。どこかで止まったら戻る所が決まっていて、ユーザーには聞かない。</p>
     <div class="cycle">
       <div class="step r"><b>土台を確かめる</b><small><code>git fetch</code>、<code>main</code> の CI が緑</small></div>
       <div class="step r"><b>選ぶ</b><small>EPIC の順で、依存が閉じた最初</small></div>
       <div class="step r"><b>読む</b><small>issue が仕様。関係する ADR も</small></div>
-      <div class="step g"><b>基準を測る</b><small>変える前の <code>pnpm verify</code></small></div>
+      <div class="step g"><b>基準を確かめる</b><small>出発点の commit の CI が緑</small></div>
       <div class="step l"><b>TDD で作る</b><small>赤の出力をその場で記録</small></div>
       <div class="step g"><b>確かめる</b><small><code>pnpm verify</code>、受け入れ条件、Chrome</small></div>
       <div class="step l"><b>独立したレビュー</b><small><code>APPROVE</code> まで新しいレビュアーで</small></div>
       <div class="step c"><b>決定を残す</b><small>同じ commit に ADR</small></div>
       <div class="step g"><b>commit と push</b><small>パスを名指しでステージ</small></div>
-      <div class="step g"><b>CI を最後まで見る</b><small>赤なら次へ進まない</small></div>
+      <div class="step g"><b>CI を最後まで見る</b><small>待つ間は次の PBI を読むだけ。赤なら直す</small></div>
       <div class="step c"><b>試験レポート</b><small>写真つきで push、その CI も緑</small></div>
       <div class="step c"><b>閉じる</b><small>完了の定義に印、根拠のコメント</small></div>
     </div>
@@ -299,10 +301,11 @@ footer { color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
     <h2 id="s-gates">関所の順番</h2>
     <p class="lede">早い関所ほど安く、遅い関所ほど本物に近い。どれも飛ばさず、ゆるめない。</p>
     <div class="gates">
+      <div class="g"><span class="when">コマンドと編集のたび</span><h3>Claude Code のフック</h3><ul><li>全部をまとめたステージ</li><li>確認を飛ばす commit</li><li><code>;</code>・<code>||</code>・改行のあとの commit と push</li><li>名前でのプロセスの停止</li><li>編集したファイルを整える</li></ul><span class="cost">一瞬〜約 1 秒</span></div>
       <div class="g"><span class="when">commit のとき</span><h3>pre-commit のフック</h3><ul><li>ステージした木を書き出す</li><li>ドキュメントの形とリンク</li><li>要件とテストの結びつき</li><li>引いた ADR の番号があるか</li></ul><span class="cost">約 1 秒</span></div>
       <div class="g"><span class="when">push の前</span><h3><code>pnpm verify</code></h3><ul><li>型・ESLint・Steiger・整形</li><li>単体とデータアクセス層（本物の PostgreSQL）</li><li>カバレッジ 4 つとも 100%</li><li>ビルドと 3 ブラウザの e2e</li></ul><span class="cost">約 10 分</span></div>
       <div class="g"><span class="when">push の前</span><h3>人の代わりの目</h3><ul><li>本物の Chrome で 3 つの幅と低い画面</li><li>独立した code-reviewer（opus）</li></ul><span class="cost">数分〜</span></div>
-      <div class="g"><span class="when">push の後</span><h3>GitHub Actions</h3><ul><li>依存の監査（高と重大）</li><li>上の 7 つを公式の Playwright のイメージで</li><li><code>fresh-clone</code>: 手順書をそのまま流す</li></ul><span class="cost">約 20 分</span></div>
+      <div class="g"><span class="when">push の後</span><h3>GitHub Actions</h3><ul><li>まず範囲を決める（文書だけか）</li><li>文書だけ: 文書と整形</li><li>それ以外: 監査と上の 7 つ、画面のテストはブラウザごとに同時</li><li><code>fresh-clone</code>: 手順書をそのまま流す</li></ul><span class="cost">文書だけ: 数分 · それ以外: 10 分前後（見込み）</span></div>
     </div>
   </section>
 

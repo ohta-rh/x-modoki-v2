@@ -36,14 +36,16 @@ pnpm dev
 
 ## 確かめ方
 
-- `PORT=3300 pnpm verify` が、CI と同じ 7 つの確認（ドキュメント・型・lint・整形・テストとカバレッジ 100%・ビルド・Chromium と Firefox と WebKit の画面のテスト）を流す。CI はこれに本番の依存の監査を足した 8 つと、まっさらな clone で手順書を流すジョブを動かす
+- `PORT=3300 pnpm verify` が、CI と同じ 7 つの確認（ドキュメント・型・lint・整形・テストとカバレッジ 100%・ビルド・Chromium と Firefox と WebKit の画面のテスト）を流す。CI はこれに本番の依存の監査を足した 8 つ（画面のテストはブラウザごとに同時）と、まっさらな clone で手順書を流すジョブを動かす。変えたのが文書だけなら、文書と整形の確認だけを流す
 - commit の前に、ステージした中身でドキュメントの確認が動く（`scripts/setup-local.sh` が有効にする）
+- Claude Code で開くと、`.claude/settings.json` のフックが、危ないコマンド（全部をまとめたステージ、確認を飛ばす commit など）を止め、編集したファイルを整える
 
 ## 進め方
 
 このリポジトリは、エージェント（Claude Code）が人の手を借りずに要件から運用まで進められるように、決まり（ハーネス）を持っています。全体の図は [ハーネスの全体像](docs/architecture/harness.md)（ブラウザで開く図解: [docs/architecture/harness.html](docs/architecture/harness.html)）にあります。
 
-- [CLAUDE.md](CLAUDE.md) が入口で、詳しい決まりは [.claude/rules/](.claude/rules/) にある: issue の書き方、Feature-Sliced Design、品質の確認、TDD、独立したコードレビュー、完了の定義、1 件ずつ閉じるまでのループ、バグの扱い、文書と ADR
+- [CLAUDE.md](CLAUDE.md) が入口（毎回読むのはここだけ）。コードと文書の決まり（Feature-Sliced Design、品質の確認、TDD、文書と ADR）は [.claude/rules/](.claude/rules/) にあり、合うファイルを開いたときに読まれる
+- 手順は skill にある: [deliver-pbi](.claude/skills/deliver-pbi/SKILL.md)（PBI を 1 件ずつ閉じるまで。完了の定義・コードレビュー・バグの扱い）と [file-issues](.claude/skills/file-issues/SKILL.md)（EPIC と PBI の書き方）
 - コードレビューは、差分の範囲だけを渡された別のエージェント（[.claude/agents/code-reviewer.md](.claude/agents/code-reviewer.md)）が行う
 - 作業は EPIC と PBI の issue で計画し、PBI ごとに試験レポート（画面の写真つき）を [docs/test-reports/](docs/test-reports/index.md) に残す
 - 決定は [ADR](docs/adr/README.md) に残す。マイルストーン 1 で分かったことは [振り返り](docs/research/retrospective-m1.md) にある
