@@ -24,7 +24,8 @@ Decided in ADR-0017, ADR-0019, ADR-0020, ADR-0021; this file is the operating ru
 
 - GitHub Actions runs on every push to `main` and every PR. The `scope` job decides first: when
   every file changed since the last fully verified commit is a document (`docs/`, `.claude/`,
-  `README.md`, `CHANGELOG.md`, `CLAUDE.md`, `LICENSE`), only `docs only` runs (`pnpm docs:check`,
+  `README.md`, `CHANGELOG.md`, `CLAUDE.md`, `LICENSE`) that no gate outside `docs:check` reads
+  (`GATE_INPUTS` in `scripts/lib/ci-scope.mjs`), only `docs only` runs (`pnpm docs:check`,
   `pnpm format:check`); otherwise the eight gates run — `verify` (the dependency audit, then
   `pnpm docs:check`, `typecheck`, `lint`, `format:check`, `test --coverage`, `build`) and
   `e2e (chromium|firefox|webkit)` at the same time. `fresh-clone` runs the local guide on every push
@@ -35,8 +36,8 @@ Decided in ADR-0017, ADR-0019, ADR-0020, ADR-0021; this file is the operating ru
   audit is CI's alone: its result follows the advisory database, not the change. While working,
   run only the tests the change touches; the full run is once, right before the push (ADR-0056).
 - **Join a check and the commit after it with `&&`.** The Bash hook (`scripts/guard-bash.mjs`,
-  ADR-0074) refuses `;`, `||` or a new line before `git commit`/`git push`, `--no-verify`, `git add`
-  of everything, and stopping processes by name; the pre-commit hook checks the docs on the staged
+  ADR-0074) refuses `;`, `||`, `&` or a new line before `git commit`/`git push`, `--no-verify`,
+  `git add` of everything, and `pkill`/`killall`; the pre-commit hook checks the docs on the staged
   tree. If a hook refuses a command, fix the command; never reshape it to slip past the hook. To
   edit a file, use the editing tools, not a shell heredoc (the hook reads the heredoc too).
   **After pushing:** watch the CI run to its end. Do not end the turn on "CI is running".

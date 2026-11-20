@@ -95,7 +95,7 @@ GitHub Actions が、`main` への push と全ての PR で動かす（[ADR-0073
 
 | ジョブ | いつ | すること |
 |---|---|---|
-| `scope` | 毎回、最初 | `scripts/ci-scope.mjs` が、最後に全部の確認が通った commit からの変更を見て、文書だけなら `docs`、それ以外は `full` に決める |
+| `scope` | 毎回、最初 | `scripts/ci-scope.mjs` が、最後に全部の確認が通った commit からの変更を見て、文書だけなら `docs`、それ以外は `full` に決める。`docs:check` の外の確認が読む文書（脅威のモデル、手順書、`.claude/settings.json`）はコードとして扱う |
 | `docs only` | `docs` のとき | 1（ドキュメント）と 4（整形）だけ |
 | `verify` | `full` のとき | 8（監査）と 1〜6 |
 | `e2e (chromium)`・`e2e (firefox)`・`e2e (webkit)` | `full` のとき、`verify` と同時に | それぞれ自分でビルドし、7 をそのブラウザで |

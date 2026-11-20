@@ -11,10 +11,23 @@ export const FULL_JOBS = ['verify', 'e2e (chromium)', 'e2e (firefox)', 'e2e (web
 const LEGACY_FULL_JOB = 'verify (8 gates)';
 
 const DOCS = [/^docs\//, /^\.claude\//, /^(README|CHANGELOG|CLAUDE)\.md$/, /^LICENSE$/];
+/**
+ * Documents a gate outside `docs:check` reads, so they count as code (ADR-0073 review 1):
+ * `check-authz` (lint) reads the threat model; scripts/quality-gates.test.ts reads the guide and the
+ * hook settings. scripts/ci-scope.test.mjs fails when a gate starts reading another one.
+ */
+export const GATE_INPUTS = [
+  'docs/architecture/threat-model.md',
+  'docs/guides/local-development.md',
+  '.claude/settings.json',
+];
 
-/** True when every changed file is a document (and there is at least one). */
+/** True when every changed file is a document no gate but docs:check reads (and there is one). */
 export function isDocsOnly(files) {
-  return files.length > 0 && files.every((file) => DOCS.some((pattern) => pattern.test(file)));
+  return (
+    files.length > 0 &&
+    files.every((file) => !GATE_INPUTS.includes(file) && DOCS.some((pattern) => pattern.test(file)))
+  );
 }
 
 /** The newest ancestor that is fully verified, or null. */

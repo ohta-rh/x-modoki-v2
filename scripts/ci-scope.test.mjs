@@ -2,7 +2,15 @@
 // verified commit touch only documents runs the light checks; anything else, or any doubt, runs
 // every gate.
 import { describe, expect, it, vi } from 'vitest';
-import { FULL_JOBS, decide, defaultDeps, isDocsOnly, main, pickBase } from './lib/ci-scope.mjs';
+import {
+  FULL_JOBS,
+  GATE_INPUTS,
+  decide,
+  defaultDeps,
+  isDocsOnly,
+  main,
+  pickBase,
+} from './lib/ci-scope.mjs';
 
 describe('isDocsOnly', () => {
   it('文書・README・CHANGELOG・LICENSE・CLAUDE.md・.claude/ だけなら true', () => {
@@ -30,6 +38,10 @@ describe('isDocsOnly', () => {
       '.github/workflows/ci.yml',
       'docker-compose.yml',
       'docs-like.md',
+      // Documents a gate reads (ADR-0073 review 1): check-authz, scripts/quality-gates.test.ts.
+      'docs/architecture/threat-model.md',
+      'docs/guides/local-development.md',
+      '.claude/settings.json',
     ]) {
       expect(isDocsOnly(['docs/a.md', file]), file).toBe(false);
     }
@@ -156,5 +168,32 @@ describe('scripts/ci-scope.mjs', () => {
       process.exitCode = undefined;
       if (out !== undefined) process.env.GITHUB_OUTPUT = out;
     }
+  });
+});
+
+describe('確認が読む文書（ADR-0073 のレビュー 1）', () => {
+  it('docs:check の外の確認が読む docs/ と .claude/ のファイルは、全部 GATE_INPUTS にある', async () => {
+    const { execFileSync } = await import('node:child_process');
+    const { readFileSync } = await import('node:fs');
+    const files = execFileSync('git', ['ls-files', 'scripts', 'e2e', 'src', 'eslint-rules'], {
+      encoding: 'utf8',
+    })
+      .split('\n')
+      .filter((file) => /\.(?:[cm]?[jt]sx?)$/.test(file))
+      // docs:check runs these two (their tests build sample bundles in temp directories); the
+      // light checks run docs:check.
+      .filter(
+        (file) => !/^scripts\/(?:lib\/)?check-(docs|traceability)(?:\.test)?\.mjs$/.test(file),
+      );
+    const read = new Set();
+    for (const file of files) {
+      const text = readFileSync(file, 'utf8');
+      for (const match of text.matchAll(
+        /(?:readFileSync\(|=\s*)['"]((?:docs|\.claude)\/[\w./-]+\.\w+)['"]/g,
+      )) {
+        read.add(match[1]);
+      }
+    }
+    expect([...read].sort()).toEqual([...GATE_INPUTS].sort());
   });
 });
