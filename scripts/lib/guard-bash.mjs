@@ -6,7 +6,7 @@
 
 const SEPARATORS = ['&&', '||', ';', '&', '|', '\n', '(', ')', '`'];
 /** Separators after which the next command runs whatever the previous one did. */
-export const UNCONDITIONAL = [';', '||', '&', '\n'];
+export const UNCONDITIONAL = [';', '||', '&', '\n', '|&&'];
 
 /**
  * Splits `text` into simple commands: `[{ words, after, weak }]`. `after` is the separator before
@@ -22,6 +22,7 @@ export function split(text) {
   let word = '';
   let inWord = false;
   let after = null;
+  let piped = false;
   const endWord = () => {
     if (inWord) words.push(word);
     word = '';
@@ -42,7 +43,11 @@ export function split(text) {
       groups.pop();
       after = null;
     } else {
-      after = separator;
+      // A pipeline's status is its last command's, so `check | tail && git commit` commits even
+      // when the check fails (review 4): an && after a pipeline counts as unconditional.
+      if (separator === '|') piped = true;
+      if (UNCONDITIONAL.includes(separator)) piped = false;
+      after = separator === '&&' && piped ? '|&&' : separator;
     }
   };
   for (let i = 0; i < text.length;) {
@@ -125,12 +130,16 @@ const shortFlag = (args, letter) =>
 const REASONS = {
   add: 'stage files by path (git add <path> or --pathspec-from-file), never all at once',
   verify: 'never skip the checks with --no-verify (or git commit -n)',
-  join: 'join a check and the commit or push after it with &&, not ; || & or a new line',
+  join: 'join a check and the commit or push after it with && (not ; || & a new line, or after a pipeline)',
   kill: 'stop only your own server, by its PID (lsof -iTCP:<port>), never by name',
+  hooks: 'never point core.hooksPath elsewhere; it skips the pre-commit hook',
+  alias: 'do not define a git alias with -c; an alias hides what the command runs',
 };
 
 /** The reason to refuse one simple command, or null. */
 function checkCommand({ words, after, weak }, depth, seen) {
+  // Checked on the words as the shell joins them, too: core.hooks\Path, 'core.hooks''Path'.
+  if (words.some((word) => HOOKS_PATH.test(word))) return REASONS.hooks;
   const { name, args } = program(words);
   if (name === 'pkill' || name === 'killall') return REASONS.kill;
   const shell =
@@ -141,11 +150,13 @@ function checkCommand({ words, after, weak }, depth, seen) {
       : 'bash -c too deeply nested to read; refusing it';
   }
   if (name !== 'git') return null;
+  if (args.some((arg, i) => args[i - 1] === '-c' && /^alias\./i.test(arg))) return REASONS.alias;
   const { sub, rest } = gitCommand(args);
   seen.add(sub);
+  // --al is git's prefix of --all.
   if (
     sub === 'add' &&
-    (rest.some((a) => ['--all', '.', './'].includes(a)) || shortFlag(rest, 'A'))
+    (rest.some((a) => ['.', './'].includes(a) || /^--al/.test(a)) || shortFlag(rest, 'A'))
   ) {
     return REASONS.add;
   }
@@ -177,9 +188,7 @@ const HOOKS_PATH = /core\.hookspath/i;
 
 /** The reason to refuse `command`, or null. A command it cannot parse is refused. */
 export function check(command) {
-  if (HOOKS_PATH.test(command)) {
-    return 'never point core.hooksPath elsewhere; it skips the pre-commit hook';
-  }
+  if (HOOKS_PATH.test(command)) return REASONS.hooks;
   try {
     const seen = new Set();
     const reason = checkText(command, 0, seen);

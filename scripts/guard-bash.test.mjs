@@ -115,6 +115,20 @@ describe('check', () => {
     expect(check('echo "ends in a backslash\\')).toMatch(/could not parse/);
   });
 
+  it('引用で割った hooksPath、-c の alias、--al、パイプのあとの && も止める（ADR-0074 のレビュー 4）', () => {
+    for (const [command, reason] of [
+      ['git -c core.hooks\\Path=/x commit -m m', /hooksPath/],
+      ["git -c 'core.hooks''Path'=/x commit -m m", /hooksPath/],
+      ["git -c alias.ci='commit --no-verify' ci -m m", /alias/],
+      ['git add --al', /stage files by path/],
+      ['pnpm verify | tail -5 && git commit -m m', /&&/],
+    ]) {
+      expect(check(command), command).toMatch(reason);
+    }
+    // A pipeline ended by ; does not weaken a later && chain.
+    expect(check('git status | grep x; pnpm verify && git commit -m m')).toBeNull();
+  });
+
   it('括弧の数が合わないものは読めないので止める', () => {
     expect(check('echo a)')).toMatch(/could not parse.*unbalanced/);
     expect(check('(echo a')).toMatch(/could not parse.*unbalanced/);
