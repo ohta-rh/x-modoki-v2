@@ -93,9 +93,17 @@ test('画像つきの投稿を引用すると、引用の中に画像が出る',
   expect(inner!.x).toBeGreaterThanOrEqual(box!.x);
   expect(inner!.x + inner!.width).toBeLessThanOrEqual(box!.x + box!.width);
 
-  // Pressing the image opens the quoted post, not the outer one.
-  await image.click();
+  // The quoting post's own detail page shows the image inside its quote too (#115 review).
+  await card(page, '画像に意見を添える').locator('time').first().click();
   await expect(page).toHaveURL(/\/status\/\d+$/);
+  const detail = page.getByRole('article').filter({ hasText: '画像に意見を添える' }).first();
+  const inDetail = detail
+    .getByRole('article', { name: '引用した投稿' })
+    .getByRole('img', { name: '青い四角' });
+  await expect(inDetail).toBeVisible();
+
+  // Pressing the image opens the quoted post, not the outer one.
+  await inDetail.click();
   await expect(page.getByRole('article').first()).toContainText('画像を引用される投稿');
   await expect(page.getByRole('article').first()).not.toContainText('画像に意見を添える');
 });

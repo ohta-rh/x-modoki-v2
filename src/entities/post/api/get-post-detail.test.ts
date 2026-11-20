@@ -1,7 +1,8 @@
 import { makePost, makeUser } from '@test/factories';
-import { setupTestDb } from '@test/db';
+import { setupTestDb, testDb } from '@test/db';
 import { currentSession, signInAs, signOut } from '@test/session';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { media, postMedia } from '@/shared/db';
 import { newId } from '@/shared/lib/id';
 import { getPostDetail, getReplies } from './get-post-detail';
 
@@ -83,6 +84,45 @@ describe('getPostDetail（#20、data-model.md）', () => {
     signOut();
     const anonymous = await getPostDetail(root.id);
     expect(anonymous.ok && anonymous.detail.post.viewer.isAuthor).toBe(false);
+  });
+
+  it('引用する投稿の詳細では、引用した投稿の画像も返す（#115）', async () => {
+    const taro = await makeUser({ username: 'taro' });
+    const pictured = await makePost({ id: at(1), authorId: taro.id, text: '写真' });
+    const [image] = await testDb()
+      .insert(media)
+      .values({
+        id: newId(),
+        ownerId: taro.id,
+        key: 'media/detail.webp',
+        mime: 'image/webp',
+        width: 30,
+        height: 40,
+        alt: '詳細の画像',
+        status: 'ready' as const,
+      })
+      .returning();
+    await testDb()
+      .insert(postMedia)
+      .values({ postId: pictured.id, mediaId: image.id, position: 0 });
+    const quote = await makePost({
+      id: at(2),
+      authorId: taro.id,
+      text: '引用',
+      quoteOfId: pictured.id,
+    });
+    const result = await getPostDetail(quote.id);
+    if (!result.ok) throw new Error('expected ok');
+    const quoted = result.detail.post.quoted;
+    if (!quoted || 'deleted' in quoted) throw new Error('expected a quoted post');
+    expect(quoted.media).toEqual([
+      {
+        url: `${process.env.NEXT_PUBLIC_MEDIA_BASE_URL}/media/detail.webp`,
+        width: 30,
+        height: 40,
+        alt: '詳細の画像',
+      },
+    ]);
   });
 });
 
