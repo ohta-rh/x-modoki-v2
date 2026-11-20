@@ -88,10 +88,36 @@ describe('check', () => {
     }
   });
 
+  it("; のあとのサブシェルとバッククォートの中の commit、別の飛ばし方、$'…' も止める（ADR-0074 のレビュー 3）", () => {
+    for (const [command, reason] of [
+      ['pnpm verify; (git commit -m x)', /&&/],
+      ['pnpm verify; `git push`', /&&/],
+      ['pnpm verify; (cd x && git commit -m x)', /&&/],
+      ['pnpm verify || (true && (git push))', /&&/],
+      ['git -c core.hooksPath=/dev/null commit -m x', /hooksPath/],
+      ['git config core.hooksPath /dev/null', /hooksPath/],
+      ['GIT_CONFIG_KEY_0=core.HooksPath git commit -m x', /hooksPath/],
+      ['git commit --no-verif -m x', /--no-verify/],
+      ['git push --no-ve', /--no-verify/],
+      ["bash -c $'pnpm verify\\ngit commit -m x'", /could not parse/],
+      ['git add $"-A"', /could not parse/],
+    ]) {
+      expect(check(command), command).toMatch(reason);
+    }
+    // A check, then a subshell joined with && stays allowed.
+    expect(check('pnpm verify && (cd x && git commit -m x)')).toBeNull();
+    expect(check('(pnpm verify) && git push')).toBeNull();
+  });
+
   it('閉じていない引用符は読めないので止める', () => {
     expect(check('git commit -m "unterminated')).toMatch(/could not parse/);
     expect(check("git commit -m 'unterminated")).toMatch(/could not parse/);
     expect(check('echo "ends in a backslash\\')).toMatch(/could not parse/);
+  });
+
+  it('括弧の数が合わないものは読めないので止める', () => {
+    expect(check('echo a)')).toMatch(/could not parse.*unbalanced/);
+    expect(check('(echo a')).toMatch(/could not parse.*unbalanced/);
   });
 
   it('入れ子が深すぎる bash -c は読み切れないので止める', () => {

@@ -5,14 +5,19 @@
 // it cannot parse is refused (~/.claude/rules/gate-design.md).
 
 const SEPARATORS = ['&&', '||', ';', '&', '|', '\n', '(', ')', '`'];
+/** Separators after which the next command runs whatever the previous one did. */
+export const UNCONDITIONAL = [';', '||', '&', '\n'];
 
 /**
- * Splits `text` into simple commands: `[{ words, after }]`, where `after` is the separator before
- * it. Quotes group words and are removed; a backslash escapes the next character outside single
- * quotes. Throws on an unterminated quote.
+ * Splits `text` into simple commands: `[{ words, after, weak }]`. `after` is the separator before
+ * the command inside its own group; `weak` is true when an enclosing subshell or backquote group
+ * was itself opened after an unconditional separator (review 3). Quotes group words and are
+ * removed; a backslash escapes the next character outside single quotes. Throws on an unterminated
+ * quote, on `$'…'` / `$"…"` quoting, and on an unbalanced group.
  */
 export function split(text) {
   const commands = [];
+  const groups = [{ kind: null, weak: false }];
   let words = [];
   let word = '';
   let inWord = false;
@@ -24,13 +29,27 @@ export function split(text) {
   };
   const endCommand = (separator) => {
     endWord();
-    if (words.length > 0) commands.push({ words, after });
+    const top = groups[groups.length - 1];
+    if (words.length > 0) commands.push({ words, after, weak: top.weak });
     words = [];
-    after = separator;
+    const opens = separator === '(' || (separator === '`' && top.kind !== '`');
+    const closes = separator === ')' || (separator === '`' && top.kind === '`');
+    if (opens) {
+      groups.push({ kind: separator, weak: top.weak || UNCONDITIONAL.includes(after) });
+      after = null;
+    } else if (closes) {
+      if (groups.length === 1) throw new Error('unbalanced group');
+      groups.pop();
+      after = null;
+    } else {
+      after = separator;
+    }
   };
   for (let i = 0; i < text.length;) {
     const c = text[i];
-    if (c === "'") {
+    if (c === '$' && (text[i + 1] === "'" || text[i + 1] === '"')) {
+      throw new Error('$\'…\' or $"…" quoting');
+    } else if (c === "'") {
       const end = text.indexOf("'", i + 1);
       if (end < 0) throw new Error('unterminated quote');
       word += text.slice(i + 1, end);
@@ -66,6 +85,7 @@ export function split(text) {
     }
   }
   endCommand(null);
+  if (groups.length > 1) throw new Error('unbalanced group');
   return commands;
 }
 
@@ -110,7 +130,7 @@ const REASONS = {
 };
 
 /** The reason to refuse one simple command, or null. */
-function checkCommand({ words, after }, depth, seen) {
+function checkCommand({ words, after, weak }, depth, seen) {
   const { name, args } = program(words);
   if (name === 'pkill' || name === 'killall') return REASONS.kill;
   const shell =
@@ -129,11 +149,11 @@ function checkCommand({ words, after }, depth, seen) {
   ) {
     return REASONS.add;
   }
-  if (sub === 'commit' && (rest.includes('--no-verify') || shortFlag(rest, 'n'))) {
-    return REASONS.verify;
-  }
-  if (sub === 'push' && rest.includes('--no-verify')) return REASONS.verify;
-  if ((sub === 'commit' || sub === 'push') && [';', '||', '&', '\n'].includes(after)) {
+  // Git accepts an unambiguous prefix of a long option (--no-verif), so match the prefix.
+  const noVerify = rest.some((arg) => /^--no-ve/.test(arg));
+  if (sub === 'commit' && (noVerify || shortFlag(rest, 'n'))) return REASONS.verify;
+  if (sub === 'push' && noVerify) return REASONS.verify;
+  if ((sub === 'commit' || sub === 'push') && (weak || UNCONDITIONAL.includes(after))) {
     return REASONS.join;
   }
   return null;
@@ -151,9 +171,15 @@ function checkText(text, depth, seen) {
 // subcommand, or a by-name kill, anywhere in the text.
 const RAW_GIT = /\bgit(?:\s+-[Cc]\s+\S+|\s+-\S+)*\s+(add|commit|push)\b/g;
 const RAW_KILL = /\b(?:pkill|killall)\b/;
+// Pointing git's hooks elsewhere skips the pre-commit hook (ADR-0072) in any form: `-c`,
+// `git config`, GIT_CONFIG_* variables.
+const HOOKS_PATH = /core\.hookspath/i;
 
 /** The reason to refuse `command`, or null. A command it cannot parse is refused. */
 export function check(command) {
+  if (HOOKS_PATH.test(command)) {
+    return 'never point core.hooksPath elsewhere; it skips the pre-commit hook';
+  }
   try {
     const seen = new Set();
     const reason = checkText(command, 0, seen);

@@ -26,7 +26,7 @@ status: stable
 - **コードと文書の決まりは、`paths:` を付けて同じ場所に置く**: `architecture-fsd.md`・`quality-gates.md`・`tdd.md`・`documentation.md`。合うファイルを開いたときに読み込まれる
 - **PBI の手順は skill に移す**: `deliver-pbi`（ループ、参照のファイルに完了の定義・コードレビュー・バグの扱い）と `file-issues`（EPIC と PBI の書き方）。元のルールのファイルは、古い ADR と試験レポートのリンクが切れないよう、移った先を指す短い案内として残す（起動のときには読まれない）
 - **フックで止める**（`.claude/settings.json`）:
-  - Bash の前（`scripts/guard-bash.mjs`）: 全部をまとめた `git add`、`--no-verify` と `git commit -n`、`;`・`||`・`&`・改行のあとの `git commit`/`git push`、`pkill` と `killall`。コマンドをシェルと同じ規則で語に分け（引用符・エスケープ・区切り・サブシェル・`bash -c` の中身）、前置き（`VAR=value`、`env`、`xargs`、`eval`、`if`・`then`・`do`・`{` などの予約語）・バイナリのパス・git の全体のオプション・`bash -lc` のような旗の組を越えて見る。読めない入力、閉じていない引用符、深すぎる入れ子は止める。文字の上に git の `add`・`commit`・`push` か `pkill`・`killall` があるのに、コマンドとして読み解けなかったときも止める（`echo "git add -A"` も止まる）
+  - Bash の前（`scripts/guard-bash.mjs`）: 全部をまとめた `git add`、`--no-verify` と `git commit -n`、`;`・`||`・`&`・改行のあとの `git commit`/`git push`、`pkill` と `killall`。コマンドをシェルと同じ規則で語に分け（引用符・エスケープ・区切り・サブシェル・`bash -c` の中身）、前置き（`VAR=value`、`env`、`xargs`、`eval`、`if`・`then`・`do`・`{` などの予約語）・バイナリのパス・git の全体のオプション・`bash -lc` のような旗の組を越えて見る。読めない入力、閉じていない引用符、深すぎる入れ子は止める。文字の上に git の `add`・`commit`・`push` か `pkill`・`killall` があるのに、コマンドとして読み解けなかったときも止める（`echo "git add -A"` も止まる）。`;` などのあとに開いたサブシェルとバッククォートの中の commit と push、`core.hooksPath` を変えること（どの書き方でも）、`--no-verif` のような省略形、`$'…'` の引用、括弧の数が合わないものも止める
   - 編集のあと（`scripts/format-edited.mjs`）: 編集したファイルを Prettier で整える。止めない
   - `.env.local` は読まない（`permissions.deny`）
 - **手順の 4（基準）は、出発点の commit の緑の CI にする。** 作業の前の `pnpm verify` は流さない。push の前の `pnpm verify` は変えない
