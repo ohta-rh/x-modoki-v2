@@ -218,10 +218,30 @@ describe('名前の変更（ADR-0073 のレビュー 2）', () => {
 });
 
 describe('defaultDeps の既定', () => {
-  it('このリポジトリの本物の git で、40 桁の祖先を読む', () => {
-    const ancestors = defaultDeps({ repo: 'o/r' }).ancestors();
-    expect(ancestors.length).toBeGreaterThan(0);
-    expect(ancestors.every((sha) => /^[0-9a-f]{40}$/.test(sha))).toBe(true);
+  // A temporary repository, not this checkout: CI's verify job clones one commit deep, where
+  // HEAD~1 does not exist (run 44651634691).
+  it('既定の run は本物の git を呼び、40 桁の祖先を読む', async () => {
+    const { execFileSync } = await import('node:child_process');
+    const { mkdtempSync, rmSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const dir = mkdtempSync(join(tmpdir(), 'ci-scope-default-'));
+    const cwd = process.cwd();
+    try {
+      const git = (...args) => execFileSync('git', args, { cwd: dir, encoding: 'utf8' });
+      git('init', '-q');
+      git('config', 'user.email', 't@example.com');
+      git('config', 'user.name', 't');
+      git('commit', '-q', '--allow-empty', '-m', 'one');
+      git('commit', '-q', '--allow-empty', '-m', 'two');
+      process.chdir(dir);
+      const ancestors = defaultDeps({ repo: 'o/r' }).ancestors();
+      expect(ancestors).toHaveLength(1);
+      expect(ancestors[0]).toMatch(/^[0-9a-f]{40}$/);
+    } finally {
+      process.chdir(cwd);
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
 
