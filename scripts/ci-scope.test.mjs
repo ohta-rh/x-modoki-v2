@@ -127,7 +127,7 @@ describe('defaultDeps', () => {
     const run = (cmd, args) => {
       calls.push([cmd, ...args].join(' '));
       if (args[0] === 'log') return 'a1\na2\n';
-      if (args[0] === 'diff') return 'docs/a.md\nREADME.md\n';
+      if (args[0] === 'diff') return 'docs/a.md\0README.md\0';
       return args[1].includes('/full/')
         ? JSON.stringify([...FULL_JOBS])
         : args[1].includes('/legacy/')
@@ -141,8 +141,79 @@ describe('defaultDeps', () => {
     expect(deps.fullyVerified('legacy/x')).toBe(true);
     expect(deps.fullyVerified('part')).toBe(false);
     expect(calls).toContain('git log --format=%H -n 50 HEAD~1');
-    expect(calls).toContain('git diff --name-only a2 HEAD');
+    expect(calls).toContain('git diff --no-renames -z --name-only a2 HEAD');
     expect(calls.some((c) => c.startsWith('gh api repos/o/r/commits/part/check-runs'))).toBe(true);
+  });
+});
+
+describe('PR の基準が動いたとき（ADR-0073 のレビュー 2）', () => {
+  const deps = (over = {}) => ({
+    ancestors: () => ['p1', 'p2'],
+    fullyVerified: (sha) => sha === 'p2',
+    changedFiles: () => ['docs/a.md'],
+    ...over,
+  });
+
+  it('PR の基準の commit が、全部が通った commit の祖先でなければ full（新しい main とのマージが確かめられていない）', () => {
+    expect(decide(deps({ prBase: 'm2', isAncestor: () => false }))).toMatchObject({
+      scope: 'full',
+      reason: expect.stringMatching(/PR base/),
+    });
+  });
+
+  it('PR の基準が祖先なら、これまでどおり文書だけは light', () => {
+    const isAncestor = vi.fn(() => true);
+    expect(decide(deps({ prBase: 'm1', isAncestor })).scope).toBe('docs');
+    expect(isAncestor).toHaveBeenCalledWith('m1', 'p2');
+  });
+
+  it('isAncestor は git merge-base --is-ancestor の終了コードを読み、失敗は false', () => {
+    const ok = defaultDeps({ run: () => '', repo: 'o/r', prBase: 'm1' });
+    expect(ok.prBase).toBe('m1');
+    expect(ok.isAncestor('m1', 'p2')).toBe(true);
+    const calls = [];
+    const no = defaultDeps({
+      run: (cmd, args) => {
+        calls.push([cmd, ...args].join(' '));
+        throw new Error('exit 1');
+      },
+      repo: 'o/r',
+    });
+    expect(no.isAncestor('m1', 'p2')).toBe(false);
+    expect(calls).toEqual(['git merge-base --is-ancestor m1 p2']);
+  });
+});
+
+describe('名前の変更（ADR-0073 のレビュー 2）', () => {
+  it('コードを docs/ へ移すと、消えた道と増えた道の両方が出て full になる', async () => {
+    const { execFileSync } = await import('node:child_process');
+    const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const dir = mkdtempSync(join(tmpdir(), 'ci-scope-'));
+    const git = (...args) => execFileSync('git', args, { cwd: dir, encoding: 'utf8' });
+    try {
+      git('init', '-q');
+      git('config', 'user.email', 't@example.com');
+      git('config', 'user.name', 't');
+      mkdirSync(join(dir, 'src'));
+      mkdirSync(join(dir, 'docs'));
+      writeFileSync(join(dir, 'src/x.ts'), 'export const x = 1;\n'.repeat(20));
+      git('add', 'src/x.ts');
+      git('commit', '-qm', 'base');
+      const base = git('rev-parse', 'HEAD').trim();
+      git('mv', 'src/x.ts', 'docs/x.ts');
+      git('commit', '-qm', 'move');
+      const deps = defaultDeps({
+        run: (cmd, args) => execFileSync(cmd, args, { cwd: dir, encoding: 'utf8' }),
+        repo: 'o/r',
+      });
+      const files = deps.changedFiles(base);
+      expect(files.sort()).toEqual(['docs/x.ts', 'src/x.ts']);
+      expect(isDocsOnly(files)).toBe(false);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
 

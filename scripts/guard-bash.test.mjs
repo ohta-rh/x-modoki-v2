@@ -61,6 +61,33 @@ describe('check', () => {
     }
   });
 
+  it('予約語・まとまり・eval・xargs・bash -lc の中でも止める（ADR-0074 のレビュー 2）', () => {
+    for (const [command, reason] of [
+      ['if true; then git add -A; fi', /stage files by path/],
+      ['pnpm verify; { git commit -m x; }', /&&/],
+      ['while true; do git push --no-verify; done', /--no-verify/],
+      ['! git commit -n -m x', /--no-verify/],
+      ['bash -lc "git add -A"', /stage files by path/],
+      ['eval "git add -A"', /stage files by path/],
+      ['xargs git add -A', /stage files by path/],
+      ['xargs -0 git commit --no-verify', /--no-verify/],
+    ]) {
+      expect(check(command), command).toMatch(reason);
+    }
+  });
+
+  it('文字の上に git の add・commit・push か pkill・killall があるのに、コマンドとして読めなければ止める', () => {
+    for (const command of [
+      'echo "git add -A"',
+      "printf '%s' 'pnpm verify; git commit -m x'",
+      'echo pkill node',
+      // Outside quotes a backslash makes the next character literal: no separator, no commit.
+      'echo a\\; git commit -m x',
+    ]) {
+      expect(check(command), command).toMatch(/could not resolve/);
+    }
+  });
+
   it('閉じていない引用符は読めないので止める', () => {
     expect(check('git commit -m "unterminated')).toMatch(/could not parse/);
     expect(check("git commit -m 'unterminated")).toMatch(/could not parse/);
@@ -87,9 +114,8 @@ describe('check', () => {
       // Inside double quotes a backslash escapes ", \, $ and ` (the shell's rule).
       'grep -E "(x|=)[\'\\"]docs" file',
       'echo "a \\\\" b',
-      // Outside quotes a backslash makes the next character literal: no separator, no commit.
-      'echo a\\; git commit -m x',
-      'echo "git add -A"',
+      'bash',
+      'eval',
       'kill 1234',
       'echo "a; b"',
     ]) {

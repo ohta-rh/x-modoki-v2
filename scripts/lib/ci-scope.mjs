@@ -36,10 +36,15 @@ export function pickBase(ancestors, fullyVerified) {
 }
 
 /** `{ scope: 'docs' | 'full', ... }`; every error and every doubt means `full`. */
-export function decide({ ancestors, fullyVerified, changedFiles }) {
+export function decide({ ancestors, fullyVerified, changedFiles, prBase, isAncestor }) {
   try {
     const base = pickBase(ancestors(), fullyVerified);
     if (base === null) return { scope: 'full', reason: 'no fully verified ancestor' };
+    // On a pull request the gates test the merge with the base branch: when that branch moved
+    // after the verified commit, the new merge has not been tested (ADR-0073 review 2).
+    if (prBase && !isAncestor(prBase, base)) {
+      return { scope: 'full', base, reason: 'the PR base moved since the last full run' };
+    }
     const files = changedFiles(base);
     return isDocsOnly(files)
       ? { scope: 'docs', base, files }
@@ -53,8 +58,18 @@ export function decide({ ancestors, fullyVerified, changedFiles }) {
 export function defaultDeps({
   run = (cmd, args) => execFileSync(cmd, args, { encoding: 'utf8' }),
   repo = process.env.GITHUB_REPOSITORY,
+  prBase = process.env.PR_BASE_SHA,
 } = {}) {
   return {
+    prBase,
+    isAncestor: (ancestor, sha) => {
+      try {
+        run('git', ['merge-base', '--is-ancestor', ancestor, sha]);
+        return true;
+      } catch {
+        return false;
+      }
+    },
     ancestors: () =>
       run('git', ['log', '--format=%H', '-n', '50', 'HEAD~1']).split('\n').filter(Boolean),
     fullyVerified: (sha) => {
@@ -68,8 +83,11 @@ export function defaultDeps({
       );
       return passed.includes(LEGACY_FULL_JOB) || FULL_JOBS.every((job) => passed.includes(job));
     },
+    // --no-renames: a file moved from src/ into docs/ lists both paths, so it is not docs-only.
     changedFiles: (base) =>
-      run('git', ['diff', '--name-only', base, 'HEAD']).split('\n').filter(Boolean),
+      run('git', ['diff', '--no-renames', '-z', '--name-only', base, 'HEAD'])
+        .split('\0')
+        .filter(Boolean),
   };
 }
 

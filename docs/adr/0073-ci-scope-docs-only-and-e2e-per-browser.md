@@ -22,6 +22,7 @@ status: stable
 ## 決定
 
 - **`scope` のジョブが最初に決める**（`scripts/ci-scope.mjs`）。祖先を新しい順に見て、`verify` と 3 つの `e2e` のジョブが全部通った最初の commit を基準にし、そこからの変更が全部文書（`docs/`、`.claude/`、`README.md`、`CHANGELOG.md`、`CLAUDE.md`、`LICENSE`）なら `docs`、それ以外は `full`。基準が無い、読めない、のどれでも `full`
+- 変更の一覧は、名前の変更を分けて読む（`git diff --no-renames -z`）。`src/` から `docs/` へ移したファイルは、消えた道も出るので `full` になる。PR では、PR の基準の commit が、全部が通った commit の祖先でなければ `full`（基準のブランチが進んだあとのマージは、まだ確かめていない）
 - **`docs:check` の外の確認が読む文書は、コードとして扱う**（`GATE_INPUTS`: 脅威のモデルは `check-authz` が、手順書と `.claude/settings.json` は `scripts/quality-gates.test.ts` が読む）。確認が新しい文書を読み始めたら、`scripts/ci-scope.test.mjs` がスクリプトとテストの中の読み込みの道を探して落ちる
 - **`docs`**: `pnpm docs:check`（要件とテストの結びつきを含む）と `pnpm format:check` だけを流す
 - **`full`**: ADR-0070 の 8 つの確認を全部流す。`verify` のジョブが依存の監査と確認 1〜6、`e2e (chromium)`・`e2e (firefox)`・`e2e (webkit)` の 3 つのジョブが確認 7 を、同時に流す。各ジョブは自分でビルドする

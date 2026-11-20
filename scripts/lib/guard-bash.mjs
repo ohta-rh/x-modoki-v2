@@ -69,14 +69,24 @@ export function split(text) {
   return commands;
 }
 
-const PREFIXES = new Set(['env', 'command', 'time', 'exec', 'nohup', 'sudo']);
+// Words that run the command after them: prefixes, and the shell's reserved and grouping words.
+const PREFIXES = new Set([
+  ...['env', 'command', 'time', 'exec', 'nohup', 'sudo'],
+  ...['if', 'then', 'else', 'elif', 'do', 'while', 'until', '!', '{'],
+]);
 const GIT_OPTION_WITH_VALUE = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace']);
 const base = (word) => word.slice(word.lastIndexOf('/') + 1);
 
-/** The command's name and arguments, past VAR=value and prefix words. */
+/** The command's name and arguments, past VAR=value, prefix words, and xargs with its options. */
 function program(words) {
   let i = 0;
-  while (i < words.length && (/^\w+=/.test(words[i]) || PREFIXES.has(words[i]))) i += 1;
+  for (;;) {
+    if (i < words.length && (/^\w+=/.test(words[i]) || PREFIXES.has(words[i]))) i += 1;
+    else if (words[i] === 'xargs') {
+      i += 1;
+      while (i < words.length && words[i].startsWith('-')) i += 1;
+    } else break;
+  }
   return { name: base(words[i] ?? ''), args: words.slice(i + 1) };
 }
 
@@ -100,16 +110,19 @@ const REASONS = {
 };
 
 /** The reason to refuse one simple command, or null. */
-function checkCommand({ words, after }, depth) {
+function checkCommand({ words, after }, depth, seen) {
   const { name, args } = program(words);
   if (name === 'pkill' || name === 'killall') return REASONS.kill;
-  if ((name === 'bash' || name === 'sh' || name === 'zsh') && args[0] === '-c' && args[1]) {
+  const shell =
+    ['bash', 'sh', 'zsh'].includes(name) && /^-[a-zA-Z]*c[a-zA-Z]*$/.test(args[0] ?? '');
+  if ((shell && args[1]) || (name === 'eval' && args.length > 0)) {
     return depth < 3
-      ? checkText(args[1], depth + 1)
+      ? checkText(shell ? args[1] : args.join(' '), depth + 1, seen)
       : 'bash -c too deeply nested to read; refusing it';
   }
   if (name !== 'git') return null;
   const { sub, rest } = gitCommand(args);
+  seen.add(sub);
   if (
     sub === 'add' &&
     (rest.some((a) => ['--all', '.', './'].includes(a)) || shortFlag(rest, 'A'))
@@ -126,18 +139,33 @@ function checkCommand({ words, after }, depth) {
   return null;
 }
 
-function checkText(text, depth) {
+function checkText(text, depth, seen) {
   for (const command of split(text)) {
-    const reason = checkCommand(command, depth);
+    const reason = checkCommand(command, depth, seen);
     if (reason) return reason;
   }
   return null;
 }
 
+// The raw-text fallback (gate-design.md): git (with only options between) and a guarded
+// subcommand, or a by-name kill, anywhere in the text.
+const RAW_GIT = /\bgit(?:\s+-[Cc]\s+\S+|\s+-\S+)*\s+(add|commit|push)\b/g;
+const RAW_KILL = /\b(?:pkill|killall)\b/;
+
 /** The reason to refuse `command`, or null. A command it cannot parse is refused. */
 export function check(command) {
   try {
-    return checkText(command, 0);
+    const seen = new Set();
+    const reason = checkText(command, 0, seen);
+    if (reason) return reason;
+    const unresolved = [...command.matchAll(RAW_GIT)].find((match) => !seen.has(match[1]));
+    if (unresolved) {
+      return `found "git ${unresolved[1]}" in text the hook could not resolve as a command; refusing it`;
+    }
+    if (RAW_KILL.test(command)) {
+      return 'found pkill or killall in text the hook could not resolve as a command; refusing it';
+    }
+    return null;
   } catch (error) {
     return `could not parse the command (${error.message}); refusing it`;
   }

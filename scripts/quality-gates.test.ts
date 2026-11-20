@@ -156,6 +156,8 @@ describe('品質の確認の設定（#30）', () => {
     expect(job('scope')).toMatch(/fetch-depth: 0/);
     // A pull request's own history, not the merge with main (whose parent is main's tip).
     expect(job('scope')).toContain('ref: ${{ github.event.pull_request.head.sha || github.sha }}');
+    // A PR whose base branch moved since the last full run needs the full run (review 2).
+    expect(job('scope')).toContain('PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}');
     for (const id of ['verify', 'e2e']) {
       expect(job(id)).toContain("if: needs.scope.outputs.scope == 'full'");
     }
