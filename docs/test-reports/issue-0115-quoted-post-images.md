@@ -12,7 +12,7 @@ status: stable
 
 - issue: [#115](https://github.com/ohta-rh/x-modoki-v2/issues/115)（バグ。ユーザーが 2026-11-20 に報告した）
 - commit: `a5c141e`、レビューで足した `4a3bdfa`（ブランチ `m1/local-app`、PR #40）
-- CI: push のあとにこの節へ書き足す
+- CI: [実行 44701498479](https://github.com/ohta-rh/x-modoki-v2/actions/runs/44701498479)（成功。範囲は full、`verify` 4.1 分、画面のテストは Chromium 4 分・Firefox 5.9 分・WebKit 9 分）
 - 日付: 2026-11-20
 
 ## 環境
