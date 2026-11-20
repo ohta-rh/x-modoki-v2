@@ -305,7 +305,7 @@ footer { color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
       <div class="g"><span class="when">commit のとき</span><h3>pre-commit のフック</h3><ul><li>ステージした木を書き出す</li><li>ドキュメントの形とリンク</li><li>要件とテストの結びつき</li><li>引いた ADR の番号があるか</li></ul><span class="cost">約 1 秒</span></div>
       <div class="g"><span class="when">push の前</span><h3><code>pnpm verify</code></h3><ul><li>型・ESLint・Steiger・整形</li><li>単体とデータアクセス層（本物の PostgreSQL）</li><li>カバレッジ 4 つとも 100%</li><li>ビルドと 3 ブラウザの e2e</li></ul><span class="cost">約 10 分</span></div>
       <div class="g"><span class="when">push の前</span><h3>人の代わりの目</h3><ul><li>本物の Chrome で 3 つの幅と低い画面</li><li>独立した code-reviewer（opus）</li></ul><span class="cost">数分〜</span></div>
-      <div class="g"><span class="when">push の後</span><h3>GitHub Actions</h3><ul><li>まず範囲を決める（文書だけか）</li><li>文書だけ: 文書と整形</li><li>それ以外: 監査と上の 7 つ、画面のテストはブラウザごとに同時</li><li><code>fresh-clone</code>: 手順書をそのまま流す</li></ul><span class="cost">文書だけ: 数分 · それ以外: 10 分前後（見込み）</span></div>
+      <div class="g"><span class="when">push の後</span><h3>GitHub Actions</h3><ul><li>まず範囲を決める（文書だけか）</li><li>文書だけ: 文書と整形</li><li>それ以外: 監査と上の 7 つ、画面のテストはブラウザごとに同時</li><li><code>fresh-clone</code>: 手順書をそのまま流す</li></ul><span class="cost">文書だけ: 数分 · それ以外: 約 6 分（2026-11-20 に測った）</span></div>
     </div>
   </section>
 
